@@ -1,0 +1,497 @@
+{
+  "label": "Vibrating Screen",
+  "category": "Coal Mining",
+  "layer": "equipment",
+  "parts": [
+    {
+      "id": "foundation",
+      "label": "Concrete Pad",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 7,
+        "height": 0.4,
+        "depth": 4.5
+      },
+      "position": [
+        0,
+        0.2,
+        0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "legsGrp",
+      "label": "Support Legs",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leg1",
+      "label": "Leg 1",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.35,
+        "height": 2.2,
+        "depth": 0.35
+      },
+      "position": [
+        -2.4,
+        1.5,
+        1.4
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "leg2",
+      "label": "Leg 2",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.35,
+        "height": 2.2,
+        "depth": 0.35
+      },
+      "position": [
+        2.4,
+        1.5,
+        1.4
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "leg3",
+      "label": "Leg 3",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.35,
+        "height": 2.2,
+        "depth": 0.35
+      },
+      "position": [
+        -2.4,
+        1.5,
+        -1.4
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "leg4",
+      "label": "Leg 4",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.35,
+        "height": 2.2,
+        "depth": 0.35
+      },
+      "position": [
+        2.4,
+        1.5,
+        -1.4
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "springsGrp",
+      "label": "Coil Springs",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "spring1",
+      "label": "Spring 1",
+      "parentId": "springsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.14,
+        "height": 0.5
+      },
+      "position": [
+        -2.4,
+        2.85,
+        1.4
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "spring2",
+      "label": "Spring 2",
+      "parentId": "springsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.14,
+        "height": 0.5
+      },
+      "position": [
+        2.4,
+        2.85,
+        1.4
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "spring3",
+      "label": "Spring 3",
+      "parentId": "springsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.14,
+        "height": 0.5
+      },
+      "position": [
+        -2.4,
+        2.85,
+        -1.4
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "spring4",
+      "label": "Spring 4",
+      "parentId": "springsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.14,
+        "height": 0.5
+      },
+      "position": [
+        2.4,
+        2.85,
+        -1.4
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "deck",
+      "label": "Screen Deck",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 5.6,
+        "height": 0.8,
+        "depth": 3.0
+      },
+      "position": [
+        0,
+        3.5,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -0.15
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "bob",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "vibMotor1",
+      "label": "Vibrator Motor 1",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.28,
+        "height": 0.9
+      },
+      "position": [
+        -0.5,
+        4.25,
+        0
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "vibMotor2",
+      "label": "Vibrator Motor 2",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.28,
+        "height": 0.9
+      },
+      "position": [
+        0.5,
+        4.3,
+        0
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "feedChute",
+      "label": "Feed Chute",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.2,
+        "height": 1.4,
+        "depth": 2.2
+      },
+      "position": [
+        -3.1,
+        4.3,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "oversizeChute",
+      "label": "Oversize Chute",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.0,
+        "height": 1.2,
+        "depth": 1.4
+      },
+      "position": [
+        3.0,
+        2.9,
+        0.9
+      ],
+      "rotation": [
+        0,
+        0,
+        0.4
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "undersizeHopper",
+      "label": "Undersize Hopper",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 1.4,
+        "height": 1.4
+      },
+      "position": [
+        0.6,
+        1.6,
+        0
+      ],
+      "rotation": [
+        3.1416,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "conveyor_in",
+      "type": "conveyor",
+      "direction": "in",
+      "offset": [
+        -3.4,
+        2.2,
+        0
+      ]
+    },
+    {
+      "id": "conveyor_out",
+      "type": "conveyor",
+      "direction": "out",
+      "offset": [
+        3.4,
+        1.4,
+        0
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Vibrator Speed",
+      "type": "number",
+      "default": 1.6,
+      "min": 0,
+      "max": 4,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "feedRate",
+      "label": "Feed Rate",
+      "unit": "t/h",
+      "default": 950,
+      "min": 0,
+      "max": 2000,
+      "freq": "5s"
+    },
+    {
+      "key": "deckLoad",
+      "label": "Deck Load",
+      "unit": "%",
+      "default": 62,
+      "min": 0,
+      "max": 100,
+      "freq": "5s"
+    },
+    {
+      "key": "oversizeRate",
+      "label": "Oversize",
+      "unit": "%",
+      "default": 8,
+      "min": 0,
+      "max": 40,
+      "freq": "5m"
+    },
+    {
+      "key": "bearingTemp",
+      "label": "Bearing Temp",
+      "unit": "degC",
+      "default": 54,
+      "min": 0,
+      "max": 110,
+      "freq": "30s"
+    },
+    {
+      "key": "vibrationRms",
+      "label": "Vibration RMS",
+      "unit": "mm/s",
+      "default": 4.5,
+      "min": 0,
+      "max": 20,
+      "freq": "5s"
+    },
+    {
+      "key": "kwhPerTonne",
+      "label": "Specific Energy",
+      "unit": "kWh/t",
+      "default": 0.62,
+      "min": 0,
+      "max": 2,
+      "freq": "5s"
+    }
+  ],
+  "states": [
+    {
+      "key": "screening",
+      "label": "Screening",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "standby",
+      "label": "Standby",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "tripped",
+      "label": "Tripped",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

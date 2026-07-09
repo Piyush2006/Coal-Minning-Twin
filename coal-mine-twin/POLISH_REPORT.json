@@ -1,0 +1,132 @@
+[
+  {
+    "item": 1,
+    "title": "Muted grid",
+    "status": "done",
+    "files_changed": ["src/components/GridSystem.jsx", "src/lib/paletteTokens.js", "coal-mine-twin/03-twin-spec.json"],
+    "how": "GridSystem now reads scene-level environment.grid {show, opacity, desaturate, cellColor, sectionColor}; view mode renders one desaturated grid at ~10% strength (edit mode keeps the full build grids). Coal scene opts in via environment.grid.",
+    "generic": true,
+    "verify_in_scene": "environment.grid = { \"opacity\": 0.1, \"desaturate\": true } in the scene JSON.",
+    "caveats": "drei's Grid shader has no true opacity uniform, so 'opacity' is emulated by blending line colours toward the background (mixHex) — visually equivalent."
+  },
+  {
+    "item": 2,
+    "title": "Gradient sky + environment IBL",
+    "status": "done",
+    "files_changed": ["src/components/SkyDome.jsx", "src/App.jsx", "src/lib/twinSpec.js", "src/store/sceneStore.js", "src/store/projectStore.js", "coal-mine-twin/03-twin-spec.json"],
+    "how": "New SkyDome (inward shader sphere, zenith/horizon/ground gradient + matching scene fog) plus a procedural soft-overcast IBL built from drei Lightformers rendered into an Environment map. Activated per scene via a new environment.sky block, which is plumbed through validateSpec -> loadScene -> store -> export; scenes without it keep the previous warehouse preset.",
+    "generic": true,
+    "verify_in_scene": "environment.sky = { zenith, horizon, ground, fog } in the scene JSON; projectStore now carries built.environment into new projects.",
+    "caveats": "IBL is procedural Lightformers (no HDRI file, works offline/headless); reflections are soft area shapes, not a photographic environment."
+  },
+  {
+    "item": 3,
+    "title": "Soft shadows + AO post pass",
+    "status": "done",
+    "files_changed": ["src/components/PostFX.jsx"],
+    "how": "Verified PCSS SoftShadows (Canvas shadows=\"soft\" + <SoftShadows/>) and the N8AO ambient-occlusion pass were ALREADY enabled engine-wide with no presentation/edit toggle; kept both and made bloom threshold/intensity env-tunable in the same pass.",
+    "generic": true,
+    "verify_in_scene": "No scene keys needed; only gate is the thumbnail-capture ?snap URL flag (performance, not a UI toggle).",
+    "caveats": "Soft shadows and N8AO were pre-existing — this item was verification plus PostFX tuning, not new code."
+  },
+  {
+    "item": 4,
+    "title": "Real benched pit terrain + haul ramp",
+    "status": "done",
+    "files_changed": ["src/components/terrain/PitTerrain.jsx", "src/lib/machineLibrary.js", "src/lib/assetSchemas.js", "src/lib/parameterSchemas.js", "src/lib/stateSchemas.js", "src/lib/templates/coalMine.js", "coal-mine-twin/03-twin-spec.json"],
+    "how": "New built-in PitTerrain type: one BufferGeometry of sloped bench faces + treads (config: depth, benches, benchDepth, faceAngle, floor size), side caps, exposed seam band, noise-displaced pit floor, muck piles and an inclined haul-ramp deck with windrow berms. pit-1 switched from stacked-box parts to type PitTerrain; the template loader derives config.depth from the pit object's parameters.pitDepth (x0.3 visual scale). Excavator EX-01 and the blast-hole drill sit on bench 1 (y=4.2), the exploration rig on bench 2 (y=8.4); EX-02 digs the seam toe on the pit floor.",
+    "generic": true,
+    "verify_in_scene": "pit-1.type == \"PitTerrain\" with config {benches:3, benchDepth:10, faceAngle:62, ramp:true}; exc-ob-1.position[1]==4.2, bh-drill-1.position[1]==4.2, expl-rig-1.position[1]==8.4.",
+    "caveats": "Visual wall depth is 0.3x of the 42 m pitDepth parameter (full scale would dwarf the site); the ramp is one straight inclined deck across the faces, not a switchback; EX-02 works the pit floor (lowest level) rather than an upper bench so something digs the coal seam."
+  },
+  {
+    "item": 5,
+    "title": "Ground noise + raised dump mound",
+    "status": "done",
+    "files_changed": ["src/components/ShopFloorEnvironment.jsx", "src/components/terrain/TerrainMound.jsx", "src/lib/machineLibrary.js", "src/lib/assetSchemas.js", "coal-mine-twin/03-twin-spec.json"],
+    "how": "ShopFloorEnvironment gained an environment.ground {style:'earth', color, noiseAmp, noiseScale} mode: an auto-sizing heightmap plane displaced by deterministic value noise (dips only, so y=0 assets never sink). New built-in TerrainMound renders the overburden dump as noise-displaced hemisphere lobes (config radius/height/lobes/irregular + dust flag); dump-1 switched to it.",
+    "generic": true,
+    "verify_in_scene": "environment.ground = { style:'earth', noiseAmp:0.35, noiseScale:55 }; dump-1.type == \"TerrainMound\" with config {radius:10, height:5.5, lobes:3, dust:true}.",
+    "caveats": "Ground displacement is downward-only by design; amplitude is subtle (0.35 m)."
+  },
+  {
+    "item": 6,
+    "title": "Re-clustered layout",
+    "status": "done",
+    "files_changed": ["coal-mine-twin/03-twin-spec.json"],
+    "how": "All positions re-authored into one continuous strip: pit floor ends x=-42, crusher at -30, conveyor -19, screen -7, CHPP +8 with thickener/water circuit at z 12-30 beside it, stockyard at 30, blending 52, rail load-out 68 with the rake to 90, port 88-118, power station 111-145. Two new access/laydown roads (road-3, road-4) fill the remaining gaps.",
+    "generic": false,
+    "verify_in_scene": "Object positions as listed; new nodes road-3 [12,0,-16] and road-4 [70,0,6]; no gap between zones exceeds ~15 m.",
+    "caveats": "Scene-data change by definition (positions), not engine code."
+  },
+  {
+    "item": 7,
+    "title": "Material variation + weathering + granular bulk solids",
+    "status": "done",
+    "files_changed": ["src/lib/textures.js", "src/components/CompositeAsset.jsx", "src/lib/componentSpec.js", "coal-mine-twin/02-components/*.json"],
+    "how": "Two new procedural finishes (dust film, granular bulk-solid with glinting grains) in the shared texture module; CompositeAsset materials now support vary (deterministic per-part roughness/metalness jitter), weather {kind: rust|dust|concrete|paint, amount} and granular; componentSpec whitelists the new keys. Applied in data: coal loads/heaps/stockpiles/bunker are granular, wagon/loco frames rusted, bins/walls/structures dusted, painted steel gets vary 0.4.",
+    "generic": true,
+    "verify_in_scene": "customAssetTypes parts carry material.granular / material.weather / material.vary keys (e.g. haul_truck.coalLoad.granular, coal_wagon.underframe.weather.kind=='rust').",
+    "caveats": "Weathering selects a whole-surface finish + roughness bias — no per-face dirt masks or edge wear."
+  },
+  {
+    "item": 8,
+    "title": "Motion: belt scroll, truck path-follow, particles, water shimmer",
+    "status": "done",
+    "files_changed": ["src/components/Connectors.jsx", "src/components/SceneRenderer.jsx", "src/components/effects/ParticleEmitter.jsx", "src/components/CompositeAsset.jsx", "src/components/terrain/TerrainMound.jsx", "src/lib/componentSpec.js", "coal-mine-twin/02-components/*.json", "coal-mine-twin/03-twin-spec.json"],
+    "how": "Conveyor connectors got UVs + a scrolling chevron texture tied to belt speed (opt-out connectorConfig.beltScroll:false). New generic PathDrive: any asset with config.path {waypoints, speed, loop} drives its visual around a Catmull-Rom loop with heading — applied to all three haul trucks (pit->ROM, ROM->crusher, pit->dump loops). New shared ParticleEmitter (dust/smoke/steam/spray presets) usable as a component part kind 'emitter' or directly — applied at the crusher (dust), dump tip-head (dust), power-station stack + cooling tower (smoke/steam) and ship funnel (smoke). Water materials (material.water) scroll micro-normal maps for shimmer — thickener surface and the ship's berth water.",
+    "generic": true,
+    "verify_in_scene": "truck-1/2/3 config.path blocks; dump-1.config.dust==true; emitter parts dustEmitter/stackSmokeEmitter/ctSteamEmitter/funnelSmokeEmitter in customAssetTypes; thickener liquidSurface + bulk_carrier berthWater material.water==true.",
+    "caveats": "Particles are uniform-size sprites (no per-particle growth); the store object stays at its authored position while the visual travels, so flow lines to moving trucks anchor at the authored spot; paths pause in edit mode."
+  },
+  {
+    "item": 9,
+    "title": "Centralized colour palette tokens",
+    "status": "done",
+    "files_changed": ["src/lib/paletteTokens.js", "src/components/CompositeAsset.jsx", "src/components/Connectors.jsx", "src/components/SkyDome.jsx", "src/components/ShopFloorEnvironment.jsx", "src/components/terrain/PitTerrain.jsx", "src/components/terrain/TerrainMound.jsx", "src/lib/componentSpec.js", "coal-mine-twin/02-components/*.json", "coal-mine-twin/03-twin-spec.json"],
+    "how": "New paletteTokens module (miningYellow, structureGrey, darkSteel, safetyOrange/Red, waterBlue/Teal/Green, coalBlack, earthBrown/Dark, concrete, copper, rubberDark, equipmentBlue) with resolveColor('@token') honoured in part materials, connector configs, terrain and environment config; componentSpec accepts '@' colours. All coal component specs re-pointed to tokens (equipment yellow, structures grey, water blue, coal black; blending beacon uses @safetyOrange).",
+    "generic": true,
+    "verify_in_scene": "Materials and connectorConfigs contain '@miningYellow', '@structureGrey', '@coalBlack', '@waterBlue', '@safetyOrange', '@earthBrown' token strings.",
+    "caveats": ""
+  },
+  {
+    "item": 10,
+    "title": "PostFX: vignette, depth-of-field, bloom",
+    "status": "done",
+    "files_changed": ["src/components/PostFX.jsx", "coal-mine-twin/03-twin-spec.json"],
+    "how": "Added a mild DepthOfField pass and made bloom threshold/intensity scene-tunable via environment.postfx (dof can be disabled or tuned per scene); vignette kept as-is. The coal scene pins bloom {threshold 1.0, intensity 0.5} and dof {bokehScale 0.9} after wide-shot testing showed the brighter defaults washing out distant terrain.",
+    "generic": true,
+    "verify_in_scene": "environment.postfx = { bloom:{threshold:1,intensity:0.5}, dof:{focusDistance:0.045, focalLength:0.5, bokehScale:0.9} }.",
+    "caveats": "Vignette and bloom passes pre-existed; the new work is DoF + per-scene tunability. Bloom at threshold 1.0 catches only toneMapped=false emissives (status lamps, beacons), not water glints."
+  },
+  {
+    "item": 11,
+    "title": "End-to-end material flow in connections[]",
+    "status": "done",
+    "files_changed": ["coal-mine-twin/03-twin-spec.json", "coal-mine-twin/02-components/*.json", "src/lib/machineLibrary.js", "src/store/sceneStore.js"],
+    "how": "Added product-type flow ports to the mobile/logistics components and wired one continuous pit-to-port chain as thin grey flowing route lines, reusing the existing pipe/conveyor connector renderers. Also fixed loadScene to derive connectorType from the source port (conveyor->belt, power->busbar) instead of defaulting everything to pipe.",
+    "generic": true,
+    "verify_in_scene": "New connections: pit-1.coal_out->exc-coal-1.feed_in; pit-1.coal_out->exc-ob-1.feed_in; exc-coal-1.load_out->truck-1.load_in; exc-ob-1.load_out->truck-3.load_in; truck-1.dump_out->crusher-1.feed_in; truck-2.dump_out->crusher-1.feed_in; truck-3.dump_out->dump-1.waste_in; stacker-1.rail_out->blend-1.feed_in (rewired from loadout-1); blend-1.blend_out->loadout-1.conveyor_in; loadout-1.load_out->wagon-1.load_in; wagon-2.link_out->wagon-1.link_in; wagon-3.link_out->wagon-2.link_in; wagon-4.link_out->wagon-3.link_in; wagon-1.link_out->loco-1.link_in; shiploader-1.boom_out->ship-1.hold_in; ship-1.cargo_out->power-1.coal_in. Existing fixed-plant chain (crusher->CV-01->screen->CHPP->stacker + water circuit) unchanged.",
+    "caveats": "Mobile-fleet links render as thin orthogonally-routed pipes (route lines), not belts — physically these hops are truck movements, so the lines are schematic; wagon couplings are non-flowing; ship->power station is a schematic shipping-route line across the site."
+  },
+  {
+    "item": 12,
+    "title": "State/params bound onto meshes",
+    "status": "done",
+    "files_changed": ["src/components/SceneRenderer.jsx"],
+    "how": "New generic StatusLamp: every asset gets a small emissive indicator coloured by its CURRENT per-type state colour (the state field already computed for the fleet panel, colours from stateSchemas/component states); steady+small when severity ok, larger+pulsing on warn/down; opt-out via config.statusLamp:false. Hover tooltips now fall back for EVERY asset to its first three schema parameters with units when no explicit tooltip is configured (explicit tooltips unchanged). Values drift via the pre-existing stepSimulation generic simulator (params move within min/max each tick; UNS-bound params excluded).",
+    "generic": true,
+    "verify_in_scene": "No scene keys needed (defaults on); state field bound = obj.state (colour) with obj.status severity driving pulse; params bound = per-type parameter schema values with units. Values are SIMULATED by the existing engine simulator, not live.",
+    "caveats": "Simulated drift was already present in the engine (lib/oee.js stepSimulation) — not added by this work; lamp height comes from a throttled bounding-box measure (re-measured every 30 frames)."
+  },
+  {
+    "item": 13,
+    "title": "Pit dewatering pump + blending plant",
+    "status": "done",
+    "files_changed": ["coal-mine-twin/03-twin-spec.json", "coal-mine-twin/02-components/blending_plant.json", "coal-mine-twin/02-components/chpp_dmc_module.json"],
+    "how": "pump-pit-1 (catalog Pump, 'Pit Dewatering Pump PD-01') on the pit floor, piped to a new pitwater_in utility port on the CHPP with a @waterBlue flowing connector; params flowRate/pressure/vibration are live via the simulator, tooltip enabled. blend-1 ('Blending Plant BL-01', new 16-part blending_plant component: twin blend bins with cone dischargers, spinning feeders, collecting conveyor, sampling tower, pulsing safety beacon) inserted between the stockyard and load-out — the stacker-reclaimer's rail_out now feeds blend-1, whose blend_out feeds the load-out; params blendRatio/throughput/binALevel/binBLevel, tooltip enabled, plus a blendRate KPI on the Stockyard group.",
+    "generic": false,
+    "verify_in_scene": "New node ids: pump-pit-1 (type Pump, connection outlet->chpp-1.pitwater_in), blend-1 (type blending_plant, connections stacker-1.rail_out->blend-1.feed_in and blend-1.blend_out->loadout-1.conveyor_in); grp_yard.kpis contains blendRate; customAssetTypes.blending_plant exists; chpp_dmc_module ports include pitwater_in.",
+    "caveats": "Realistically pit water would go to a settling pond before the CHPP; it is piped directly to a dedicated CHPP inlet to keep the loop closed on-scene."
+  }
+]

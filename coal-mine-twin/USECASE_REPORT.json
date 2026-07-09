@@ -1,0 +1,102 @@
+[
+  {
+    "useCase": 1,
+    "title": "Haulage & dispatch monitoring",
+    "status": "done",
+    "assets_targeted": ["truck-1", "truck-2", "truck-3 (haul_truck)", "exc-ob-1", "exc-coal-1 (mining_excavator)"],
+    "params_added": ["idleTime", "cycleTime", "fuelBurn (trucks)", "idleTime", "cycleTime (excavators)", "speed (pre-existing)"],
+    "rules_added": [
+      { "param": "idleTime", "op": ">", "threshold": 20, "severity": "warn" },
+      { "param": "speed", "op": ">", "threshold": 40, "severity": "critical" },
+      { "param": "idleTime", "op": ">", "threshold": 25, "severity": "warn" }
+    ],
+    "scripted_demo_asset": "truck-1 (idleTime sweeps 4-34 min, 150 s loop)",
+    "alerts_panel": "Fires as 'Truck idling {idleTime} min' (warn, amber lamp) and 'Over-speed {speed} km/h' (critical, red lamp); tagged 'Haulage'. Both observed firing in headless verification (HT-01 idle warn, HT-03 over-speed critical).",
+    "generic": true,
+    "caveats": "Over-speed can also fire from random drift on any truck (speed schema 0-60) — intended realism."
+  },
+  {
+    "useCase": 2,
+    "title": "HEMM predictive maintenance",
+    "status": "done",
+    "assets_targeted": ["truck-1", "truck-2", "truck-3", "exc-ob-1", "exc-coal-1"],
+    "params_added": ["engineHealth", "hydraulicHealth", "faultCode", "rulHours"],
+    "rules_added": [
+      { "param": "engineHealth", "op": "<", "threshold": 40, "severity": "critical" },
+      { "param": "hydraulicHealth", "op": "<", "threshold": 45, "severity": "warn" },
+      { "param": "faultCode", "op": ">", "threshold": 0.5, "severity": "warn" }
+    ],
+    "scripted_demo_asset": "exc-ob-1 (engineHealth sweeps 82->30->82, 200 s loop)",
+    "alerts_panel": "Fires as 'HEMM engine fault risk, RUL {rulHours} h' — message interpolates the live mock RUL value (observed: 'RUL 264 h'); tagged 'HEMM PdM'.",
+    "generic": true,
+    "caveats": "faultCode is freq:'manual' so it never drifts — the fault-code rule only fires if a code is staged by hand; the demo relies on the engineHealth trend instead."
+  },
+  {
+    "useCase": 3,
+    "title": "OTR tyre / TPMS",
+    "status": "done",
+    "assets_targeted": ["truck-1", "truck-2", "truck-3 (haul_truck)"],
+    "params_added": ["tyrePressure", "tkph (tyreTemp pre-existing, freq tightened 5m -> 5s)"],
+    "rules_added": [
+      { "param": "tyreTemp", "op": ">", "threshold": 85, "severity": "critical" },
+      { "param": "tyrePressure", "op": "<", "threshold": 7, "severity": "warn" },
+      { "param": "tyrePressure", "op": ">", "threshold": 10, "severity": "warn" }
+    ],
+    "scripted_demo_asset": "truck-3 (tyreTemp sweeps 58-96 degC, 180 s loop)",
+    "alerts_panel": "Fires as 'Tyre over-temp {tyreTemp} degC' (critical) and under/over-inflation warns; tagged 'TPMS'. Observed firing and driving HT-03's lamp red in verification.",
+    "generic": true,
+    "caveats": "One aggregate tyre pressure/temp per truck, not six wheel positions."
+  },
+  {
+    "useCase": 4,
+    "title": "Vibration CBM (fixed plant)",
+    "status": "done",
+    "assets_targeted": ["crusher-1 (primary_crusher)", "screen-1 (vibrating_screen)", "chpp-1 (chpp_dmc_module)", "pump-1", "pump-2", "pump-pit-1 (Pump)"],
+    "params_added": ["vibrationRms + bearingTemp (screen, CHPP); crusher vibration/bearingTemp and pump vibration pre-existing"],
+    "rules_added": [
+      { "param": "vibration", "op": "between", "threshold": [6, 10], "severity": "warn" },
+      { "param": "vibration", "op": ">", "threshold": 10, "severity": "critical" },
+      { "param": "vibrationRms", "op": "between", "threshold": [7, 11], "severity": "warn" },
+      { "param": "vibrationRms", "op": ">", "threshold": 11, "severity": "critical" },
+      { "param": "bearingTemp", "op": ">", "threshold": 85, "severity": "warn" },
+      { "param": "vibration", "op": ">", "threshold": 8, "severity": "warn" }
+    ],
+    "scripted_demo_asset": "crusher-1 (vibration sweeps 2.5-12.5 mm/s, 170 s loop — passes through ISO zone C 'between' band into zone D critical)",
+    "alerts_panel": "Fires as 'Vibration {v} mm/s in ISO zone C' (warn) then 'Bearing/imbalance fault' (critical); tagged 'Vibration CBM'. Both zone transitions observed in one sweep.",
+    "generic": true,
+    "caveats": "Conveyor CV-01 (catalog ConveyorBelt) has no vibration parameter in its catalog schema, so conveyor drives are not covered — adding one would change the global catalog type."
+  },
+  {
+    "useCase": 5,
+    "title": "CHP specific energy (SEC)",
+    "status": "done",
+    "assets_targeted": ["crusher-1", "screen-1", "chpp-1"],
+    "params_added": ["kwhPerTonne (all three)"],
+    "rules_added": [
+      { "param": "kwhPerTonne", "op": ">", "threshold": 1.6, "severity": "warn" },
+      { "param": "kwhPerTonne", "op": ">", "threshold": 1.0, "severity": "warn" },
+      { "param": "kwhPerTonne", "op": ">", "threshold": 3.5, "severity": "warn" }
+    ],
+    "scripted_demo_asset": "screen-1 (kwhPerTonne sweeps 0.45-1.35, 160 s loop)",
+    "alerts_panel": "Fires as 'High specific energy {kwhPerTonne} kWh/t - check idle-running'; tagged 'CHP SEC'. Observed firing and driving screen-1's lamp amber.",
+    "generic": true,
+    "caveats": "Baselines are fixed per-asset thresholds, not computed from a rolling production baseline; conveyors excluded (same catalog-schema caveat as UC4)."
+  },
+  {
+    "useCase": 6,
+    "title": "Dust & environmental compliance",
+    "status": "done",
+    "assets_targeted": ["pm-1 (new pm_monitor, ROM pad)", "pm-2 (new pm_monitor, stockyard)"],
+    "params_added": ["pm10", "pm25", "noise", "suppressionActive (new pm_monitor component, 7 parts, in new 'Environmental Monitoring' group with avg-PM10/noise KPIs)"],
+    "rules_added": [
+      { "param": "pm10", "op": ">", "threshold": 150, "severity": "warn" },
+      { "param": "pm10", "op": ">", "threshold": 250, "severity": "critical" },
+      { "param": "pm25", "op": ">", "threshold": 90, "severity": "warn" },
+      { "param": "noise", "op": ">", "threshold": 85, "severity": "warn" }
+    ],
+    "scripted_demo_asset": "pm-1 (pm10 sweeps 60-320 ug/m3, 190 s loop)",
+    "alerts_panel": "Fires as 'PM10 {pm10} ug/m3 above 150 action level' (warn) then 'Dust exceedance - PM10 {pm10} ug/m3 (suppression: {suppressionActive})' (critical) — the suppression indicator is interpolated into the message (pm-1 shows 1 = active); tagged 'Dust & Env'.",
+    "generic": true,
+    "caveats": "suppressionActive is a manual 0/1 mock flag surfaced in the message and tooltip, not a separate visual effect."
+  }
+]

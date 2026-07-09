@@ -1,0 +1,476 @@
+{
+  "label": "Shiploader",
+  "category": "Coal Mining",
+  "layer": "equipment",
+  "parts": [
+    {
+      "id": "wharfRail1",
+      "label": "Wharf Rail 1",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 16,
+        "height": 0.3,
+        "depth": 0.5
+      },
+      "position": [
+        0,
+        0.15,
+        2.5
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "wharfRail2",
+      "label": "Wharf Rail 2",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 16,
+        "height": 0.3,
+        "depth": 0.5
+      },
+      "position": [
+        0,
+        0.15,
+        -2.5
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "legsGrp",
+      "label": "Portal Legs",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leg1",
+      "label": "Leg 1",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.7,
+        "height": 8.0,
+        "depth": 0.7
+      },
+      "position": [
+        -3.0,
+        4.3,
+        2.5
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "leg2",
+      "label": "Leg 2",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.7,
+        "height": 8.0,
+        "depth": 0.7
+      },
+      "position": [
+        3.0,
+        4.3,
+        2.5
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "leg3",
+      "label": "Leg 3",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.7,
+        "height": 8.0,
+        "depth": 0.7
+      },
+      "position": [
+        -3.0,
+        4.3,
+        -2.5
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "leg4",
+      "label": "Leg 4",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.7,
+        "height": 8.0,
+        "depth": 0.7
+      },
+      "position": [
+        3.0,
+        4.3,
+        -2.5
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "gantryDeck",
+      "label": "Gantry Deck",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 7.5,
+        "height": 0.8,
+        "depth": 6.5
+      },
+      "position": [
+        0,
+        8.7,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.35
+        },
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "tower",
+      "label": "Tower",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.2,
+        "height": 5.5,
+        "depth": 2.2
+      },
+      "position": [
+        0,
+        11.8,
+        -1.5
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "boom",
+      "label": "Loading Boom",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.4,
+        "height": 0.9,
+        "depth": 18.0
+      },
+      "position": [
+        0,
+        12.4,
+        6.5
+      ],
+      "rotation": [
+        -0.06,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "boomBelt",
+      "label": "Boom Conveyor",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.9,
+        "height": 0.12,
+        "depth": 17.2
+      },
+      "position": [
+        0,
+        12.95,
+        6.5
+      ],
+      "rotation": [
+        -0.06,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      }
+    },
+    {
+      "id": "headPulley",
+      "label": "Head Pulley",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.35,
+        "height": 1.1
+      },
+      "position": [
+        0,
+        12.0,
+        15.2
+      ],
+      "rotation": [
+        0,
+        0,
+        1.5708
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "chute",
+      "label": "Telescopic Chute",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.5,
+        "height": 4.2
+      },
+      "position": [
+        0,
+        9.6,
+        14.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "bob",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "counterweight",
+      "label": "Counterweight",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.4,
+        "height": 2.0,
+        "depth": 1.6
+      },
+      "position": [
+        0,
+        11.5,
+        -5.5
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "backstay",
+      "label": "Backstay",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.08,
+        "height": 13.0
+      },
+      "position": [
+        0,
+        13.6,
+        1.5
+      ],
+      "rotation": [
+        1.12,
+        0,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "cab",
+      "label": "Operator Cab",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.5,
+        "height": 1.5,
+        "depth": 1.5
+      },
+      "position": [
+        1.8,
+        10.2,
+        1.8
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "conveyor_in",
+      "type": "conveyor",
+      "direction": "in",
+      "offset": [
+        -5.5,
+        2.0,
+        0
+      ]
+    },
+    {
+      "id": "boom_out",
+      "type": "product",
+      "direction": "out",
+      "offset": [
+        0,
+        9.4,
+        15.5
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Belt Speed",
+      "type": "number",
+      "default": 1.6,
+      "min": 0,
+      "max": 4,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "loadRate",
+      "label": "Loading Rate",
+      "unit": "t/h",
+      "default": 5200,
+      "min": 0,
+      "max": 8000,
+      "freq": "5s"
+    },
+    {
+      "key": "boomLuff",
+      "label": "Boom Luff",
+      "unit": "deg",
+      "default": 6,
+      "min": -15,
+      "max": 25,
+      "freq": "30s"
+    },
+    {
+      "key": "travelPos",
+      "label": "Travel Position",
+      "unit": "m",
+      "default": 18,
+      "min": 0,
+      "max": 200,
+      "freq": "5s"
+    },
+    {
+      "key": "loadedThisShift",
+      "label": "Loaded This Shift",
+      "unit": "t",
+      "default": 21000,
+      "min": 0,
+      "max": 60000,
+      "freq": "15m"
+    }
+  ],
+  "states": [
+    {
+      "key": "loading",
+      "label": "Loading",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "repositioning",
+      "label": "Repositioning",
+      "color": "#30b0c7",
+      "severity": "ok"
+    },
+    {
+      "key": "idle",
+      "label": "Idle",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "estop",
+      "label": "E-Stop",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

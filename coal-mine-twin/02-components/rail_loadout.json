@@ -1,0 +1,532 @@
+{
+  "label": "Train Load-Out Station",
+  "category": "Coal Mining",
+  "layer": "equipment",
+  "parts": [
+    {
+      "id": "footing1",
+      "label": "Concrete Footing 1",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.0,
+        "height": 0.5,
+        "depth": 6.5
+      },
+      "position": [
+        -2.5,
+        0.25,
+        0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "footing2",
+      "label": "Concrete Footing 2",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.0,
+        "height": 0.5,
+        "depth": 6.5
+      },
+      "position": [
+        2.5,
+        0.25,
+        0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "legsGrp",
+      "label": "Support Legs",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leg1",
+      "label": "Leg 1",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 7.5,
+        "depth": 0.5
+      },
+      "position": [
+        -2.5,
+        4.25,
+        2.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "leg2",
+      "label": "Leg 2",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 7.5,
+        "depth": 0.5
+      },
+      "position": [
+        2.5,
+        4.25,
+        2.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "leg3",
+      "label": "Leg 3",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 7.5,
+        "depth": 0.5
+      },
+      "position": [
+        -2.5,
+        4.25,
+        -2.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "leg4",
+      "label": "Leg 4",
+      "parentId": "legsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 7.5,
+        "depth": 0.5
+      },
+      "position": [
+        2.5,
+        4.25,
+        -2.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "binBody",
+      "label": "Surge Bin",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 6.0,
+        "height": 4.5,
+        "depth": 5.5
+      },
+      "position": [
+        0,
+        10.25,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.5
+        },
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "gallery",
+      "label": "Feed Gallery",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 13.0,
+        "height": 1.4,
+        "depth": 1.8
+      },
+      "position": [
+        -7.5,
+        8.5,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0.42
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.4
+        },
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "weighHopper",
+      "label": "Batch Weigh Hopper",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 1.7,
+        "height": 2.0
+      },
+      "position": [
+        0,
+        7.0,
+        0
+      ],
+      "rotation": [
+        3.1416,
+        0,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "chute",
+      "label": "Discharge Chute",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 0.9,
+        "height": 1.6
+      },
+      "position": [
+        0,
+        5.0,
+        0
+      ],
+      "rotation": [
+        3.1416,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "gateActuator",
+      "label": "Gate Actuator",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 0.4,
+        "depth": 0.4
+      },
+      "position": [
+        0.9,
+        5.6,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "loadingBeacon",
+      "label": "Loading Beacon",
+      "parentId": null,
+      "geometry": "sphere",
+      "dims": {
+        "radius": 0.18
+      },
+      "position": [
+        0,
+        12.8,
+        2.9
+      ],
+      "material": {
+        "color": "#ff9f0a",
+        "metalness": 0.1,
+        "roughness": 0.4,
+        "emissive": "#ff9f0a",
+        "emissiveIntensity": 1.2
+      },
+      "animate": {
+        "kind": "pulse",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "cabin",
+      "label": "Control Cabin",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.2,
+        "height": 2.2,
+        "depth": 2.0
+      },
+      "position": [
+        4.6,
+        6.9,
+        2.8
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "cabinGlass",
+      "label": "Cabin Glass",
+      "parentId": "cabin",
+      "geometry": "box",
+      "dims": {
+        "width": 1.8,
+        "height": 0.9,
+        "depth": 0.06
+      },
+      "position": [
+        0,
+        0.3,
+        -1.03
+      ],
+      "material": {
+        "color": "#cfe6f2",
+        "metalness": 0.1,
+        "roughness": 0.05,
+        "polygonOffset": true
+      }
+    },
+    {
+      "id": "walkway",
+      "label": "Walkway",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 8.0,
+        "height": 0.12,
+        "depth": 1.0
+      },
+      "position": [
+        1.5,
+        7.9,
+        3.2
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "ballast",
+      "label": "Track Ballast",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 18,
+        "height": 0.12,
+        "depth": 2.4
+      },
+      "position": [
+        0,
+        0.06,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.6
+        }
+      }
+    },
+    {
+      "id": "railA",
+      "label": "Rail A",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 18,
+        "height": 0.15,
+        "depth": 0.12
+      },
+      "position": [
+        0,
+        0.2,
+        0.75
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "railB",
+      "label": "Rail B",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 18,
+        "height": 0.15,
+        "depth": 0.12
+      },
+      "position": [
+        0,
+        0.2,
+        -0.75
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "conveyor_in",
+      "type": "conveyor",
+      "direction": "in",
+      "offset": [
+        -12.5,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "load_out",
+      "type": "product",
+      "direction": "out",
+      "offset": [
+        0,
+        3.4,
+        0
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Load Cycle",
+      "type": "number",
+      "default": 1.5,
+      "min": 0,
+      "max": 4,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "loadRate",
+      "label": "Loading Rate",
+      "unit": "t/h",
+      "default": 4200,
+      "min": 0,
+      "max": 6000,
+      "freq": "5s"
+    },
+    {
+      "key": "binLevel",
+      "label": "Bin Level",
+      "unit": "%",
+      "default": 64,
+      "min": 0,
+      "max": 100,
+      "freq": "1m"
+    },
+    {
+      "key": "trainLoadedT",
+      "label": "Train Loaded",
+      "unit": "t",
+      "default": 5600,
+      "min": 0,
+      "max": 12000,
+      "freq": "15m"
+    },
+    {
+      "key": "wagonsLoaded",
+      "label": "Wagons Loaded",
+      "unit": "wagons",
+      "default": 38,
+      "min": 0,
+      "max": 120,
+      "freq": "15m"
+    }
+  ],
+  "states": [
+    {
+      "key": "loading",
+      "label": "Loading",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "standby",
+      "label": "Standby",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "gateFault",
+      "label": "Gate Fault",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

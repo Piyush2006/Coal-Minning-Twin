@@ -1,0 +1,597 @@
+{
+  "label": "Haul Truck",
+  "category": "Coal Mining",
+  "layer": "equipment",
+  "parts": [
+    {
+      "id": "chassis",
+      "label": "Chassis",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 9.0,
+        "height": 0.8,
+        "depth": 3.4
+      },
+      "position": [
+        0,
+        1.6,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "dumpBody",
+      "label": "Dump Body",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 6.4,
+        "height": 2.2,
+        "depth": 3.8
+      },
+      "position": [
+        -1.2,
+        3.4,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "bodyCanopy",
+      "label": "Body Canopy",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.4,
+        "height": 0.3,
+        "depth": 3.8
+      },
+      "position": [
+        2.6,
+        4.6,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "coalLoad",
+      "label": "Coal Load",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 5.6,
+        "height": 0.7,
+        "depth": 3.2
+      },
+      "position": [
+        -1.2,
+        4.7,
+        0
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.95,
+        "granular": true
+      }
+    },
+    {
+      "id": "cabDeck",
+      "label": "Cab Deck",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.6,
+        "height": 0.25,
+        "depth": 3.4
+      },
+      "position": [
+        3.4,
+        2.85,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "cab",
+      "label": "Operator Cab",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.6,
+        "height": 1.3,
+        "depth": 1.6
+      },
+      "position": [
+        3.4,
+        3.65,
+        -0.8
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "cabGlass",
+      "label": "Cab Glass",
+      "parentId": "cab",
+      "geometry": "box",
+      "dims": {
+        "width": 0.06,
+        "height": 0.9,
+        "depth": 1.3
+      },
+      "position": [
+        0.82,
+        0.1,
+        0
+      ],
+      "material": {
+        "color": "#cfe6f2",
+        "metalness": 0.1,
+        "roughness": 0.05,
+        "polygonOffset": true
+      }
+    },
+    {
+      "id": "grille",
+      "label": "Radiator Grille",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.2,
+        "height": 1.4,
+        "depth": 3.0
+      },
+      "position": [
+        4.3,
+        1.9,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "wheelsGrp",
+      "label": "Wheels",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "wheelFL",
+      "label": "Wheel Front L",
+      "parentId": "wheelsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.0,
+        "height": 0.7
+      },
+      "position": [
+        3.2,
+        1.0,
+        1.75
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "wheelFR",
+      "label": "Wheel Front R",
+      "parentId": "wheelsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.0,
+        "height": 0.7
+      },
+      "position": [
+        3.2,
+        1.0,
+        -1.75
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "wheelML",
+      "label": "Wheel Mid L",
+      "parentId": "wheelsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.0,
+        "height": 0.7
+      },
+      "position": [
+        -0.6,
+        1.0,
+        1.75
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "wheelMR",
+      "label": "Wheel Mid R",
+      "parentId": "wheelsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.0,
+        "height": 0.7
+      },
+      "position": [
+        -0.6,
+        1.0,
+        -1.75
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "wheelRL",
+      "label": "Wheel Rear L",
+      "parentId": "wheelsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.0,
+        "height": 0.7
+      },
+      "position": [
+        -2.6,
+        1.0,
+        1.75
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "wheelRR",
+      "label": "Wheel Rear R",
+      "parentId": "wheelsGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.0,
+        "height": 0.7
+      },
+      "position": [
+        -2.6,
+        1.0,
+        -1.75
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "exhaust",
+      "label": "Exhaust",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.1,
+        "height": 0.8
+      },
+      "position": [
+        2.6,
+        5.0,
+        1.2
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "exhaustSmoke",
+      "label": "Exhaust Plume",
+      "parentId": null,
+      "kind": "emitter",
+      "position": [
+        2.6,
+        5.4,
+        1.2
+      ],
+      "emitter": {
+        "preset": "exhaust",
+        "scale": 0.85
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "load_in",
+      "type": "product",
+      "direction": "in",
+      "offset": [
+        -1.2,
+        4.9,
+        0
+      ]
+    },
+    {
+      "id": "dump_out",
+      "type": "product",
+      "direction": "out",
+      "offset": [
+        4.8,
+        1.6,
+        0
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Travel Speed",
+      "type": "number",
+      "default": 1.2,
+      "min": 0,
+      "max": 4,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "payload",
+      "label": "Payload",
+      "unit": "t",
+      "default": 185,
+      "min": 0,
+      "max": 240,
+      "freq": "5s"
+    },
+    {
+      "key": "speed",
+      "label": "Ground Speed",
+      "unit": "km/h",
+      "default": 28,
+      "min": 0,
+      "max": 60,
+      "freq": "5s"
+    },
+    {
+      "key": "fuelLevel",
+      "label": "Fuel Level",
+      "unit": "%",
+      "default": 63,
+      "min": 0,
+      "max": 100,
+      "freq": "15m"
+    },
+    {
+      "key": "tyreTemp",
+      "label": "Tyre Temp",
+      "unit": "degC",
+      "default": 48,
+      "min": 0,
+      "max": 120,
+      "freq": "5s"
+    },
+    {
+      "key": "engineTemp",
+      "label": "Engine Temp",
+      "unit": "degC",
+      "default": 88,
+      "min": 0,
+      "max": 130,
+      "freq": "30s"
+    },
+    {
+      "key": "idleTime",
+      "label": "Idle Time",
+      "unit": "min",
+      "default": 8,
+      "min": 0,
+      "max": 60,
+      "freq": "5s"
+    },
+    {
+      "key": "cycleTime",
+      "label": "Cycle Time",
+      "unit": "min",
+      "default": 26,
+      "min": 0,
+      "max": 90,
+      "freq": "5s"
+    },
+    {
+      "key": "fuelBurn",
+      "label": "Fuel Burn",
+      "unit": "L/h",
+      "default": 185,
+      "min": 0,
+      "max": 400,
+      "freq": "5s"
+    },
+    {
+      "key": "engineHealth",
+      "label": "Engine Health",
+      "unit": "%",
+      "default": 86,
+      "min": 0,
+      "max": 100,
+      "freq": "5s"
+    },
+    {
+      "key": "hydraulicHealth",
+      "label": "Hydraulic Health",
+      "unit": "%",
+      "default": 88,
+      "min": 0,
+      "max": 100,
+      "freq": "5s"
+    },
+    {
+      "key": "faultCode",
+      "label": "Fault Code",
+      "unit": "code",
+      "default": 0,
+      "min": 0,
+      "max": 8,
+      "freq": "manual"
+    },
+    {
+      "key": "rulHours",
+      "label": "Remaining Useful Life",
+      "unit": "h",
+      "default": 320,
+      "min": 0,
+      "max": 500,
+      "freq": "5m"
+    },
+    {
+      "key": "tyrePressure",
+      "label": "Tyre Pressure",
+      "unit": "bar",
+      "default": 8.5,
+      "min": 6,
+      "max": 11,
+      "freq": "5s"
+    },
+    {
+      "key": "tkph",
+      "label": "TKPH",
+      "unit": "TKPH",
+      "default": 340,
+      "min": 0,
+      "max": 600,
+      "freq": "5m"
+    }
+  ],
+  "states": [
+    {
+      "key": "hauling",
+      "label": "Hauling",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "loading",
+      "label": "Loading",
+      "color": "#30b0c7",
+      "severity": "ok"
+    },
+    {
+      "key": "queuing",
+      "label": "Queuing",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "down",
+      "label": "Down",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

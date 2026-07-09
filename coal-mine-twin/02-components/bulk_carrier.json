@@ -1,0 +1,427 @@
+{
+  "label": "Bulk Carrier Vessel",
+  "category": "Coal Mining",
+  "layer": "structural",
+  "parts": [
+    {
+      "id": "berthWater",
+      "label": "Berth Water",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 48,
+        "height": 0.1,
+        "depth": 14
+      },
+      "position": [
+        0,
+        0.05,
+        0
+      ],
+      "material": {
+        "color": "@waterBlue",
+        "metalness": 0.2,
+        "roughness": 0.25,
+        "water": true,
+        "waterRipple": 0.55,
+        "waterSpeed": 0.8
+      }
+    },
+    {
+      "id": "hull",
+      "label": "Hull",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 40,
+        "height": 5.0,
+        "depth": 9.0
+      },
+      "position": [
+        -2,
+        2.6,
+        0
+      ],
+      "material": {
+        "color": "#6e2f2f",
+        "metalness": 0.5,
+        "roughness": 0.5,
+        "weather": {
+          "kind": "rust",
+          "amount": 0.25
+        },
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "bow",
+      "label": "Bow",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 4.4,
+        "height": 6.0
+      },
+      "position": [
+        21,
+        2.6,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -1.5708
+      ],
+      "material": {
+        "color": "#6e2f2f",
+        "metalness": 0.5,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "deck",
+      "label": "Main Deck",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 40,
+        "height": 0.25,
+        "depth": 8.6
+      },
+      "position": [
+        -2,
+        5.2,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "hatchGrp",
+      "label": "Hatch Covers",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "hatch1",
+      "label": "Hatch 1",
+      "parentId": "hatchGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 5.6,
+        "height": 0.4,
+        "depth": 6.4
+      },
+      "position": [
+        12,
+        5.5,
+        0
+      ],
+      "material": {
+        "color": "#9aa3ad",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "hatch2",
+      "label": "Hatch 2",
+      "parentId": "hatchGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 5.6,
+        "height": 0.4,
+        "depth": 6.4
+      },
+      "position": [
+        5,
+        5.5,
+        0
+      ],
+      "material": {
+        "color": "#9aa3ad",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "hatch3",
+      "label": "Hatch 3",
+      "parentId": "hatchGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 5.6,
+        "height": 0.4,
+        "depth": 6.4
+      },
+      "position": [
+        -2,
+        5.5,
+        0
+      ],
+      "material": {
+        "color": "#9aa3ad",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "hatch4",
+      "label": "Hatch 4",
+      "parentId": "hatchGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 5.6,
+        "height": 0.4,
+        "depth": 6.4
+      },
+      "position": [
+        -9,
+        5.5,
+        0
+      ],
+      "material": {
+        "color": "#9aa3ad",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "hatch5",
+      "label": "Hatch 5",
+      "parentId": "hatchGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 5.6,
+        "height": 0.4,
+        "depth": 6.4
+      },
+      "position": [
+        -16,
+        5.5,
+        0
+      ],
+      "material": {
+        "color": "#9aa3ad",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "accommodation",
+      "label": "Accommodation Block",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 4.5,
+        "height": 5.5,
+        "depth": 7.0
+      },
+      "position": [
+        -20.5,
+        8.0,
+        0
+      ],
+      "material": {
+        "color": "#cfd6dd",
+        "metalness": 0.3,
+        "roughness": 0.5
+      }
+    },
+    {
+      "id": "bridge",
+      "label": "Bridge",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.4,
+        "height": 1.4,
+        "depth": 8.4
+      },
+      "position": [
+        -20.5,
+        11.5,
+        0
+      ],
+      "material": {
+        "color": "#cfd6dd",
+        "metalness": 0.3,
+        "roughness": 0.5
+      }
+    },
+    {
+      "id": "funnel",
+      "label": "Funnel",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.9,
+        "height": 3.0
+      },
+      "position": [
+        -23.0,
+        12.0,
+        0
+      ],
+      "material": {
+        "color": "#b8452f",
+        "metalness": 0.5,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "foremast",
+      "label": "Foremast",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.1,
+        "height": 4.5
+      },
+      "position": [
+        17.5,
+        7.5,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "funnelSmokeEmitter",
+      "label": "Funnel Smoke",
+      "parentId": null,
+      "kind": "emitter",
+      "position": [
+        -23,
+        13.8,
+        0
+      ],
+      "emitter": {
+        "preset": "smoke",
+        "scale": 0.9,
+        "count": 55,
+        "color": "#b9c0c8",
+        "opacity": 0.26
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "hold_in",
+      "type": "product",
+      "direction": "in",
+      "offset": [
+        5,
+        6.0,
+        0
+      ]
+    },
+    {
+      "id": "cargo_out",
+      "type": "product",
+      "direction": "out",
+      "offset": [
+        21,
+        4.0,
+        0
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Plume Rate",
+      "type": "number",
+      "default": 0.6,
+      "min": 0,
+      "max": 3,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "cargoLoaded",
+      "label": "Cargo Loaded",
+      "unit": "t",
+      "default": 38000,
+      "min": 0,
+      "max": 80000,
+      "freq": "15m"
+    },
+    {
+      "key": "draft",
+      "label": "Draft",
+      "unit": "m",
+      "default": 11.2,
+      "min": 0,
+      "max": 20,
+      "freq": "15m"
+    },
+    {
+      "key": "ballast",
+      "label": "Ballast",
+      "unit": "%",
+      "default": 22,
+      "min": 0,
+      "max": 100,
+      "freq": "15m"
+    }
+  ],
+  "states": [
+    {
+      "key": "berthed",
+      "label": "Berthed",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "loading",
+      "label": "Loading",
+      "color": "#30b0c7",
+      "severity": "ok"
+    },
+    {
+      "key": "underway",
+      "label": "Underway",
+      "color": "#30b0c7",
+      "severity": "ok"
+    },
+    {
+      "key": "delayed",
+      "label": "Delayed",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "emergency",
+      "label": "Emergency",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

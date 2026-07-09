@@ -1,0 +1,139 @@
+{
+  "label": "Coal Stockpile",
+  "category": "Coal Mining",
+  "layer": "structural",
+  "parts": [
+    {
+      "id": "groundRing",
+      "label": "Stockpile Pad",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 8.0,
+        "height": 0.08
+      },
+      "position": [
+        0,
+        0.04,
+        0
+      ],
+      "material": {
+        "color": "#3a3d42",
+        "metalness": 0.05,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "pileMain",
+      "label": "Main Pile",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 7.0,
+        "height": 4.5
+      },
+      "position": [
+        0,
+        2.25,
+        0
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.95,
+        "granular": true
+      }
+    },
+    {
+      "id": "pileLobe1",
+      "label": "Pile Lobe East",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 4.0,
+        "height": 2.8
+      },
+      "position": [
+        4.5,
+        1.4,
+        2.0
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.95,
+        "granular": true
+      }
+    },
+    {
+      "id": "pileLobe2",
+      "label": "Pile Lobe West",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 3.0,
+        "height": 2.0
+      },
+      "position": [
+        -4.5,
+        1.0,
+        -2.0
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.95,
+        "granular": true
+      }
+    }
+  ],
+  "ports": [],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Active",
+      "type": "boolean",
+      "default": true
+    }
+  ],
+  "parameters": [
+    {
+      "key": "stockTonnes",
+      "label": "Stock On Ground",
+      "unit": "t",
+      "default": 42000,
+      "min": 0,
+      "max": 80000,
+      "freq": "15m"
+    },
+    {
+      "key": "moisture",
+      "label": "Moisture",
+      "unit": "%",
+      "default": 9.5,
+      "min": 0,
+      "max": 25,
+      "freq": "manual"
+    }
+  ],
+  "states": [
+    {
+      "key": "normal",
+      "label": "Normal",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "low",
+      "label": "Low Stock",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "empty",
+      "label": "Empty",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

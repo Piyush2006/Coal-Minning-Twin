@@ -1,0 +1,411 @@
+{
+  "label": "Thickener (Dewatering)",
+  "category": "Coal Mining",
+  "layer": "piping",
+  "parts": [
+    {
+      "id": "ringFoundation",
+      "label": "Concrete Ring Foundation",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 8.6,
+        "height": 0.4
+      },
+      "position": [
+        0,
+        0.2,
+        0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "tankWall",
+      "label": "Tank Wall",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 8.2,
+        "height": 2.6
+      },
+      "position": [
+        0,
+        1.7,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.4
+        },
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "liquidSurface",
+      "label": "Liquor Surface",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 7.8,
+        "height": 0.15
+      },
+      "position": [
+        0,
+        3.0,
+        0
+      ],
+      "material": {
+        "color": "@waterBlue",
+        "metalness": 0.2,
+        "roughness": 0.25,
+        "water": true,
+        "waterRipple": 0.4,
+        "waterSpeed": 1.2
+      },
+      "animate": {
+        "kind": "bob",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "launder",
+      "label": "Overflow Launder",
+      "parentId": null,
+      "geometry": "torus",
+      "dims": {
+        "radius": 8.0,
+        "tube": 0.25
+      },
+      "position": [
+        0,
+        3.1,
+        0
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "centreCol",
+      "label": "Centre Column",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.5,
+        "height": 4.6
+      },
+      "position": [
+        0,
+        2.3,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "bridge",
+      "label": "Access Bridge",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 17.5,
+        "height": 0.3,
+        "depth": 1.2
+      },
+      "position": [
+        0,
+        3.7,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "bridgeRail",
+      "label": "Bridge Handrail",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 17.5,
+        "height": 0.08,
+        "depth": 0.06
+      },
+      "position": [
+        0,
+        4.6,
+        0.55
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "driveMotor",
+      "label": "Rake Drive",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.45,
+        "height": 0.8
+      },
+      "position": [
+        0,
+        4.3,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "rakeArm1",
+      "label": "Rake Arm 1",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 15.0,
+        "height": 0.25,
+        "depth": 0.5
+      },
+      "position": [
+        0,
+        0.9,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "rakeSpeed"
+      }
+    },
+    {
+      "id": "rakeArm2",
+      "label": "Rake Arm 2",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 15.0,
+        "height": 0.25,
+        "depth": 0.5
+      },
+      "position": [
+        0,
+        1.05,
+        0
+      ],
+      "rotation": [
+        0,
+        1.5708,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "rakeSpeed"
+      }
+    },
+    {
+      "id": "feedwell",
+      "label": "Feedwell",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.6,
+        "height": 1.2
+      },
+      "position": [
+        0,
+        2.9,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "underflowPump",
+      "label": "Underflow Pump",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.4,
+        "height": 0.7
+      },
+      "position": [
+        4.0,
+        0.75,
+        -7.6
+      ],
+      "material": {
+        "color": "#3f7fa8",
+        "metalness": 0.7,
+        "roughness": 0.3,
+        "vary": 0.4
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "feed_in",
+      "type": "utility",
+      "direction": "in",
+      "offset": [
+        0,
+        2.6,
+        -8.5
+      ]
+    },
+    {
+      "id": "overflow_out",
+      "type": "utility",
+      "direction": "out",
+      "offset": [
+        -8.5,
+        2.9,
+        0
+      ]
+    },
+    {
+      "id": "underflow_out",
+      "type": "utility",
+      "direction": "out",
+      "offset": [
+        4.6,
+        0.5,
+        -7.6
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "rakeSpeed",
+      "label": "Rake Speed",
+      "type": "number",
+      "default": 0.15,
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    },
+    {
+      "key": "speed",
+      "label": "Surface Motion",
+      "type": "number",
+      "default": 0.3,
+      "min": 0,
+      "max": 2,
+      "step": 0.05
+    }
+  ],
+  "parameters": [
+    {
+      "key": "bedLevel",
+      "label": "Bed Level",
+      "unit": "m",
+      "default": 1.8,
+      "min": 0,
+      "max": 4,
+      "freq": "1m"
+    },
+    {
+      "key": "rakeTorque",
+      "label": "Rake Torque",
+      "unit": "%",
+      "default": 42,
+      "min": 0,
+      "max": 100,
+      "freq": "5s"
+    },
+    {
+      "key": "underflowSolids",
+      "label": "Underflow Solids",
+      "unit": "%",
+      "default": 58,
+      "min": 0,
+      "max": 80,
+      "freq": "5m"
+    },
+    {
+      "key": "overflowClarity",
+      "label": "Overflow Clarity",
+      "unit": "NTU",
+      "default": 45,
+      "min": 0,
+      "max": 500,
+      "freq": "5m"
+    },
+    {
+      "key": "flocDose",
+      "label": "Flocculant Dose",
+      "unit": "g/t",
+      "default": 22,
+      "min": 0,
+      "max": 100,
+      "freq": "15m"
+    }
+  ],
+  "states": [
+    {
+      "key": "normal",
+      "label": "Normal",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "highTorque",
+      "label": "High Torque",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "overload",
+      "label": "Rake Overload",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

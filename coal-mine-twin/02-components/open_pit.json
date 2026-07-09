@@ -1,0 +1,284 @@
+{
+  "label": "Open Pit (Highwall & Benches)",
+  "category": "Coal Mining",
+  "layer": "structural",
+  "parts": [
+    {
+      "id": "pitFloor",
+      "label": "Pit Floor",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 76,
+        "height": 0.06,
+        "depth": 50
+      },
+      "position": [
+        0,
+        0.03,
+        0
+      ],
+      "material": {
+        "color": "@earthDark",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "benchesGrp",
+      "label": "Highwall Benches",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "bench1",
+      "label": "Bench 1",
+      "parentId": "benchesGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 76,
+        "height": 4.2,
+        "depth": 10
+      },
+      "position": [
+        0,
+        2.1,
+        20
+      ],
+      "material": {
+        "color": "@earthBrown",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "bench2",
+      "label": "Bench 2",
+      "parentId": "benchesGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 76,
+        "height": 4.2,
+        "depth": 10
+      },
+      "position": [
+        0,
+        6.3,
+        26.5
+      ],
+      "material": {
+        "color": "#93826b",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "bench3",
+      "label": "Bench 3",
+      "parentId": "benchesGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 76,
+        "height": 4.2,
+        "depth": 10
+      },
+      "position": [
+        0,
+        10.5,
+        33
+      ],
+      "material": {
+        "color": "@earthBrown",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "crestBerm",
+      "label": "Crest Berm",
+      "parentId": "benchesGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 76,
+        "height": 1.0,
+        "depth": 1.4
+      },
+      "position": [
+        0,
+        13.1,
+        38.5
+      ],
+      "material": {
+        "color": "#7a6c58",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "coalSeam",
+      "label": "Exposed Coal Seam",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 76,
+        "height": 1.6,
+        "depth": 0.4
+      },
+      "position": [
+        0,
+        0.85,
+        14.85
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.95,
+        "polygonOffset": true
+      }
+    },
+    {
+      "id": "muckPile1",
+      "label": "Blasted Coal Muck",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 5.0,
+        "height": 3.0
+      },
+      "position": [
+        6,
+        1.5,
+        10
+      ],
+      "material": {
+        "color": "#2e3136",
+        "metalness": 0.05,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "muckPile2",
+      "label": "Muck Pile 2",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 3.5,
+        "height": 2.2
+      },
+      "position": [
+        13,
+        1.1,
+        7
+      ],
+      "material": {
+        "color": "#2e3136",
+        "metalness": 0.05,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "rubble1",
+      "label": "Overburden Rubble",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 2.5,
+        "height": 1.5
+      },
+      "position": [
+        -20,
+        0.75,
+        13
+      ],
+      "material": {
+        "color": "#7a6c58",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "safetyBerm",
+      "label": "Safety Berm",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 60,
+        "height": 0.8,
+        "depth": 1.5
+      },
+      "position": [
+        0,
+        0.4,
+        -24
+      ],
+      "material": {
+        "color": "@earthBrown",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    }
+  ],
+  "ports": [],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Active",
+      "type": "boolean",
+      "default": true
+    }
+  ],
+  "parameters": [
+    {
+      "key": "pitDepth",
+      "label": "Pit Depth",
+      "unit": "m",
+      "default": 42,
+      "min": 0,
+      "max": 300,
+      "freq": "manual"
+    },
+    {
+      "key": "stripRatio",
+      "label": "Strip Ratio",
+      "unit": "m3/t",
+      "default": 4.2,
+      "min": 0,
+      "max": 20,
+      "freq": "manual"
+    },
+    {
+      "key": "coalExposed",
+      "label": "Coal Exposed",
+      "unit": "t",
+      "default": 65000,
+      "min": 0,
+      "max": 500000,
+      "freq": "manual"
+    }
+  ],
+  "states": [
+    {
+      "key": "active",
+      "label": "Active Mining",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "restricted",
+      "label": "Restricted (Blast)",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "evacuated",
+      "label": "Evacuated",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

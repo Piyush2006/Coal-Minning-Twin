@@ -1,0 +1,502 @@
+{
+  "label": "Stacker-Reclaimer",
+  "category": "Coal Mining",
+  "layer": "equipment",
+  "parts": [
+    {
+      "id": "railsGrp",
+      "label": "Travel Rails",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "railBeam1",
+      "label": "Rail Beam 1",
+      "parentId": "railsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 22,
+        "height": 0.3,
+        "depth": 0.5
+      },
+      "position": [
+        0,
+        0.15,
+        2.0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "railBeam2",
+      "label": "Rail Beam 2",
+      "parentId": "railsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 22,
+        "height": 0.3,
+        "depth": 0.5
+      },
+      "position": [
+        0,
+        0.15,
+        -2.0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "bogie1",
+      "label": "Travel Bogie 1",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.4,
+        "height": 0.8,
+        "depth": 1.0
+      },
+      "position": [
+        0,
+        0.7,
+        2.0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "bogie2",
+      "label": "Travel Bogie 2",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.4,
+        "height": 0.8,
+        "depth": 1.0
+      },
+      "position": [
+        0,
+        0.7,
+        -2.0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "portal",
+      "label": "Portal Frame",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 3.0,
+        "height": 0.8,
+        "depth": 5.0
+      },
+      "position": [
+        0,
+        1.5,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "slewDeck",
+      "label": "Slew Deck",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.8,
+        "height": 0.5
+      },
+      "position": [
+        0,
+        2.15,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "tower",
+      "label": "Tower",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.0,
+        "height": 3.6,
+        "depth": 2.0
+      },
+      "position": [
+        0,
+        4.2,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "boom",
+      "label": "Bucket-Wheel Boom",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.2,
+        "height": 0.8,
+        "depth": 16.0
+      },
+      "position": [
+        0,
+        5.0,
+        5.5
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "boomBelt",
+      "label": "Boom Conveyor",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.8,
+        "height": 0.12,
+        "depth": 15.4
+      },
+      "position": [
+        0,
+        5.5,
+        5.5
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      }
+    },
+    {
+      "id": "bucketWheel",
+      "label": "Bucket Wheel",
+      "parentId": null,
+      "geometry": "torus",
+      "dims": {
+        "radius": 1.6,
+        "tube": 0.45
+      },
+      "position": [
+        0,
+        4.4,
+        13.2
+      ],
+      "rotation": [
+        0,
+        1.5708,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "counterBoom",
+      "label": "Counterweight Boom",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.0,
+        "height": 0.6,
+        "depth": 7.0
+      },
+      "position": [
+        0,
+        5.2,
+        -4.5
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "counterweight",
+      "label": "Counterweight Block",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.6,
+        "height": 1.6,
+        "depth": 1.4
+      },
+      "position": [
+        0,
+        4.7,
+        -7.4
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "pylon",
+      "label": "Pylon",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 3.4,
+        "depth": 0.5
+      },
+      "position": [
+        0,
+        7.7,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "tieFront",
+      "label": "Tie Rod Front",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.06,
+        "height": 12.0
+      },
+      "position": [
+        0,
+        7.5,
+        5.6
+      ],
+      "rotation": [
+        1.05,
+        0,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "tieBack",
+      "label": "Tie Rod Back",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.06,
+        "height": 8.0
+      },
+      "position": [
+        0,
+        7.3,
+        -3.9
+      ],
+      "rotation": [
+        -1.1,
+        0,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "cab",
+      "label": "Operator Cab",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.3,
+        "height": 1.3,
+        "depth": 1.3
+      },
+      "position": [
+        1.4,
+        3.4,
+        1.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "conveyor_in",
+      "type": "conveyor",
+      "direction": "in",
+      "offset": [
+        -11.0,
+        0.8,
+        0
+      ]
+    },
+    {
+      "id": "rail_out",
+      "type": "conveyor",
+      "direction": "out",
+      "offset": [
+        11.0,
+        0.8,
+        -1.5
+      ]
+    },
+    {
+      "id": "ship_out",
+      "type": "conveyor",
+      "direction": "out",
+      "offset": [
+        11.0,
+        0.8,
+        1.5
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Wheel Speed",
+      "type": "number",
+      "default": 0.8,
+      "min": 0,
+      "max": 3,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "reclaimRate",
+      "label": "Reclaim Rate",
+      "unit": "t/h",
+      "default": 1800,
+      "min": 0,
+      "max": 4000,
+      "freq": "5s"
+    },
+    {
+      "key": "stackRate",
+      "label": "Stack Rate",
+      "unit": "t/h",
+      "default": 2200,
+      "min": 0,
+      "max": 5000,
+      "freq": "5s"
+    },
+    {
+      "key": "boomAngle",
+      "label": "Boom Luff Angle",
+      "unit": "deg",
+      "default": 4,
+      "min": -10,
+      "max": 20,
+      "freq": "30s"
+    },
+    {
+      "key": "travelPos",
+      "label": "Travel Position",
+      "unit": "m",
+      "default": 42,
+      "min": 0,
+      "max": 300,
+      "freq": "5s"
+    },
+    {
+      "key": "slewAngle",
+      "label": "Slew Angle",
+      "unit": "deg",
+      "default": 25,
+      "min": -110,
+      "max": 110,
+      "freq": "30s"
+    }
+  ],
+  "states": [
+    {
+      "key": "stacking",
+      "label": "Stacking",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "reclaiming",
+      "label": "Reclaiming",
+      "color": "#30b0c7",
+      "severity": "ok"
+    },
+    {
+      "key": "idle",
+      "label": "Idle",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "fault",
+      "label": "Fault",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

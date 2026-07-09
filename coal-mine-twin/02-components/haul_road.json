@@ -1,0 +1,119 @@
+{
+  "label": "Haul Road",
+  "category": "Coal Mining",
+  "layer": "structural",
+  "parts": [
+    {
+      "id": "roadway",
+      "label": "Roadway",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 30,
+        "height": 0.12,
+        "depth": 6
+      },
+      "position": [
+        0,
+        0.06,
+        0
+      ],
+      "material": {
+        "color": "#55504a",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "bermL",
+      "label": "Windrow Berm L",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 30,
+        "height": 0.5,
+        "depth": 0.6
+      },
+      "position": [
+        0,
+        0.25,
+        3.2
+      ],
+      "material": {
+        "color": "@earthBrown",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "bermR",
+      "label": "Windrow Berm R",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 30,
+        "height": 0.5,
+        "depth": 0.6
+      },
+      "position": [
+        0,
+        0.25,
+        -3.2
+      ],
+      "material": {
+        "color": "@earthBrown",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    }
+  ],
+  "ports": [],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Open",
+      "type": "boolean",
+      "default": true
+    }
+  ],
+  "parameters": [
+    {
+      "key": "dustLevel",
+      "label": "Dust Level",
+      "unit": "%",
+      "default": 18,
+      "min": 0,
+      "max": 100,
+      "freq": "15m"
+    },
+    {
+      "key": "gradient",
+      "label": "Gradient",
+      "unit": "%",
+      "default": 8,
+      "min": 0,
+      "max": 15,
+      "freq": "manual"
+    }
+  ],
+  "states": [
+    {
+      "key": "open",
+      "label": "Open",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "dusty",
+      "label": "Dusty",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "closed",
+      "label": "Closed",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}
