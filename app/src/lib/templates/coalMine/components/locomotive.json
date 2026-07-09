@@ -1,0 +1,464 @@
+{
+  "label": "Diesel Locomotive",
+  "category": "Coal Mining",
+  "layer": "equipment",
+  "parts": [
+    {
+      "id": "underframe",
+      "label": "Underframe",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 16.0,
+        "height": 0.6,
+        "depth": 2.8
+      },
+      "position": [
+        0,
+        1.3,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.4,
+        "roughness": 0.6,
+        "weather": {
+          "kind": "rust",
+          "amount": 0.3
+        },
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "hood",
+      "label": "Long Hood",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 10.5,
+        "height": 2.4,
+        "depth": 2.6
+      },
+      "position": [
+        -1.8,
+        2.8,
+        0
+      ],
+      "material": {
+        "color": "@equipmentBlue",
+        "metalness": 0.55,
+        "roughness": 0.4,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "cab",
+      "label": "Cab",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.6,
+        "height": 2.7,
+        "depth": 2.8
+      },
+      "position": [
+        4.9,
+        3.0,
+        0
+      ],
+      "material": {
+        "color": "@equipmentBlue",
+        "metalness": 0.55,
+        "roughness": 0.4,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "cabGlass",
+      "label": "Windscreen",
+      "parentId": "cab",
+      "geometry": "box",
+      "dims": {
+        "width": 0.06,
+        "height": 1.0,
+        "depth": 2.2
+      },
+      "position": [
+        1.33,
+        0.55,
+        0
+      ],
+      "material": {
+        "color": "#cfe6f2",
+        "metalness": 0.1,
+        "roughness": 0.05,
+        "polygonOffset": true
+      }
+    },
+    {
+      "id": "nose",
+      "label": "Nose",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.6,
+        "height": 1.5,
+        "depth": 2.6
+      },
+      "position": [
+        7.0,
+        2.35,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "fuelTank",
+      "label": "Fuel Tank",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 4.5,
+        "height": 0.9,
+        "depth": 2.0
+      },
+      "position": [
+        0.4,
+        0.85,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.35
+        },
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "bogieGrpA",
+      "label": "Bogie A",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        4.6,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "bogieFrameA",
+      "label": "Bogie Frame A",
+      "parentId": "bogieGrpA",
+      "geometry": "box",
+      "dims": {
+        "width": 3.4,
+        "height": 0.6,
+        "depth": 2.4
+      },
+      "position": [
+        0,
+        0.7,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.4,
+        "roughness": 0.6,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "wheelA1",
+      "label": "Wheelset A1",
+      "parentId": "bogieGrpA",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.5,
+        "height": 2.5
+      },
+      "position": [
+        -0.9,
+        0.5,
+        0
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "wheelA2",
+      "label": "Wheelset A2",
+      "parentId": "bogieGrpA",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.5,
+        "height": 2.5
+      },
+      "position": [
+        0.9,
+        0.5,
+        0
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "bogieGrpB",
+      "label": "Bogie B",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        -4.6,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "bogieFrameB",
+      "label": "Bogie Frame B",
+      "parentId": "bogieGrpB",
+      "geometry": "box",
+      "dims": {
+        "width": 3.4,
+        "height": 0.6,
+        "depth": 2.4
+      },
+      "position": [
+        0,
+        0.7,
+        0
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.4,
+        "roughness": 0.6,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "wheelB1",
+      "label": "Wheelset B1",
+      "parentId": "bogieGrpB",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.5,
+        "height": 2.5
+      },
+      "position": [
+        -0.9,
+        0.5,
+        0
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "wheelB2",
+      "label": "Wheelset B2",
+      "parentId": "bogieGrpB",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.5,
+        "height": 2.5
+      },
+      "position": [
+        0.9,
+        0.5,
+        0
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "exhaust",
+      "label": "Exhaust",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.8,
+        "height": 0.3,
+        "depth": 0.8
+      },
+      "position": [
+        -3.5,
+        4.15,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "headlight",
+      "label": "Headlight",
+      "parentId": null,
+      "geometry": "sphere",
+      "dims": {
+        "radius": 0.15
+      },
+      "position": [
+        7.85,
+        2.6,
+        0
+      ],
+      "material": {
+        "color": "#fff4d6",
+        "metalness": 0.1,
+        "roughness": 0.3,
+        "emissive": "#ffe9a8",
+        "emissiveIntensity": 1.5
+      },
+      "animate": {
+        "kind": "pulse",
+        "speedKey": "speed"
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "link_in",
+      "type": "product",
+      "direction": "in",
+      "offset": [
+        -8.2,
+        1.3,
+        0
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Speed",
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 4,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "speed",
+      "label": "Speed",
+      "unit": "km/h",
+      "default": 24,
+      "min": 0,
+      "max": 100,
+      "freq": "5s"
+    },
+    {
+      "key": "tractiveEffort",
+      "label": "Tractive Effort",
+      "unit": "kN",
+      "default": 380,
+      "min": 0,
+      "max": 700,
+      "freq": "5s"
+    },
+    {
+      "key": "fuelLevel",
+      "label": "Fuel Level",
+      "unit": "%",
+      "default": 71,
+      "min": 0,
+      "max": 100,
+      "freq": "15m"
+    }
+  ],
+  "states": [
+    {
+      "key": "hauling",
+      "label": "Hauling",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "shunting",
+      "label": "Shunting",
+      "color": "#30b0c7",
+      "severity": "ok"
+    },
+    {
+      "key": "idle",
+      "label": "Idle",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "fault",
+      "label": "Fault",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

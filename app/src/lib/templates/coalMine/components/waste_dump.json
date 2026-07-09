@@ -1,0 +1,136 @@
+{
+  "label": "Waste / Overburden Dump",
+  "category": "Coal Mining",
+  "layer": "structural",
+  "parts": [
+    {
+      "id": "pad",
+      "label": "Dump Pad",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 13,
+        "height": 0.08
+      },
+      "position": [
+        0,
+        0.04,
+        0
+      ],
+      "material": {
+        "color": "#7a6c58",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "lobe1",
+      "label": "Dump Lobe Main",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 9,
+        "height": 5.5
+      },
+      "position": [
+        0,
+        2.75,
+        0
+      ],
+      "material": {
+        "color": "@earthBrown",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "lobe2",
+      "label": "Dump Lobe East",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 6.5,
+        "height": 4.0
+      },
+      "position": [
+        7,
+        2.0,
+        4
+      ],
+      "material": {
+        "color": "#93826b",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    },
+    {
+      "id": "lobe3",
+      "label": "Dump Lobe West",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 5,
+        "height": 3.2
+      },
+      "position": [
+        -7,
+        1.6,
+        -3
+      ],
+      "material": {
+        "color": "@earthBrown",
+        "metalness": 0.02,
+        "roughness": 0.95
+      }
+    }
+  ],
+  "ports": [],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Active",
+      "type": "boolean",
+      "default": true
+    }
+  ],
+  "parameters": [
+    {
+      "key": "dumpTonnes",
+      "label": "Waste In Dump",
+      "unit": "t",
+      "default": 480000,
+      "min": 0,
+      "max": 2000000,
+      "freq": "15m"
+    },
+    {
+      "key": "stability",
+      "label": "Slope Stability",
+      "unit": "%",
+      "default": 92,
+      "min": 0,
+      "max": 100,
+      "freq": "manual"
+    }
+  ],
+  "states": [
+    {
+      "key": "normal",
+      "label": "Normal",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "monitoring",
+      "label": "Under Monitoring",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "slipRisk",
+      "label": "Slip Risk",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

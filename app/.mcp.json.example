@@ -1,0 +1,15 @@
+{
+  "//": "Opt-in MCP servers for authoring detailed components. Copy to .mcp.json and match each server's own launch command / install docs. These run on a workstation (Blender must be open); they are NOT used at app runtime. See docs/blender-mcp.md.",
+  "mcpServers": {
+    "blender": {
+      "command": "uvx",
+      "args": ["blender-mcp"],
+      "//": "https://github.com/ahujasid/blender-mcp — start Blender with the add-on enabled first."
+    },
+    "mcp-blender": {
+      "command": "uvx",
+      "args": ["mcp-blender"],
+      "//": "https://github.com/RFingAdam/mcp-blender — Blender control + built-in text/image-to-3D (Rodin/Meshy/Tripo/Hunyuan3D)."
+    }
+  }
+}

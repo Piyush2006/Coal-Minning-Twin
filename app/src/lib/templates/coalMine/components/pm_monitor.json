@@ -1,0 +1,30 @@
+{
+  "label": "PM / Environmental Monitor",
+  "category": "Coal Mining",
+  "layer": "structural",
+  "parts": [
+    { "id": "pad", "label": "Concrete Footing", "parentId": null, "geometry": "box", "dims": { "width": 1.2, "height": 0.25, "depth": 1.2 }, "position": [0, 0.125, 0], "material": { "color": "@concrete", "metalness": 0.04, "roughness": 0.92 } },
+    { "id": "mast", "label": "Mast", "parentId": null, "geometry": "cylinder", "dims": { "radius": 0.07, "height": 3.6 }, "position": [0, 2.05, 0], "material": { "color": "@structureGrey", "metalness": 0.7, "roughness": 0.35 } },
+    { "id": "sensorBox", "label": "Sensor Enclosure", "parentId": null, "geometry": "box", "dims": { "width": 0.65, "height": 0.8, "depth": 0.45 }, "position": [0, 2.6, 0], "material": { "color": "#e8e4da", "metalness": 0.3, "roughness": 0.5, "weather": { "kind": "dust", "amount": 0.35 } } },
+    { "id": "inlet", "label": "PM Sampling Inlet", "parentId": null, "geometry": "cylinder", "dims": { "radius": 0.09, "height": 0.5 }, "position": [0, 4.1, 0], "material": { "color": "#b0c4d0", "metalness": 0.85, "roughness": 0.12 } },
+    { "id": "inletCap", "label": "Inlet Rain Cap", "parentId": null, "geometry": "cone", "dims": { "radius": 0.16, "height": 0.16 }, "position": [0, 4.42, 0], "material": { "color": "@darkSteel", "metalness": 0.6, "roughness": 0.5 } },
+    { "id": "solarPanel", "label": "Solar Panel", "parentId": null, "geometry": "box", "dims": { "width": 0.8, "height": 0.05, "depth": 0.6 }, "position": [0.35, 3.35, 0], "rotation": [0, 0, -0.5], "material": { "color": "#1d2b4a", "metalness": 0.4, "roughness": 0.3 } },
+    { "id": "statusLed", "label": "Status LED", "parentId": null, "geometry": "sphere", "dims": { "radius": 0.07 }, "position": [0, 3.1, 0.26], "material": { "color": "#34c759", "metalness": 0.1, "roughness": 0.3, "emissive": "#34c759", "emissiveIntensity": 1.4, "polygonOffset": true }, "animate": { "kind": "pulse", "speedKey": "speed" } }
+  ],
+  "ports": [],
+  "config": [
+    { "key": "enabled", "label": "Active", "type": "boolean", "default": true },
+    { "key": "speed", "label": "LED Pulse", "type": "number", "default": 0.6, "min": 0, "max": 3, "step": 0.1 }
+  ],
+  "parameters": [
+    { "key": "pm10", "label": "PM10", "unit": "ug/m3", "default": 70, "min": 0, "max": 500, "freq": "5s" },
+    { "key": "pm25", "label": "PM2.5", "unit": "ug/m3", "default": 35, "min": 0, "max": 300, "freq": "5s" },
+    { "key": "noise", "label": "Noise", "unit": "dB(A)", "default": 68, "min": 30, "max": 120, "freq": "5s" },
+    { "key": "suppressionActive", "label": "Suppression Active", "unit": "0/1", "default": 0, "min": 0, "max": 1, "freq": "manual" }
+  ],
+  "states": [
+    { "key": "normal", "label": "Normal", "color": "#34c759", "severity": "ok" },
+    { "key": "elevated", "label": "Elevated Dust", "color": "#ff9f0a", "severity": "warn" },
+    { "key": "exceedance", "label": "Exceedance", "color": "#ff3b30", "severity": "down" }
+  ]
+}

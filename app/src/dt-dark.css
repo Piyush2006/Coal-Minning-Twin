@@ -1,0 +1,59 @@
+/* Dark theme token overrides for @faclon-labs/design-sdk within .dt-dark scope */
+.dt-dark {
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --background-default-intense:          #0d1428;
+  --background-default-moderate:         #0a1020;
+  --background-default-subtle:           #070c18;
+  --background-secondary-default:        rgba(13, 20, 40, 0.95);
+  --background-secondary-hover-dark:     rgba(26, 37, 64, 0.95);
+  --background-secondary-hover-light:    rgba(13, 20, 40, 0.80);
+  --background-secondary-disabled:       rgba(7, 12, 24, 0.50);
+  --background-overlay-default:          rgba(0, 0, 0, 0.75);
+
+  /* Text */
+  --text-default-primary:    #c0d4e8;
+  --text-default-secondary:  #5a7a9a;
+  --text-default-tertiary:   #2a4a6a;
+  --text-default-disabled:   #1a2a40;
+
+  /* Borders */
+  --border-gray-default: rgba(0, 200, 255, 0.20);
+  --border-gray-subtle:  rgba(0, 200, 255, 0.10);
+  --border-gray-muted:   rgba(0, 200, 255, 0.05);
+
+  /* Brand → CAD blue */
+  --background-brand-default:    #00c8ff;
+  --background-brand-secondary:  rgba(0, 200, 255, 0.12);
+  --text-brand-default:          #00c8ff;
+  --text-brand-on-brand:         #070c18;
+  --text-brand-on-secondary:     #00c8ff;
+  --border-brand-default:        rgba(0, 200, 255, 0.40);
+
+  /* Status: positive = running */
+  --background-positive-default:   #00dd66;
+  --background-positive-secondary: rgba(0, 221, 102, 0.15);
+  --text-positive-default:         #00dd66;
+  --text-positive-on-secondary:    #00dd66;
+
+  /* Status: error = fault */
+  --background-error-default:      #ff3344;
+  --background-error-secondary:    rgba(255, 51, 68, 0.15);
+  --text-error-default:            #ff3344;
+
+  /* Status: warning = idle */
+  --background-warning-default:    #ffaa00;
+  --background-warning-secondary:  rgba(255, 170, 0, 0.15);
+  --text-warning-default:          #ffaa00;
+
+  /* Info */
+  --background-info-default:       #00c8ff;
+  --background-info-secondary:     rgba(0, 200, 255, 0.12);
+  --text-info-default:             #00c8ff;
+
+  /* Shadows */
+  --fds-shadow-sm: 0 2px 8px rgba(0,0,0,0.50), 0 1px 3px rgba(0,0,0,0.40);
+  --fds-shadow-md: 0 4px 20px rgba(0,0,0,0.60), 0 2px 8px rgba(0,0,0,0.40);
+  --fds-shadow-lg: 0 8px 40px rgba(0,0,0,0.70), 0 4px 16px rgba(0,0,0,0.50);
+}

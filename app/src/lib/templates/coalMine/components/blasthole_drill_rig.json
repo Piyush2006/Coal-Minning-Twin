@@ -1,0 +1,421 @@
+{
+  "label": "Blast-Hole Drill Rig",
+  "category": "Coal Mining",
+  "layer": "equipment",
+  "parts": [
+    {
+      "id": "tracksGrp",
+      "label": "Tracks",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "trackL",
+      "label": "Track Left",
+      "parentId": "tracksGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 4.6,
+        "height": 0.9,
+        "depth": 0.9
+      },
+      "position": [
+        0,
+        0.45,
+        1.3
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      }
+    },
+    {
+      "id": "trackR",
+      "label": "Track Right",
+      "parentId": "tracksGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 4.6,
+        "height": 0.9,
+        "depth": 0.9
+      },
+      "position": [
+        0,
+        0.45,
+        -1.3
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      }
+    },
+    {
+      "id": "machineHouse",
+      "label": "Machine House",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 4.2,
+        "height": 1.8,
+        "depth": 2.6
+      },
+      "position": [
+        -0.4,
+        1.9,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "cab",
+      "label": "Operator Cab",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.5,
+        "height": 1.4,
+        "depth": 1.5
+      },
+      "position": [
+        1.4,
+        3.5,
+        0.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "mastGrp",
+      "label": "Mast",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        2.4,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mastMain",
+      "label": "Mast Main",
+      "parentId": "mastGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.7,
+        "height": 8.0,
+        "depth": 0.7
+      },
+      "position": [
+        0,
+        4.9,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "mastBrace",
+      "label": "Mast Brace",
+      "parentId": "mastGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.25,
+        "height": 5.4,
+        "depth": 0.25
+      },
+      "position": [
+        -1.4,
+        3.3,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0.45
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "dustCollector",
+      "label": "Dust Collector",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.55,
+        "height": 1.6
+      },
+      "position": [
+        -1.8,
+        3.6,
+        -0.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "jackF",
+      "label": "Levelling Jack Front",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.12,
+        "height": 1.0
+      },
+      "position": [
+        2.3,
+        0.5,
+        1.3
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "jackR",
+      "label": "Levelling Jack Rear",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.12,
+        "height": 1.0
+      },
+      "position": [
+        -2.4,
+        0.5,
+        -1.3
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "carriage",
+      "label": "Drill Carriage",
+      "parentId": "mastGrp",
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "animate": {
+        "kind": "slide",
+        "axis": "y",
+        "from": 0.3,
+        "to": -3.2,
+        "period": 7,
+        "phase": 0,
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "drillSpin",
+      "label": "Drill Rotation",
+      "parentId": "carriage",
+      "kind": "group",
+      "position": [
+        0.6,
+        3.8,
+        0
+      ],
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed",
+        "rate": 3
+      }
+    },
+    {
+      "id": "drillPipe",
+      "label": "Drill Pipe",
+      "parentId": "drillSpin",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.2,
+        "height": 7.2
+      },
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "kellyFlat",
+      "label": "Kelly Flat",
+      "parentId": "drillSpin",
+      "geometry": "box",
+      "dims": {
+        "width": 0.1,
+        "height": 6.8,
+        "depth": 0.56
+      },
+      "position": [
+        0,
+        0.1,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5
+      }
+    },
+    {
+      "id": "rotaryHead",
+      "label": "Rotary Head",
+      "parentId": "carriage",
+      "geometry": "box",
+      "dims": {
+        "width": 1.0,
+        "height": 0.8,
+        "depth": 1.0
+      },
+      "position": [
+        0.6,
+        7.0,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "drillDust",
+      "label": "Collar Dust",
+      "parentId": "mastGrp",
+      "kind": "emitter",
+      "position": [
+        0.6,
+        0.5,
+        0
+      ],
+      "emitter": {
+        "preset": "dust",
+        "scale": 0.55
+      }
+    }
+  ],
+  "ports": [],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Rotary Speed",
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 3,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "holeDepth",
+      "label": "Hole Depth",
+      "unit": "m",
+      "default": 12,
+      "min": 0,
+      "max": 60,
+      "freq": "1m"
+    },
+    {
+      "key": "pulldown",
+      "label": "Pulldown Force",
+      "unit": "kN",
+      "default": 240,
+      "min": 0,
+      "max": 500,
+      "freq": "5s"
+    },
+    {
+      "key": "rotarySpeed",
+      "label": "Rotary Speed",
+      "unit": "rpm",
+      "default": 90,
+      "min": 0,
+      "max": 200,
+      "freq": "5s"
+    },
+    {
+      "key": "holesToday",
+      "label": "Holes Drilled Today",
+      "unit": "holes",
+      "default": 14,
+      "min": 0,
+      "max": 120,
+      "freq": "1h"
+    }
+  ],
+  "states": [
+    {
+      "key": "drilling",
+      "label": "Drilling",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "tramming",
+      "label": "Tramming",
+      "color": "#30b0c7",
+      "severity": "ok"
+    },
+    {
+      "key": "idle",
+      "label": "Idle",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "fault",
+      "label": "Fault",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

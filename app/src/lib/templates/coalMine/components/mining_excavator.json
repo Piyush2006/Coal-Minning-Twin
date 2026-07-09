@@ -1,0 +1,558 @@
+{
+  "label": "Mining Excavator",
+  "category": "Coal Mining",
+  "layer": "equipment",
+  "parts": [
+    {
+      "id": "tracksGrp",
+      "label": "Crawler Tracks",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "trackL",
+      "label": "Track Left",
+      "parentId": "tracksGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 5.2,
+        "height": 1.1,
+        "depth": 1.2
+      },
+      "position": [
+        0,
+        0.55,
+        1.35
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      }
+    },
+    {
+      "id": "trackR",
+      "label": "Track Right",
+      "parentId": "tracksGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 5.2,
+        "height": 1.1,
+        "depth": 1.2
+      },
+      "position": [
+        0,
+        0.55,
+        -1.35
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      }
+    },
+    {
+      "id": "turretGrp",
+      "label": "Slew Pivot",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "animate": {
+        "kind": "sweep",
+        "axis": "y",
+        "from": -0.55,
+        "to": 0.2,
+        "period": 11,
+        "phase": 0.0,
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "turret",
+      "label": "Slew Turret",
+      "parentId": "turretGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 4.6,
+        "height": 1.6,
+        "depth": 3.0
+      },
+      "position": [
+        0,
+        2.2,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "counterweight",
+      "label": "Counterweight",
+      "parentId": "turretGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 1.4,
+        "height": 1.4,
+        "depth": 2.8
+      },
+      "position": [
+        -2.7,
+        2.3,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "engineHouse",
+      "label": "Engine House",
+      "parentId": "turretGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 2.0,
+        "height": 1.2,
+        "depth": 2.6
+      },
+      "position": [
+        -1.2,
+        3.5,
+        0
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "cab",
+      "label": "Operator Cab",
+      "parentId": "turretGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 1.4,
+        "height": 1.5,
+        "depth": 1.3
+      },
+      "position": [
+        1.3,
+        3.65,
+        1.0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "cabGlass",
+      "label": "Cab Glass",
+      "parentId": "cab",
+      "geometry": "box",
+      "dims": {
+        "width": 0.06,
+        "height": 1.1,
+        "depth": 1.1
+      },
+      "position": [
+        0.72,
+        0.05,
+        0
+      ],
+      "material": {
+        "color": "#cfe6f2",
+        "metalness": 0.1,
+        "roughness": 0.05,
+        "polygonOffset": true
+      }
+    },
+    {
+      "id": "exhaust",
+      "label": "Exhaust Stack",
+      "parentId": "turretGrp",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.12,
+        "height": 0.9
+      },
+      "position": [
+        -1.6,
+        4.5,
+        0.8
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "boomPivot",
+      "label": "Boom Hinge",
+      "parentId": "turretGrp",
+      "kind": "group",
+      "position": [
+        1.1,
+        2.6,
+        0
+      ],
+      "animate": {
+        "kind": "sweep",
+        "axis": "z",
+        "from": -0.12,
+        "to": 0.22,
+        "period": 11,
+        "phase": 0.08,
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "boom",
+      "label": "Boom",
+      "parentId": "boomPivot",
+      "geometry": "box",
+      "dims": {
+        "width": 4.4,
+        "height": 0.7,
+        "depth": 0.6
+      },
+      "position": [
+        1.93,
+        1.05,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0.5
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "boomCylinder",
+      "label": "Boom Cylinder",
+      "parentId": "boomPivot",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.1,
+        "height": 1.9
+      },
+      "position": [
+        1.0,
+        0.35,
+        0.55
+      ],
+      "rotation": [
+        0,
+        0,
+        1.0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "stickPivot",
+      "label": "Stick Hinge",
+      "parentId": "boomPivot",
+      "kind": "group",
+      "position": [
+        3.86,
+        2.11,
+        0
+      ],
+      "animate": {
+        "kind": "sweep",
+        "axis": "z",
+        "from": -0.28,
+        "to": 0.3,
+        "period": 11,
+        "phase": 0.18,
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "stick",
+      "label": "Stick",
+      "parentId": "stickPivot",
+      "geometry": "box",
+      "dims": {
+        "width": 2.9,
+        "height": 0.45,
+        "depth": 0.4
+      },
+      "position": [
+        0.84,
+        -1.18,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -0.95
+      ],
+      "material": {
+        "color": "@miningYellow",
+        "metalness": 0.55,
+        "roughness": 0.45,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "bucketPivot",
+      "label": "Bucket Hinge",
+      "parentId": "stickPivot",
+      "kind": "group",
+      "position": [
+        1.69,
+        -2.36,
+        0
+      ],
+      "animate": {
+        "kind": "sweep",
+        "axis": "z",
+        "from": -0.45,
+        "to": 0.4,
+        "period": 11,
+        "phase": 0.28,
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "bucket",
+      "label": "Bucket",
+      "parentId": "bucketPivot",
+      "geometry": "box",
+      "dims": {
+        "width": 1.5,
+        "height": 1.1,
+        "depth": 1.7
+      },
+      "position": [
+        0.55,
+        -0.5,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0.3
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "exhaustSmoke",
+      "label": "Exhaust Plume",
+      "parentId": "turretGrp",
+      "kind": "emitter",
+      "position": [
+        -1.6,
+        5.0,
+        0.8
+      ],
+      "emitter": {
+        "preset": "exhaust",
+        "scale": 0.9
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "feed_in",
+      "type": "product",
+      "direction": "in",
+      "offset": [
+        6.5,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "load_out",
+      "type": "product",
+      "direction": "out",
+      "offset": [
+        0,
+        3.4,
+        2.0
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Work Rate",
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 3,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "bucketPayload",
+      "label": "Bucket Payload",
+      "unit": "t",
+      "default": 32,
+      "min": 0,
+      "max": 60,
+      "freq": "5s"
+    },
+    {
+      "key": "engineLoad",
+      "label": "Engine Load",
+      "unit": "%",
+      "default": 68,
+      "min": 0,
+      "max": 100,
+      "freq": "5s"
+    },
+    {
+      "key": "fuelLevel",
+      "label": "Fuel Level",
+      "unit": "%",
+      "default": 74,
+      "min": 0,
+      "max": 100,
+      "freq": "15m"
+    },
+    {
+      "key": "hydraulicTemp",
+      "label": "Hydraulic Temp",
+      "unit": "degC",
+      "default": 62,
+      "min": 0,
+      "max": 110,
+      "freq": "30s"
+    },
+    {
+      "key": "engineHours",
+      "label": "Engine Hours",
+      "unit": "h",
+      "default": 12400,
+      "min": 0,
+      "max": 60000,
+      "freq": "1h"
+    },
+    {
+      "key": "idleTime",
+      "label": "Idle Time",
+      "unit": "min",
+      "default": 6,
+      "min": 0,
+      "max": 60,
+      "freq": "5s"
+    },
+    {
+      "key": "cycleTime",
+      "label": "Dig Cycle Time",
+      "unit": "s",
+      "default": 34,
+      "min": 0,
+      "max": 120,
+      "freq": "5s"
+    },
+    {
+      "key": "engineHealth",
+      "label": "Engine Health",
+      "unit": "%",
+      "default": 84,
+      "min": 0,
+      "max": 100,
+      "freq": "5s"
+    },
+    {
+      "key": "hydraulicHealth",
+      "label": "Hydraulic Health",
+      "unit": "%",
+      "default": 87,
+      "min": 0,
+      "max": 100,
+      "freq": "5s"
+    },
+    {
+      "key": "faultCode",
+      "label": "Fault Code",
+      "unit": "code",
+      "default": 0,
+      "min": 0,
+      "max": 8,
+      "freq": "manual"
+    },
+    {
+      "key": "rulHours",
+      "label": "Remaining Useful Life",
+      "unit": "h",
+      "default": 290,
+      "min": 0,
+      "max": 500,
+      "freq": "5m"
+    }
+  ],
+  "states": [
+    {
+      "key": "digging",
+      "label": "Digging",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "travelling",
+      "label": "Travelling",
+      "color": "#30b0c7",
+      "severity": "ok"
+    },
+    {
+      "key": "idle",
+      "label": "Idle",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "breakdown",
+      "label": "Breakdown",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+# ── Secrets — NEVER commit ─────────────────────────────────────────────
+creds file - secret
+creds*
+*.secret
+secrets/
+.env
+.env.*
+*.pem
+*.key
+
+# ── Build / deps ───────────────────────────────────────────────────────
+dist/
+node_modules/

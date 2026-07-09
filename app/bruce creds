@@ -1,0 +1,5 @@
+endpoint - https://bruce-staging.iosense.io/
+Key - agv2_05CWg_tjxsPfyezmsdJgi_crjRnGFmeeFy5KX0nVfzo
+Agent ID - 6a4d0e6d26eb698050e3529b
+chat endpoint - POST {endpoint}backend/api/agents/v1/agents/{agent id}/chat  (header X-API-Key)
+(hardcoded as defaults in src/store/aiStore.js — verified live 2026-07-07)

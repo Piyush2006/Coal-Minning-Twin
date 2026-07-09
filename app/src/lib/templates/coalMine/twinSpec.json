@@ -1,0 +1,2765 @@
+{
+  "meta": {
+    "title": "Blackridge Coal Mine - Pit to Port",
+    "description": "Full coal mining process flow: mine operations (exploration, drilling & blasting, overburden removal, coal extraction, loading, hauling), CHPP processing plant (crushing, conveying, screening, dense-media washing, dewatering, stockyard) and downstream logistics (rail load-out, dispatch, shiploading, shipping, end-use customer).",
+    "units": "meters",
+    "prompt": "Create a digital twin of the coal mining process flow (upstream mine operations, processing plant, downstream logistics & shipping)."
+  },
+  "groups": {
+    "grp_site": {
+      "name": "Blackridge Coal Mine",
+      "parentId": null,
+      "order": 0
+    },
+    "grp_mine": {
+      "name": "Mine Operations (Pit)",
+      "parentId": "grp_site",
+      "order": 0,
+      "kpis": [
+        {
+          "key": "fleetPayload",
+          "label": "Fleet Payload",
+          "unit": "t",
+          "assetType": "haul_truck",
+          "parameter": "payload",
+          "agg": "sum"
+        },
+        {
+          "key": "avgFuel",
+          "label": "Avg Truck Fuel",
+          "unit": "%",
+          "assetType": "haul_truck",
+          "parameter": "fuelLevel",
+          "agg": "avg"
+        },
+        {
+          "key": "excLoad",
+          "label": "Avg Excavator Load",
+          "unit": "%",
+          "assetType": "mining_excavator",
+          "parameter": "engineLoad",
+          "agg": "avg"
+        },
+        {
+          "key": "mobiles",
+          "label": "Mobile Fleet",
+          "unit": "",
+          "agg": "count"
+        }
+      ]
+    },
+    "grp_drillblast": {
+      "name": "Drilling & Blasting",
+      "parentId": "grp_mine",
+      "order": 0
+    },
+    "grp_extraction": {
+      "name": "Excavation",
+      "parentId": "grp_mine",
+      "order": 1
+    },
+    "grp_haulage": {
+      "name": "Load & Haul",
+      "parentId": "grp_mine",
+      "order": 2
+    },
+    "grp_pitcivil": {
+      "name": "Pit & Roads",
+      "parentId": "grp_mine",
+      "order": 3
+    },
+    "grp_chpp": {
+      "name": "Processing Plant (CHPP)",
+      "parentId": "grp_site",
+      "order": 1,
+      "kpis": [
+        {
+          "key": "crusherRate",
+          "label": "Crusher Throughput",
+          "unit": "t/h",
+          "assetType": "primary_crusher",
+          "parameter": "throughput",
+          "agg": "sum"
+        },
+        {
+          "key": "plantFeed",
+          "label": "Plant Feed",
+          "unit": "t/h",
+          "assetType": "chpp_dmc_module",
+          "parameter": "feedRate",
+          "agg": "sum"
+        },
+        {
+          "key": "yield",
+          "label": "Avg Yield",
+          "unit": "%",
+          "assetType": "chpp_dmc_module",
+          "parameter": "yield",
+          "agg": "avg"
+        },
+        {
+          "key": "ash",
+          "label": "Avg Product Ash",
+          "unit": "%",
+          "assetType": "chpp_dmc_module",
+          "parameter": "productAsh",
+          "agg": "avg"
+        },
+        {
+          "key": "n",
+          "label": "Machines",
+          "unit": "",
+          "agg": "count"
+        }
+      ]
+    },
+    "grp_crushing": {
+      "name": "Crushing & Conveying",
+      "parentId": "grp_chpp",
+      "order": 0
+    },
+    "grp_washing": {
+      "name": "Washing & Dewatering",
+      "parentId": "grp_chpp",
+      "order": 1
+    },
+    "grp_water": {
+      "name": "Water Circuit",
+      "parentId": "grp_chpp",
+      "order": 2
+    },
+    "grp_yard": {
+      "name": "Stockyard",
+      "parentId": "grp_site",
+      "order": 2,
+      "kpis": [
+        {
+          "key": "stock",
+          "label": "Stock On Ground",
+          "unit": "t",
+          "assetType": "coal_stockpile",
+          "parameter": "stockTonnes",
+          "agg": "sum"
+        },
+        {
+          "key": "reclaim",
+          "label": "Reclaim Rate",
+          "unit": "t/h",
+          "assetType": "stacker_reclaimer",
+          "parameter": "reclaimRate",
+          "agg": "sum"
+        },
+        {
+          "key": "piles",
+          "label": "Stockpiles",
+          "unit": "",
+          "assetType": "coal_stockpile",
+          "agg": "count"
+        },
+        {
+          "key": "blendRate",
+          "label": "Blend Rate",
+          "unit": "t/h",
+          "assetType": "blending_plant",
+          "parameter": "throughput",
+          "agg": "sum"
+        }
+      ]
+    },
+    "grp_rail": {
+      "name": "Rail Load-Out",
+      "parentId": "grp_site",
+      "order": 3,
+      "kpis": [
+        {
+          "key": "loadRate",
+          "label": "Loading Rate",
+          "unit": "t/h",
+          "assetType": "rail_loadout",
+          "parameter": "loadRate",
+          "agg": "sum"
+        },
+        {
+          "key": "trainGross",
+          "label": "Rake Gross Weight",
+          "unit": "t",
+          "assetType": "coal_wagon",
+          "parameter": "grossWeight",
+          "agg": "sum"
+        },
+        {
+          "key": "wagons",
+          "label": "Wagons",
+          "unit": "",
+          "assetType": "coal_wagon",
+          "agg": "count"
+        }
+      ]
+    },
+    "grp_port": {
+      "name": "Port & Shipping",
+      "parentId": "grp_site",
+      "order": 4,
+      "kpis": [
+        {
+          "key": "shipRate",
+          "label": "Shiploading Rate",
+          "unit": "t/h",
+          "assetType": "shiploader",
+          "parameter": "loadRate",
+          "agg": "sum"
+        },
+        {
+          "key": "cargo",
+          "label": "Cargo Aboard",
+          "unit": "t",
+          "assetType": "bulk_carrier",
+          "parameter": "cargoLoaded",
+          "agg": "sum"
+        }
+      ]
+    },
+    "grp_enduse": {
+      "name": "Customers (End Use)",
+      "parentId": "grp_site",
+      "order": 5,
+      "kpis": [
+        {
+          "key": "gen",
+          "label": "Customer Generation",
+          "unit": "MW",
+          "assetType": "power_station",
+          "parameter": "generationMW",
+          "agg": "sum"
+        },
+        {
+          "key": "burn",
+          "label": "Coal Burn Rate",
+          "unit": "t/h",
+          "assetType": "power_station",
+          "parameter": "coalBurnRate",
+          "agg": "sum"
+        }
+      ]
+    },
+    "grp_enviro": {
+      "name": "Environmental Monitoring",
+      "parentId": "grp_site",
+      "order": 6,
+      "kpis": [
+        {
+          "key": "pm10",
+          "label": "Avg PM10",
+          "unit": "ug/m3",
+          "assetType": "pm_monitor",
+          "parameter": "pm10",
+          "agg": "avg"
+        },
+        {
+          "key": "noise",
+          "label": "Avg Noise",
+          "unit": "dB(A)",
+          "assetType": "pm_monitor",
+          "parameter": "noise",
+          "agg": "avg"
+        },
+        {
+          "key": "n",
+          "label": "Monitors",
+          "unit": "",
+          "assetType": "pm_monitor",
+          "agg": "count"
+        }
+      ]
+    },
+    "grp_cvvision": {
+      "name": "Conveyor Vision (CCTV)",
+      "parentId": "grp_site",
+      "order": 7,
+      "kpis": [
+        {
+          "key": "cams",
+          "label": "Cameras",
+          "unit": "",
+          "assetType": "cv_camera",
+          "agg": "count"
+        }
+      ]
+    }
+  },
+  "objects": {
+    "pit-1": {
+      "type": "PitTerrain",
+      "name": "Open Pit - West Cut",
+      "position": [
+        -80,
+        0,
+        8
+      ],
+      "parentId": "grp_pitcivil",
+      "order": 0,
+      "parameters": {
+        "pitDepth": 42,
+        "stripRatio": 4.2,
+        "coalExposed": 65000
+      },
+      "config": {
+        "benches": 3,
+        "benchDepth": 10,
+        "faceAngle": 62,
+        "floorWidth": 76,
+        "floorDepth": 50,
+        "ramp": true,
+        "rampWidth": 8,
+        "seam": true,
+        "muck": true,
+        "earthColor": "@earthBrown",
+        "floorColor": "@earthDark",
+        "seamColor": "@coalBlack"
+      },
+      "connections": [
+        {
+          "targetId": "exc-coal-1",
+          "sourcePort": "coal_out",
+          "targetPort": "feed_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        },
+        {
+          "targetId": "exc-ob-1",
+          "sourcePort": "coal_out",
+          "targetPort": "feed_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        }
+      ]
+    },
+    "dump-1": {
+      "type": "TerrainMound",
+      "name": "Overburden Dump North",
+      "position": [
+        -118,
+        0,
+        -34
+      ],
+      "parentId": "grp_pitcivil",
+      "order": 1,
+      "parameters": {
+        "dumpTonnes": 512000,
+        "stability": 93
+      },
+      "config": {
+        "radius": 10,
+        "height": 5.5,
+        "lobes": 3,
+        "irregular": 0.4,
+        "color": "@earthBrown",
+        "dust": true
+      }
+    },
+    "road-1": {
+      "type": "haul_road",
+      "name": "Haul Road - ROM",
+      "position": [
+        -48,
+        0,
+        2
+      ],
+      "parentId": "grp_pitcivil",
+      "order": 2,
+      "parameters": {
+        "dustLevel": 16,
+        "gradient": 6
+      },
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    "road-2": {
+      "type": "haul_road",
+      "name": "Haul Road - Waste Dump",
+      "position": [
+        -100,
+        0,
+        -20
+      ],
+      "rotation": [
+        0,
+        2.43,
+        0
+      ],
+      "parentId": "grp_pitcivil",
+      "order": 3,
+      "parameters": {
+        "dustLevel": 24,
+        "gradient": 9
+      }
+    },
+    "bh-drill-1": {
+      "type": "blasthole_drill_rig",
+      "name": "Blast-Hole Drill BD-01",
+      "position": [
+        -94,
+        4.2,
+        30
+      ],
+      "rotation": [
+        0,
+        -0.3,
+        0
+      ],
+      "parentId": "grp_drillblast",
+      "order": 1,
+      "parameters": {
+        "holeDepth": 10.5,
+        "pulldown": 255,
+        "rotarySpeed": 85,
+        "holesToday": 17
+      }
+    },
+    "exc-ob-1": {
+      "type": "mining_excavator",
+      "name": "Excavator EX-01 (Overburden)",
+      "position": [
+        -82,
+        4.2,
+        28.5
+      ],
+      "rotation": [
+        0,
+        -1.5,
+        0
+      ],
+      "parentId": "grp_extraction",
+      "order": 0,
+      "parameters": {
+        "bucketPayload": 38,
+        "engineLoad": 74,
+        "fuelLevel": 68,
+        "hydraulicTemp": 65,
+        "engineHours": 14520,
+        "idleTime": 5,
+        "cycleTime": 36,
+        "engineHealth": 83,
+        "hydraulicHealth": 86,
+        "faultCode": 0,
+        "rulHours": 275
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "bucketPayload",
+          "engineLoad",
+          "fuelLevel"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "truck-3",
+          "sourcePort": "load_out",
+          "targetPort": "load_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        }
+      ],
+      "config": {
+        "alertRules": [
+          {
+            "id": "idle-high",
+            "param": "idleTime",
+            "op": ">",
+            "threshold": 25,
+            "severity": "warn",
+            "useCase": "Haulage",
+            "message": "Shovel idling {idleTime} min \u2014 dispatch gap"
+          },
+          {
+            "id": "engine-health",
+            "param": "engineHealth",
+            "op": "<",
+            "threshold": 40,
+            "severity": "critical",
+            "useCase": "HEMM PdM",
+            "message": "HEMM engine fault risk, RUL {rulHours} h"
+          },
+          {
+            "id": "hyd-health",
+            "param": "hydraulicHealth",
+            "op": "<",
+            "threshold": 45,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Hydraulic degradation, RUL {rulHours} h"
+          },
+          {
+            "id": "fault-code",
+            "param": "faultCode",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Active fault code {faultCode}"
+          }
+        ],
+        "demoTrends": [
+          {
+            "param": "engineHealth",
+            "min": 30,
+            "max": 82,
+            "period": 200,
+            "offset": 100
+          }
+        ],
+        "animPhase": 0.45
+      }
+    },
+    "exc-coal-1": {
+      "type": "mining_excavator",
+      "name": "Excavator EX-02 (Coal)",
+      "position": [
+        -72,
+        0,
+        17
+      ],
+      "rotation": [
+        0,
+        -1.35,
+        0
+      ],
+      "parentId": "grp_extraction",
+      "order": 1,
+      "parameters": {
+        "bucketPayload": 30,
+        "engineLoad": 62,
+        "fuelLevel": 81,
+        "hydraulicTemp": 58,
+        "engineHours": 9860,
+        "idleTime": 7,
+        "cycleTime": 32,
+        "engineHealth": 90,
+        "hydraulicHealth": 91,
+        "faultCode": 0,
+        "rulHours": 388
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "bucketPayload",
+          "engineLoad",
+          "fuelLevel"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "truck-1",
+          "sourcePort": "load_out",
+          "targetPort": "load_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        },
+        {
+          "targetId": "truck-2",
+          "sourcePort": "load_out",
+          "targetPort": "load_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        }
+      ],
+      "config": {
+        "alertRules": [
+          {
+            "id": "idle-high",
+            "param": "idleTime",
+            "op": ">",
+            "threshold": 25,
+            "severity": "warn",
+            "useCase": "Haulage",
+            "message": "Shovel idling {idleTime} min \u2014 dispatch gap"
+          },
+          {
+            "id": "engine-health",
+            "param": "engineHealth",
+            "op": "<",
+            "threshold": 40,
+            "severity": "critical",
+            "useCase": "HEMM PdM",
+            "message": "HEMM engine fault risk, RUL {rulHours} h"
+          },
+          {
+            "id": "hyd-health",
+            "param": "hydraulicHealth",
+            "op": "<",
+            "threshold": 45,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Hydraulic degradation, RUL {rulHours} h"
+          },
+          {
+            "id": "fault-code",
+            "param": "faultCode",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Active fault code {faultCode}"
+          }
+        ],
+        "animPhase": 0.0
+      }
+    },
+    "loader-1": {
+      "type": "wheel_loader",
+      "name": "Wheel Loader WL-01",
+      "position": [
+        -52,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        2.6,
+        0
+      ],
+      "parentId": "grp_haulage",
+      "order": 0,
+      "parameters": {
+        "payload": 11,
+        "hydraulicPressure": 205,
+        "fuelLevel": 52
+      }
+    },
+    "truck-1": {
+      "type": "haul_truck",
+      "name": "Haul Truck HT-01",
+      "position": [
+        -66,
+        0,
+        12
+      ],
+      "rotation": [
+        0,
+        -0.2,
+        0
+      ],
+      "parentId": "grp_haulage",
+      "order": 1,
+      "parameters": {
+        "payload": 192,
+        "speed": 6,
+        "fuelLevel": 66,
+        "tyreTemp": 51,
+        "engineTemp": 90,
+        "idleTime": 9,
+        "cycleTime": 24,
+        "fuelBurn": 172,
+        "engineHealth": 88,
+        "hydraulicHealth": 90,
+        "faultCode": 0,
+        "rulHours": 355,
+        "tyrePressure": 8.6,
+        "tkph": 328
+      },
+      "rules": [
+        {
+          "enabled": true,
+          "parameter": "fuelLevel",
+          "operator": "<",
+          "compareMode": "constant",
+          "value": 15,
+          "color": "#ff9f0a"
+        }
+      ],
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "payload",
+          "speed",
+          "fuelLevel"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "crusher-1",
+          "sourcePort": "dump_out",
+          "targetPort": "feed_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        }
+      ],
+      "config": {
+        "path": {
+          "waypoints": [
+            [
+              -66,
+              0,
+              12
+            ],
+            [
+              -54,
+              0,
+              6
+            ],
+            [
+              -42,
+              0,
+              1
+            ],
+            [
+              -34,
+              0,
+              -5
+            ],
+            [
+              -46,
+              0,
+              -10
+            ],
+            [
+              -60,
+              0,
+              1
+            ]
+          ],
+          "speed": 3.0,
+          "loop": true,
+          "dwell": 14,
+          "phase": 0
+        },
+        "alertRules": [
+          {
+            "id": "idle-high",
+            "param": "idleTime",
+            "op": ">",
+            "threshold": 20,
+            "severity": "warn",
+            "useCase": "Haulage",
+            "message": "Truck idling {idleTime} min (target < 20)"
+          },
+          {
+            "id": "overspeed",
+            "param": "speed",
+            "op": ">",
+            "threshold": 40,
+            "severity": "critical",
+            "useCase": "Haulage",
+            "message": "Over-speed {speed} km/h on haul road (limit 40)"
+          },
+          {
+            "id": "engine-health",
+            "param": "engineHealth",
+            "op": "<",
+            "threshold": 40,
+            "severity": "critical",
+            "useCase": "HEMM PdM",
+            "message": "HEMM engine fault risk, RUL {rulHours} h"
+          },
+          {
+            "id": "hyd-health",
+            "param": "hydraulicHealth",
+            "op": "<",
+            "threshold": 45,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Hydraulic degradation, RUL {rulHours} h"
+          },
+          {
+            "id": "fault-code",
+            "param": "faultCode",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Active fault code {faultCode}"
+          },
+          {
+            "id": "tyre-temp",
+            "param": "tyreTemp",
+            "op": ">",
+            "threshold": 85,
+            "severity": "critical",
+            "useCase": "TPMS",
+            "message": "Tyre over-temp {tyreTemp} degC"
+          },
+          {
+            "id": "tyre-under",
+            "param": "tyrePressure",
+            "op": "<",
+            "threshold": 7,
+            "severity": "warn",
+            "useCase": "TPMS",
+            "message": "Tyre under-inflation {tyrePressure} bar"
+          },
+          {
+            "id": "tyre-over",
+            "param": "tyrePressure",
+            "op": ">",
+            "threshold": 10,
+            "severity": "warn",
+            "useCase": "TPMS",
+            "message": "Tyre over-inflation {tyrePressure} bar"
+          }
+        ],
+        "demoTrends": [
+          {
+            "param": "idleTime",
+            "min": 4,
+            "max": 34,
+            "period": 150,
+            "offset": 0
+          }
+        ]
+      }
+    },
+    "truck-2": {
+      "type": "haul_truck",
+      "name": "Haul Truck HT-02",
+      "position": [
+        -52,
+        0,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "parentId": "grp_haulage",
+      "order": 2,
+      "parameters": {
+        "payload": 178,
+        "speed": 31,
+        "fuelLevel": 43,
+        "tyreTemp": 55,
+        "engineTemp": 92,
+        "idleTime": 6,
+        "cycleTime": 27,
+        "fuelBurn": 196,
+        "engineHealth": 82,
+        "hydraulicHealth": 85,
+        "faultCode": 0,
+        "rulHours": 300,
+        "tyrePressure": 8.3,
+        "tkph": 352
+      },
+      "rules": [
+        {
+          "enabled": true,
+          "parameter": "fuelLevel",
+          "operator": "<",
+          "compareMode": "constant",
+          "value": 15,
+          "color": "#ff9f0a"
+        }
+      ],
+      "config": {
+        "path": {
+          "waypoints": [
+            [
+              -72,
+              0,
+              12
+            ],
+            [
+              -58,
+              0,
+              6
+            ],
+            [
+              -42,
+              0,
+              2
+            ],
+            [
+              -34,
+              0,
+              -4
+            ],
+            [
+              -46,
+              0,
+              -9
+            ],
+            [
+              -64,
+              0,
+              -4
+            ]
+          ],
+          "speed": 3.2,
+          "loop": true,
+          "phase": 0.5
+        },
+        "alertRules": [
+          {
+            "id": "idle-high",
+            "param": "idleTime",
+            "op": ">",
+            "threshold": 20,
+            "severity": "warn",
+            "useCase": "Haulage",
+            "message": "Truck idling {idleTime} min (target < 20)"
+          },
+          {
+            "id": "overspeed",
+            "param": "speed",
+            "op": ">",
+            "threshold": 40,
+            "severity": "critical",
+            "useCase": "Haulage",
+            "message": "Over-speed {speed} km/h on haul road (limit 40)"
+          },
+          {
+            "id": "engine-health",
+            "param": "engineHealth",
+            "op": "<",
+            "threshold": 40,
+            "severity": "critical",
+            "useCase": "HEMM PdM",
+            "message": "HEMM engine fault risk, RUL {rulHours} h"
+          },
+          {
+            "id": "hyd-health",
+            "param": "hydraulicHealth",
+            "op": "<",
+            "threshold": 45,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Hydraulic degradation, RUL {rulHours} h"
+          },
+          {
+            "id": "fault-code",
+            "param": "faultCode",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Active fault code {faultCode}"
+          },
+          {
+            "id": "tyre-temp",
+            "param": "tyreTemp",
+            "op": ">",
+            "threshold": 85,
+            "severity": "critical",
+            "useCase": "TPMS",
+            "message": "Tyre over-temp {tyreTemp} degC"
+          },
+          {
+            "id": "tyre-under",
+            "param": "tyrePressure",
+            "op": "<",
+            "threshold": 7,
+            "severity": "warn",
+            "useCase": "TPMS",
+            "message": "Tyre under-inflation {tyrePressure} bar"
+          },
+          {
+            "id": "tyre-over",
+            "param": "tyrePressure",
+            "op": ">",
+            "threshold": 10,
+            "severity": "warn",
+            "useCase": "TPMS",
+            "message": "Tyre over-inflation {tyrePressure} bar"
+          }
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "crusher-1",
+          "sourcePort": "dump_out",
+          "targetPort": "feed_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        }
+      ]
+    },
+    "truck-3": {
+      "type": "haul_truck",
+      "name": "Haul Truck HT-03",
+      "position": [
+        -96,
+        0,
+        -16.5
+      ],
+      "rotation": [
+        0,
+        -0.71,
+        0
+      ],
+      "parentId": "grp_haulage",
+      "order": 3,
+      "parameters": {
+        "payload": 0,
+        "speed": 38,
+        "fuelLevel": 12,
+        "tyreTemp": 47,
+        "engineTemp": 86,
+        "idleTime": 12,
+        "cycleTime": 30,
+        "fuelBurn": 188,
+        "engineHealth": 79,
+        "hydraulicHealth": 83,
+        "faultCode": 0,
+        "rulHours": 262,
+        "tyrePressure": 8.8,
+        "tkph": 366
+      },
+      "rules": [
+        {
+          "enabled": true,
+          "parameter": "fuelLevel",
+          "operator": "<",
+          "compareMode": "constant",
+          "value": 15,
+          "color": "#ff9f0a"
+        }
+      ],
+      "config": {
+        "path": {
+          "waypoints": [
+            [
+              -88,
+              0,
+              -10
+            ],
+            [
+              -100,
+              0,
+              -20
+            ],
+            [
+              -110,
+              0,
+              -28
+            ],
+            [
+              -115,
+              0,
+              -22
+            ],
+            [
+              -104,
+              0,
+              -13
+            ],
+            [
+              -93,
+              0,
+              -6
+            ]
+          ],
+          "speed": 3.6,
+          "loop": true,
+          "phase": 0.25
+        },
+        "alertRules": [
+          {
+            "id": "idle-high",
+            "param": "idleTime",
+            "op": ">",
+            "threshold": 20,
+            "severity": "warn",
+            "useCase": "Haulage",
+            "message": "Truck idling {idleTime} min (target < 20)"
+          },
+          {
+            "id": "overspeed",
+            "param": "speed",
+            "op": ">",
+            "threshold": 40,
+            "severity": "critical",
+            "useCase": "Haulage",
+            "message": "Over-speed {speed} km/h on haul road (limit 40)"
+          },
+          {
+            "id": "engine-health",
+            "param": "engineHealth",
+            "op": "<",
+            "threshold": 40,
+            "severity": "critical",
+            "useCase": "HEMM PdM",
+            "message": "HEMM engine fault risk, RUL {rulHours} h"
+          },
+          {
+            "id": "hyd-health",
+            "param": "hydraulicHealth",
+            "op": "<",
+            "threshold": 45,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Hydraulic degradation, RUL {rulHours} h"
+          },
+          {
+            "id": "fault-code",
+            "param": "faultCode",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "HEMM PdM",
+            "message": "Active fault code {faultCode}"
+          },
+          {
+            "id": "tyre-temp",
+            "param": "tyreTemp",
+            "op": ">",
+            "threshold": 85,
+            "severity": "critical",
+            "useCase": "TPMS",
+            "message": "Tyre over-temp {tyreTemp} degC"
+          },
+          {
+            "id": "tyre-under",
+            "param": "tyrePressure",
+            "op": "<",
+            "threshold": 7,
+            "severity": "warn",
+            "useCase": "TPMS",
+            "message": "Tyre under-inflation {tyrePressure} bar"
+          },
+          {
+            "id": "tyre-over",
+            "param": "tyrePressure",
+            "op": ">",
+            "threshold": 10,
+            "severity": "warn",
+            "useCase": "TPMS",
+            "message": "Tyre over-inflation {tyrePressure} bar"
+          }
+        ],
+        "demoTrends": [
+          {
+            "param": "tyreTemp",
+            "min": 58,
+            "max": 96,
+            "period": 180,
+            "offset": 60
+          }
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "dump-1",
+          "sourcePort": "dump_out",
+          "targetPort": "waste_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        }
+      ]
+    },
+    "crusher-1": {
+      "type": "primary_crusher",
+      "name": "Primary Crusher CR-01",
+      "position": [
+        -30,
+        0,
+        0
+      ],
+      "parentId": "grp_crushing",
+      "order": 0,
+      "parameters": {
+        "throughput": 1480,
+        "css": 165,
+        "motorCurrent": 335,
+        "bearingTemp": 71,
+        "vibration": 3.6,
+        "kwhPerTonne": 1.15
+      },
+      "rules": [
+        {
+          "enabled": true,
+          "parameter": "bearingTemp",
+          "operator": ">",
+          "compareMode": "constant",
+          "value": 85,
+          "color": "#ff3b30"
+        }
+      ],
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "throughput",
+          "motorCurrent",
+          "bearingTemp"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "cv-01",
+          "sourcePort": "conveyor_out",
+          "targetPort": "conveyor_in",
+          "connectorConfig": {
+            "speed": 1.8,
+            "beltStyle": "chain"
+          }
+        }
+      ],
+      "config": {
+        "alertRules": [
+          {
+            "id": "vib-zone-c",
+            "param": "vibration",
+            "op": "between",
+            "threshold": [
+              6,
+              10
+            ],
+            "severity": "warn",
+            "useCase": "Vibration CBM",
+            "message": "Vibration {vibration} mm/s in ISO zone C"
+          },
+          {
+            "id": "vib-zone-d",
+            "param": "vibration",
+            "op": ">",
+            "threshold": 10,
+            "severity": "critical",
+            "useCase": "Vibration CBM",
+            "message": "Bearing/imbalance fault, vibration {vibration} mm/s"
+          },
+          {
+            "id": "brg-temp",
+            "param": "bearingTemp",
+            "op": ">",
+            "threshold": 85,
+            "severity": "warn",
+            "useCase": "Vibration CBM",
+            "message": "Bearing temp {bearingTemp} degC"
+          },
+          {
+            "id": "sec-high",
+            "param": "kwhPerTonne",
+            "op": ">",
+            "threshold": 1.6,
+            "severity": "warn",
+            "useCase": "CHP SEC",
+            "message": "High specific energy {kwhPerTonne} kWh/t - check idle-running"
+          }
+        ],
+        "demoTrends": [
+          {
+            "param": "vibration",
+            "min": 2.5,
+            "max": 12.5,
+            "period": 170,
+            "offset": 20
+          }
+        ]
+      }
+    },
+    "cv-01": {
+      "type": "ConveyorBelt",
+      "name": "Overland Conveyor CV-01",
+      "position": [
+        -19,
+        0,
+        0
+      ],
+      "parentId": "grp_crushing",
+      "order": 1,
+      "config": {
+        "running": true,
+        "speed": 1.8,
+        "beltStyle": "chain",
+        "length": 10,
+        "itemType": "crate",
+        "itemSpacing": 6
+      },
+      "parameters": {
+        "lineSpeed": 2.1,
+        "load": 64
+      },
+      "connections": [
+        {
+          "targetId": "screen-1",
+          "sourcePort": "conveyor_out",
+          "targetPort": "conveyor_in"
+        }
+      ]
+    },
+    "screen-1": {
+      "type": "vibrating_screen",
+      "name": "Sizing Screen SC-01",
+      "position": [
+        -7,
+        0,
+        0
+      ],
+      "parentId": "grp_crushing",
+      "order": 2,
+      "parameters": {
+        "feedRate": 980,
+        "deckLoad": 66,
+        "oversizeRate": 7.2,
+        "bearingTemp": 57,
+        "vibrationRms": 4.8,
+        "kwhPerTonne": 0.58
+      },
+      "connections": [
+        {
+          "targetId": "chpp-1",
+          "sourcePort": "conveyor_out",
+          "targetPort": "feed_in"
+        }
+      ],
+      "config": {
+        "alertRules": [
+          {
+            "id": "vib-zone-c",
+            "param": "vibrationRms",
+            "op": "between",
+            "threshold": [
+              7,
+              11
+            ],
+            "severity": "warn",
+            "useCase": "Vibration CBM",
+            "message": "Vibration {vibrationRms} mm/s in ISO zone C"
+          },
+          {
+            "id": "vib-zone-d",
+            "param": "vibrationRms",
+            "op": ">",
+            "threshold": 11,
+            "severity": "critical",
+            "useCase": "Vibration CBM",
+            "message": "Bearing/imbalance fault, vibration {vibrationRms} mm/s"
+          },
+          {
+            "id": "sec-high",
+            "param": "kwhPerTonne",
+            "op": ">",
+            "threshold": 1.0,
+            "severity": "warn",
+            "useCase": "CHP SEC",
+            "message": "High specific energy {kwhPerTonne} kWh/t - check idle-running"
+          }
+        ],
+        "demoTrends": [
+          {
+            "param": "kwhPerTonne",
+            "min": 0.45,
+            "max": 1.35,
+            "period": 160,
+            "offset": 80
+          }
+        ]
+      }
+    },
+    "chpp-1": {
+      "type": "chpp_dmc_module",
+      "name": "CHPP Module 1 (DMC)",
+      "position": [
+        8,
+        0,
+        0
+      ],
+      "parentId": "grp_washing",
+      "order": 0,
+      "parameters": {
+        "feedRate": 925,
+        "yield": 76.5,
+        "productAsh": 9.6,
+        "mediaRD": 1.46,
+        "cyclonePressure": 115,
+        "magnetiteLoss": 340,
+        "vibrationRms": 4.1,
+        "bearingTemp": 56,
+        "kwhPerTonne": 2.3
+      },
+      "rules": [
+        {
+          "enabled": true,
+          "parameter": "productAsh",
+          "operator": ">",
+          "compareMode": "constant",
+          "value": 12,
+          "color": "#ff9f0a"
+        }
+      ],
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "feedRate",
+          "yield",
+          "productAsh"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "stacker-1",
+          "sourcePort": "product_out",
+          "targetPort": "conveyor_in",
+          "connectorConfig": {
+            "speed": 1.6,
+            "beltStyle": "chain"
+          }
+        },
+        {
+          "targetId": "thickener-1",
+          "sourcePort": "effluent_out",
+          "targetPort": "feed_in",
+          "connectorConfig": {
+            "color": "#6b7280",
+            "radius": 0.3,
+            "flowing": true
+          }
+        }
+      ],
+      "config": {
+        "alertRules": [
+          {
+            "id": "vib-zone-c",
+            "param": "vibrationRms",
+            "op": "between",
+            "threshold": [
+              7,
+              11
+            ],
+            "severity": "warn",
+            "useCase": "Vibration CBM",
+            "message": "Vibration {vibrationRms} mm/s in ISO zone C"
+          },
+          {
+            "id": "vib-zone-d",
+            "param": "vibrationRms",
+            "op": ">",
+            "threshold": 11,
+            "severity": "critical",
+            "useCase": "Vibration CBM",
+            "message": "Washery drive fault, vibration {vibrationRms} mm/s"
+          },
+          {
+            "id": "brg-temp",
+            "param": "bearingTemp",
+            "op": ">",
+            "threshold": 85,
+            "severity": "warn",
+            "useCase": "Vibration CBM",
+            "message": "Drive bearing temp {bearingTemp} degC"
+          },
+          {
+            "id": "sec-high",
+            "param": "kwhPerTonne",
+            "op": ">",
+            "threshold": 3.5,
+            "severity": "warn",
+            "useCase": "CHP SEC",
+            "message": "High specific energy {kwhPerTonne} kWh/t"
+          }
+        ]
+      }
+    },
+    "thickener-1": {
+      "type": "thickener",
+      "name": "Tailings Thickener TH-01",
+      "position": [
+        8,
+        0,
+        24
+      ],
+      "parentId": "grp_washing",
+      "order": 1,
+      "parameters": {
+        "bedLevel": 1.9,
+        "rakeTorque": 45,
+        "underflowSolids": 56,
+        "overflowClarity": 52,
+        "flocDose": 24
+      },
+      "rules": [
+        {
+          "enabled": true,
+          "parameter": "rakeTorque",
+          "operator": ">",
+          "compareMode": "constant",
+          "value": 70,
+          "color": "#ff9f0a"
+        }
+      ],
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "rakeTorque",
+          "underflowSolids",
+          "bedLevel"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "pump-1",
+          "sourcePort": "overflow_out",
+          "targetPort": "inlet",
+          "connectorConfig": {
+            "color": "#8fcf7a",
+            "radius": 0.25,
+            "flowing": true
+          }
+        },
+        {
+          "targetId": "pipe-tails",
+          "sourcePort": "underflow_out",
+          "targetPort": "pipe_in",
+          "connectorConfig": {
+            "color": "#6b7280",
+            "radius": 0.3,
+            "flowing": true
+          }
+        }
+      ]
+    },
+    "pipe-tails": {
+      "type": "PipeSegment",
+      "name": "Tailings Header",
+      "position": [
+        18,
+        0,
+        30
+      ],
+      "parentId": "grp_washing",
+      "order": 2,
+      "layer": "piping",
+      "config": {
+        "length": 8,
+        "radius": 0.3,
+        "color": "#6b7280"
+      },
+      "parameters": {
+        "flowRate": 30,
+        "pressure": 2.4
+      }
+    },
+    "pump-1": {
+      "type": "Pump",
+      "name": "Recycle Water Pump PW-01",
+      "position": [
+        -2,
+        0,
+        20
+      ],
+      "parentId": "grp_water",
+      "order": 0,
+      "layer": "piping",
+      "parameters": {
+        "flowRate": 28,
+        "pressure": 3.8,
+        "vibration": 1.6
+      },
+      "connections": [
+        {
+          "targetId": "chpp-1",
+          "sourcePort": "outlet",
+          "targetPort": "water_in",
+          "connectorConfig": {
+            "color": "#8fcf7a",
+            "radius": 0.25,
+            "flowing": true
+          }
+        }
+      ],
+      "config": {
+        "alertRules": [
+          {
+            "id": "vib-high",
+            "param": "vibration",
+            "op": ">",
+            "threshold": 8,
+            "severity": "warn",
+            "useCase": "Vibration CBM",
+            "message": "Pump vibration {vibration} mm/s - bearing/cavitation check"
+          }
+        ]
+      }
+    },
+    "tank-1": {
+      "type": "Tank",
+      "name": "Make-Up Water Tank",
+      "position": [
+        -6,
+        0,
+        16
+      ],
+      "parentId": "grp_water",
+      "order": 1,
+      "layer": "piping",
+      "config": {
+        "radius": 1.4,
+        "height": 4.0,
+        "fillLevel": 72,
+        "color": "#cdd6e2"
+      },
+      "parameters": {
+        "level": 72,
+        "temp": 21,
+        "pressure": 1.1
+      },
+      "connections": [
+        {
+          "targetId": "valve-1",
+          "sourcePort": "outlet",
+          "targetPort": "inlet",
+          "connectorConfig": {
+            "color": "#8fcf7a",
+            "radius": 0.2,
+            "flowing": true
+          }
+        }
+      ]
+    },
+    "valve-1": {
+      "type": "Valve",
+      "name": "Make-Up Isolation Valve",
+      "position": [
+        -3,
+        0,
+        14
+      ],
+      "parentId": "grp_water",
+      "order": 2,
+      "layer": "piping",
+      "parameters": {
+        "position": 100,
+        "flowRate": 14
+      },
+      "connections": [
+        {
+          "targetId": "pump-2",
+          "sourcePort": "outlet",
+          "targetPort": "inlet",
+          "connectorConfig": {
+            "color": "#8fcf7a",
+            "radius": 0.2,
+            "flowing": true
+          }
+        }
+      ]
+    },
+    "pump-2": {
+      "type": "Pump",
+      "name": "Make-Up Water Pump PW-02",
+      "position": [
+        0,
+        0,
+        12
+      ],
+      "parentId": "grp_water",
+      "order": 3,
+      "layer": "piping",
+      "parameters": {
+        "flowRate": 14,
+        "pressure": 3.2,
+        "vibration": 2.4
+      },
+      "connections": [
+        {
+          "targetId": "chpp-1",
+          "sourcePort": "outlet",
+          "targetPort": "makeup_in",
+          "connectorConfig": {
+            "color": "#8fcf7a",
+            "radius": 0.2,
+            "flowing": true
+          }
+        }
+      ],
+      "config": {
+        "alertRules": [
+          {
+            "id": "vib-high",
+            "param": "vibration",
+            "op": ">",
+            "threshold": 8,
+            "severity": "warn",
+            "useCase": "Vibration CBM",
+            "message": "Pump vibration {vibration} mm/s - bearing/cavitation check"
+          }
+        ]
+      }
+    },
+    "stacker-1": {
+      "type": "stacker_reclaimer",
+      "name": "Stacker-Reclaimer SR-01",
+      "position": [
+        30,
+        0,
+        0
+      ],
+      "parentId": "grp_yard",
+      "order": 0,
+      "parameters": {
+        "reclaimRate": 1850,
+        "stackRate": 2150,
+        "boomAngle": 5,
+        "travelPos": 46,
+        "slewAngle": 28
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "reclaimRate",
+          "stackRate",
+          "travelPos"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "blend-1",
+          "sourcePort": "rail_out",
+          "targetPort": "feed_in",
+          "connectorConfig": {
+            "speed": 2.0,
+            "beltStyle": "chain"
+          }
+        },
+        {
+          "targetId": "shiploader-1",
+          "sourcePort": "ship_out",
+          "targetPort": "conveyor_in",
+          "connectorConfig": {
+            "speed": 2.0,
+            "beltStyle": "chain"
+          }
+        }
+      ]
+    },
+    "pile-1": {
+      "type": "coal_stockpile",
+      "name": "Product Stockpile A",
+      "position": [
+        36,
+        0,
+        14
+      ],
+      "parentId": "grp_yard",
+      "order": 1,
+      "parameters": {
+        "stockTonnes": 46000,
+        "moisture": 9.2
+      }
+    },
+    "pile-2": {
+      "type": "coal_stockpile",
+      "name": "Product Stockpile B",
+      "position": [
+        36,
+        0,
+        -14
+      ],
+      "parentId": "grp_yard",
+      "order": 2,
+      "parameters": {
+        "stockTonnes": 13500,
+        "moisture": 10.4
+      }
+    },
+    "loadout-1": {
+      "type": "rail_loadout",
+      "name": "Train Load-Out TLO-01",
+      "position": [
+        68,
+        0,
+        -26
+      ],
+      "parentId": "grp_rail",
+      "order": 0,
+      "parameters": {
+        "loadRate": 4300,
+        "binLevel": 58,
+        "trainLoadedT": 5800,
+        "wagonsLoaded": 24
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "loadRate",
+          "binLevel",
+          "trainLoadedT"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "wagon-1",
+          "sourcePort": "load_out",
+          "targetPort": "load_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        }
+      ]
+    },
+    "loco-1": {
+      "type": "locomotive",
+      "name": "Locomotive DL-401",
+      "position": [
+        84,
+        0,
+        -26
+      ],
+      "parentId": "grp_rail",
+      "order": 1,
+      "parameters": {
+        "speed": 4,
+        "tractiveEffort": 410,
+        "fuelLevel": 69
+      }
+    },
+    "wagon-1": {
+      "type": "coal_wagon",
+      "name": "Wagon W-101",
+      "position": [
+        69,
+        0,
+        -26
+      ],
+      "parentId": "grp_rail",
+      "order": 2,
+      "parameters": {
+        "grossWeight": 88
+      },
+      "connections": [
+        {
+          "targetId": "loco-1",
+          "sourcePort": "link_out",
+          "targetPort": "link_in",
+          "connectorConfig": {
+            "color": "@darkSteel",
+            "radius": 0.07,
+            "flowing": false
+          }
+        }
+      ]
+    },
+    "wagon-2": {
+      "type": "coal_wagon",
+      "name": "Wagon W-102",
+      "position": [
+        56,
+        0,
+        -26
+      ],
+      "parentId": "grp_rail",
+      "order": 3,
+      "parameters": {
+        "grossWeight": 20
+      },
+      "connections": [
+        {
+          "targetId": "wagon-1",
+          "sourcePort": "link_out",
+          "targetPort": "link_in",
+          "connectorConfig": {
+            "color": "@darkSteel",
+            "radius": 0.07,
+            "flowing": false
+          }
+        }
+      ]
+    },
+    "wagon-3": {
+      "type": "coal_wagon",
+      "name": "Wagon W-103",
+      "position": [
+        43,
+        0,
+        -26
+      ],
+      "parentId": "grp_rail",
+      "order": 4,
+      "parameters": {
+        "grossWeight": 21
+      },
+      "connections": [
+        {
+          "targetId": "wagon-2",
+          "sourcePort": "link_out",
+          "targetPort": "link_in",
+          "connectorConfig": {
+            "color": "@darkSteel",
+            "radius": 0.07,
+            "flowing": false
+          }
+        }
+      ]
+    },
+    "wagon-4": {
+      "type": "coal_wagon",
+      "name": "Wagon W-104",
+      "position": [
+        30,
+        0,
+        -26
+      ],
+      "parentId": "grp_rail",
+      "order": 5,
+      "parameters": {
+        "grossWeight": 20
+      },
+      "connections": [
+        {
+          "targetId": "wagon-3",
+          "sourcePort": "link_out",
+          "targetPort": "link_in",
+          "connectorConfig": {
+            "color": "@darkSteel",
+            "radius": 0.07,
+            "flowing": false
+          }
+        }
+      ]
+    },
+    "shiploader-1": {
+      "type": "shiploader",
+      "name": "Shiploader SL-01",
+      "position": [
+        96,
+        0,
+        14
+      ],
+      "parentId": "grp_port",
+      "order": 0,
+      "parameters": {
+        "loadRate": 5350,
+        "boomLuff": 7,
+        "travelPos": 22,
+        "loadedThisShift": 23400
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "loadRate",
+          "travelPos",
+          "loadedThisShift"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "ship-1",
+          "sourcePort": "boom_out",
+          "targetPort": "hold_in",
+          "connectorConfig": {
+            "color": "#6f7681",
+            "radius": 0.09,
+            "flowing": true
+          }
+        }
+      ]
+    },
+    "ship-1": {
+      "type": "bulk_carrier",
+      "name": "MV Blackridge Trader",
+      "position": [
+        94,
+        0,
+        31
+      ],
+      "parentId": "grp_port",
+      "order": 1,
+      "parameters": {
+        "cargoLoaded": 41000,
+        "draft": 11.6,
+        "ballast": 18
+      },
+      "connections": [
+        {
+          "targetId": "power-1",
+          "sourcePort": "cargo_out",
+          "targetPort": "coal_in",
+          "connectorConfig": {
+            "color": "#4f555c",
+            "radius": 0.1,
+            "flowing": true
+          }
+        }
+      ]
+    },
+    "power-1": {
+      "type": "power_station",
+      "name": "Westport Power Station",
+      "position": [
+        128,
+        0,
+        -12
+      ],
+      "parentId": "grp_enduse",
+      "order": 0,
+      "parameters": {
+        "generationMW": 640,
+        "coalBurnRate": 270,
+        "stockDays": 14
+      }
+    },
+    "road-3": {
+      "type": "haul_road",
+      "name": "Access Road - Yard",
+      "position": [
+        12,
+        0,
+        -16
+      ],
+      "parentId": "grp_pitcivil",
+      "order": 4,
+      "parameters": {
+        "dustLevel": 12,
+        "gradient": 3
+      }
+    },
+    "road-4": {
+      "type": "haul_road",
+      "name": "Access Road - Port",
+      "position": [
+        70,
+        0,
+        6
+      ],
+      "parentId": "grp_pitcivil",
+      "order": 5,
+      "parameters": {
+        "dustLevel": 10,
+        "gradient": 2
+      }
+    },
+    "pump-pit-1": {
+      "type": "Pump",
+      "name": "Pit Dewatering Pump PD-01",
+      "position": [
+        -60,
+        0,
+        -8
+      ],
+      "layer": "piping",
+      "parentId": "grp_pitcivil",
+      "order": 6,
+      "parameters": {
+        "flowRate": 32,
+        "pressure": 4.2,
+        "vibration": 1.9
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "flowRate",
+          "pressure",
+          "vibration"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "chpp-1",
+          "sourcePort": "outlet",
+          "targetPort": "pitwater_in",
+          "connectorConfig": {
+            "color": "@waterBlue",
+            "radius": 0.22,
+            "flowing": true
+          }
+        }
+      ],
+      "config": {
+        "alertRules": [
+          {
+            "id": "vib-high",
+            "param": "vibration",
+            "op": ">",
+            "threshold": 8,
+            "severity": "warn",
+            "useCase": "Vibration CBM",
+            "message": "Pump vibration {vibration} mm/s - bearing/cavitation check"
+          }
+        ]
+      }
+    },
+    "blend-1": {
+      "type": "blending_plant",
+      "name": "Blending Plant BL-01",
+      "position": [
+        52,
+        0,
+        -16
+      ],
+      "parentId": "grp_yard",
+      "order": 3,
+      "parameters": {
+        "blendRatio": 62,
+        "throughput": 3850,
+        "binALevel": 64,
+        "binBLevel": 47
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "blendRatio",
+          "throughput"
+        ]
+      },
+      "connections": [
+        {
+          "targetId": "loadout-1",
+          "sourcePort": "blend_out",
+          "targetPort": "conveyor_in",
+          "connectorConfig": {
+            "speed": 2.0,
+            "beltStyle": "chain"
+          }
+        }
+      ]
+    },
+    "pm-1": {
+      "type": "pm_monitor",
+      "name": "PM Monitor ROM Pad",
+      "position": [
+        -38,
+        0,
+        12
+      ],
+      "parentId": "grp_enviro",
+      "order": 0,
+      "parameters": {
+        "pm10": 72,
+        "pm25": 34,
+        "noise": 71,
+        "suppressionActive": 1
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "pm10",
+          "pm25",
+          "noise"
+        ]
+      },
+      "config": {
+        "alertRules": [
+          {
+            "id": "pm10-warn",
+            "param": "pm10",
+            "op": ">",
+            "threshold": 150,
+            "severity": "warn",
+            "useCase": "Dust & Env",
+            "message": "PM10 {pm10} ug/m3 above 150 action level"
+          },
+          {
+            "id": "pm10-crit",
+            "param": "pm10",
+            "op": ">",
+            "threshold": 250,
+            "severity": "critical",
+            "useCase": "Dust & Env",
+            "message": "Dust exceedance - PM10 {pm10} ug/m3 (suppression: {suppressionActive})"
+          },
+          {
+            "id": "pm25-warn",
+            "param": "pm25",
+            "op": ">",
+            "threshold": 90,
+            "severity": "warn",
+            "useCase": "Dust & Env",
+            "message": "PM2.5 {pm25} ug/m3 elevated"
+          },
+          {
+            "id": "noise-warn",
+            "param": "noise",
+            "op": ">",
+            "threshold": 85,
+            "severity": "warn",
+            "useCase": "Dust & Env",
+            "message": "Noise {noise} dB(A) above limit"
+          }
+        ],
+        "demoTrends": [
+          {
+            "param": "pm10",
+            "min": 60,
+            "max": 320,
+            "period": 190,
+            "offset": 40
+          }
+        ]
+      }
+    },
+    "pm-2": {
+      "type": "pm_monitor",
+      "name": "PM Monitor Stockyard",
+      "position": [
+        20,
+        0,
+        -8
+      ],
+      "parentId": "grp_enviro",
+      "order": 1,
+      "parameters": {
+        "pm10": 58,
+        "pm25": 27,
+        "noise": 66,
+        "suppressionActive": 0
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "pm10",
+          "pm25",
+          "noise"
+        ]
+      },
+      "config": {
+        "alertRules": [
+          {
+            "id": "pm10-warn",
+            "param": "pm10",
+            "op": ">",
+            "threshold": 150,
+            "severity": "warn",
+            "useCase": "Dust & Env",
+            "message": "PM10 {pm10} ug/m3 above 150 action level"
+          },
+          {
+            "id": "pm10-crit",
+            "param": "pm10",
+            "op": ">",
+            "threshold": 250,
+            "severity": "critical",
+            "useCase": "Dust & Env",
+            "message": "Dust exceedance - PM10 {pm10} ug/m3 (suppression: {suppressionActive})"
+          },
+          {
+            "id": "pm25-warn",
+            "param": "pm25",
+            "op": ">",
+            "threshold": 90,
+            "severity": "warn",
+            "useCase": "Dust & Env",
+            "message": "PM2.5 {pm25} ug/m3 elevated"
+          },
+          {
+            "id": "noise-warn",
+            "param": "noise",
+            "op": ">",
+            "threshold": 85,
+            "severity": "warn",
+            "useCase": "Dust & Env",
+            "message": "Noise {noise} dB(A) above limit"
+          }
+        ]
+      }
+    },
+    "cam-1": {
+      "type": "cv_camera",
+      "name": "CV Cam - CV-01 Tail",
+      "position": [
+        -23,
+        0,
+        2.6
+      ],
+      "parentId": "grp_cvvision",
+      "order": 0,
+      "parameters": {
+        "foreignConf": 58,
+        "misalignConf": 36,
+        "eventPos": 24
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "foreignConf",
+          "misalignConf",
+          "eventPos"
+        ]
+      },
+      "config": {
+        "watch": {
+          "assetId": "cv-01"
+        },
+        "alertRules": [
+          {
+            "id": "cv-foreign",
+            "param": "foreignConf",
+            "op": ">",
+            "threshold": 75,
+            "severity": "warn",
+            "useCase": "Conveyor Vision",
+            "message": "Foreign object (tramp metal) at {eventPos}% span (conf {foreignConf}%)"
+          },
+          {
+            "id": "cv-misalign",
+            "param": "misalignConf",
+            "op": ">",
+            "threshold": 75,
+            "severity": "warn",
+            "useCase": "Conveyor Vision",
+            "message": "Belt tracking misalignment at {eventPos}% span (conf {misalignConf}%)"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        1.57,
+        0
+      ]
+    },
+    "cam-2": {
+      "type": "cv_camera",
+      "name": "CV Cam - CV-01 Head",
+      "position": [
+        -15.5,
+        0,
+        -2.6
+      ],
+      "parentId": "grp_cvvision",
+      "order": 1,
+      "parameters": {
+        "tearConf": 22,
+        "hotspotConf": 16,
+        "eventPos": 76
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "tearConf",
+          "hotspotConf",
+          "eventPos"
+        ]
+      },
+      "config": {
+        "watch": {
+          "assetId": "cv-01"
+        },
+        "alertRules": [
+          {
+            "id": "cv-tear",
+            "param": "tearConf",
+            "op": ">",
+            "threshold": 80,
+            "severity": "critical",
+            "useCase": "Conveyor Vision",
+            "message": "Belt tear/rip detected at {eventPos}% span (conf {tearConf}%)"
+          },
+          {
+            "id": "cv-hotspot",
+            "param": "hotspotConf",
+            "op": ">",
+            "threshold": 80,
+            "severity": "critical",
+            "useCase": "Conveyor Vision",
+            "message": "Idler hotspot / fire risk at {eventPos}% span (conf {hotspotConf}%)"
+          }
+        ],
+        "demoTrends": [
+          {
+            "param": "hotspotConf",
+            "min": 15,
+            "max": 93,
+            "period": 200,
+            "offset": 90
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        -1.57,
+        0
+      ]
+    },
+    "cam-3": {
+      "type": "cv_camera",
+      "name": "CV Cam - Screen Feed",
+      "position": [
+        -3,
+        0,
+        3.2
+      ],
+      "parentId": "grp_cvvision",
+      "order": 2,
+      "parameters": {
+        "foreignConf": 31,
+        "tearConf": 19,
+        "eventPos": 52
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "foreignConf",
+          "tearConf",
+          "eventPos"
+        ]
+      },
+      "config": {
+        "watch": {
+          "sourceId": "screen-1",
+          "targetId": "chpp-1"
+        },
+        "alertRules": [
+          {
+            "id": "cv-foreign",
+            "param": "foreignConf",
+            "op": ">",
+            "threshold": 75,
+            "severity": "warn",
+            "useCase": "Conveyor Vision",
+            "message": "Foreign object (tramp metal) at {eventPos}% span (conf {foreignConf}%)"
+          },
+          {
+            "id": "cv-tear",
+            "param": "tearConf",
+            "op": ">",
+            "threshold": 80,
+            "severity": "critical",
+            "useCase": "Conveyor Vision",
+            "message": "Belt tear/rip detected at {eventPos}% span (conf {tearConf}%)"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        1.57,
+        0
+      ]
+    },
+    "cam-4": {
+      "type": "cv_camera",
+      "name": "CV Cam - CHPP Product",
+      "position": [
+        17,
+        0,
+        3.4
+      ],
+      "parentId": "grp_cvvision",
+      "order": 3,
+      "parameters": {
+        "misalignConf": 57,
+        "tearConf": 21,
+        "eventPos": 44
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "misalignConf",
+          "tearConf",
+          "eventPos"
+        ]
+      },
+      "config": {
+        "watch": {
+          "sourceId": "chpp-1",
+          "targetId": "stacker-1"
+        },
+        "alertRules": [
+          {
+            "id": "cv-misalign",
+            "param": "misalignConf",
+            "op": ">",
+            "threshold": 75,
+            "severity": "warn",
+            "useCase": "Conveyor Vision",
+            "message": "Belt tracking misalignment at {eventPos}% span (conf {misalignConf}%)"
+          },
+          {
+            "id": "cv-tear",
+            "param": "tearConf",
+            "op": ">",
+            "threshold": 80,
+            "severity": "critical",
+            "useCase": "Conveyor Vision",
+            "message": "Belt tear/rip detected at {eventPos}% span (conf {tearConf}%)"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        1.35,
+        0
+      ]
+    },
+    "cam-5": {
+      "type": "cv_camera",
+      "name": "CV Cam - Blend Feed",
+      "position": [
+        36,
+        0,
+        -7
+      ],
+      "parentId": "grp_cvvision",
+      "order": 4,
+      "parameters": {
+        "foreignConf": 41,
+        "misalignConf": 33,
+        "eventPos": 62
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "foreignConf",
+          "misalignConf",
+          "eventPos"
+        ]
+      },
+      "config": {
+        "watch": {
+          "sourceId": "stacker-1",
+          "sourcePort": "rail_out",
+          "targetId": "blend-1"
+        },
+        "alertRules": [
+          {
+            "id": "cv-foreign",
+            "param": "foreignConf",
+            "op": ">",
+            "threshold": 75,
+            "severity": "warn",
+            "useCase": "Conveyor Vision",
+            "message": "Foreign object (tramp metal) at {eventPos}% span (conf {foreignConf}%)"
+          },
+          {
+            "id": "cv-misalign",
+            "param": "misalignConf",
+            "op": ">",
+            "threshold": 75,
+            "severity": "warn",
+            "useCase": "Conveyor Vision",
+            "message": "Belt tracking misalignment at {eventPos}% span (conf {misalignConf}%)"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        -0.6,
+        0
+      ]
+    },
+    "cam-6": {
+      "type": "cv_camera",
+      "name": "CV Cam - Load-Out Feed",
+      "position": [
+        59,
+        0,
+        -19
+      ],
+      "parentId": "grp_cvvision",
+      "order": 5,
+      "parameters": {
+        "tearConf": 24,
+        "foreignConf": 37,
+        "eventPos": 35
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "tearConf",
+          "foreignConf",
+          "eventPos"
+        ]
+      },
+      "config": {
+        "watch": {
+          "sourceId": "blend-1",
+          "targetId": "loadout-1"
+        },
+        "alertRules": [
+          {
+            "id": "cv-tear",
+            "param": "tearConf",
+            "op": ">",
+            "threshold": 80,
+            "severity": "critical",
+            "useCase": "Conveyor Vision",
+            "message": "Belt tear/rip detected at {eventPos}% span (conf {tearConf}%)"
+          },
+          {
+            "id": "cv-foreign",
+            "param": "foreignConf",
+            "op": ">",
+            "threshold": 75,
+            "severity": "warn",
+            "useCase": "Conveyor Vision",
+            "message": "Foreign object (tramp metal) at {eventPos}% span (conf {foreignConf}%)"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        -1.2,
+        0
+      ]
+    },
+    "cam-7": {
+      "type": "cv_camera",
+      "name": "CV Cam - Overland Mid",
+      "position": [
+        46,
+        0,
+        7
+      ],
+      "parentId": "grp_cvvision",
+      "order": 6,
+      "parameters": {
+        "foreignConf": 20,
+        "hotspotConf": 22,
+        "eventPos": 38
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "foreignConf",
+          "hotspotConf",
+          "eventPos"
+        ]
+      },
+      "config": {
+        "watch": {
+          "sourceId": "stacker-1",
+          "sourcePort": "ship_out",
+          "targetId": "shiploader-1"
+        },
+        "alertRules": [
+          {
+            "id": "cv-foreign",
+            "param": "foreignConf",
+            "op": ">",
+            "threshold": 75,
+            "severity": "warn",
+            "useCase": "Conveyor Vision",
+            "message": "Foreign object (tramp metal) at {eventPos}% span (conf {foreignConf}%)"
+          },
+          {
+            "id": "cv-hotspot",
+            "param": "hotspotConf",
+            "op": ">",
+            "threshold": 80,
+            "severity": "critical",
+            "useCase": "Conveyor Vision",
+            "message": "Idler hotspot / fire risk at {eventPos}% span (conf {hotspotConf}%)"
+          }
+        ],
+        "demoTrends": [
+          {
+            "param": "foreignConf",
+            "min": 18,
+            "max": 92,
+            "period": 170,
+            "offset": 30
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        0.9,
+        0
+      ]
+    },
+    "cam-8": {
+      "type": "cv_camera",
+      "name": "CV Cam - Overland Wharf",
+      "position": [
+        76,
+        0,
+        11
+      ],
+      "parentId": "grp_cvvision",
+      "order": 7,
+      "parameters": {
+        "misalignConf": 44,
+        "hotspotConf": 26,
+        "eventPos": 82
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "misalignConf",
+          "hotspotConf",
+          "eventPos"
+        ]
+      },
+      "config": {
+        "watch": {
+          "sourceId": "stacker-1",
+          "sourcePort": "ship_out",
+          "targetId": "shiploader-1"
+        },
+        "alertRules": [
+          {
+            "id": "cv-misalign",
+            "param": "misalignConf",
+            "op": ">",
+            "threshold": 75,
+            "severity": "warn",
+            "useCase": "Conveyor Vision",
+            "message": "Belt tracking misalignment at {eventPos}% span (conf {misalignConf}%)"
+          },
+          {
+            "id": "cv-hotspot",
+            "param": "hotspotConf",
+            "op": ">",
+            "threshold": 80,
+            "severity": "critical",
+            "useCase": "Conveyor Vision",
+            "message": "Idler hotspot / fire risk at {eventPos}% span (conf {hotspotConf}%)"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        1.1,
+        0
+      ]
+    }
+  },
+  "environment": {
+    "sky": {
+      "zenith": "#b9cbd8",
+      "horizon": "#e8ecee",
+      "ground": "#c6c1b8",
+      "fog": {
+        "near": 280,
+        "far": 1500
+      }
+    },
+    "ground": {
+      "style": "earth",
+      "color": "#a49780",
+      "noiseAmp": 0.35,
+      "noiseScale": 55
+    },
+    "grid": {
+      "opacity": 0.1,
+      "desaturate": true
+    },
+    "postfx": {
+      "bloom": {
+        "threshold": 1.0,
+        "intensity": 0.5
+      },
+      "dof": {
+        "focusDistance": 0.045,
+        "focalLength": 0.5,
+        "bokehScale": 0.9
+      }
+    }
+  }
+}

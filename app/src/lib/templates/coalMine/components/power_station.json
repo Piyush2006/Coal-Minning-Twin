@@ -1,0 +1,333 @@
+{
+  "label": "Power Station (End Use)",
+  "category": "Coal Mining",
+  "layer": "structural",
+  "parts": [
+    {
+      "id": "pad",
+      "label": "Site Slab",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 34,
+        "height": 0.3,
+        "depth": 24
+      },
+      "position": [
+        0,
+        0.15,
+        0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "turbineHall",
+      "label": "Turbine Hall",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 16,
+        "height": 8,
+        "depth": 9
+      },
+      "position": [
+        -6,
+        4.3,
+        5
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "boilerHouse",
+      "label": "Boiler House",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 9,
+        "height": 15,
+        "depth": 9
+      },
+      "position": [
+        5,
+        7.8,
+        5
+      ],
+      "material": {
+        "color": "#79828c",
+        "metalness": 0.7,
+        "roughness": 0.4,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "stack",
+      "label": "Chimney Stack",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.2,
+        "height": 24
+      },
+      "position": [
+        11.5,
+        12.3,
+        5
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.1,
+        "roughness": 0.8
+      }
+    },
+    {
+      "id": "stackBand",
+      "label": "Stack Band",
+      "parentId": "stack",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.25,
+        "height": 1.6
+      },
+      "position": [
+        0,
+        10.5,
+        0
+      ],
+      "material": {
+        "color": "#b8452f",
+        "metalness": 0.3,
+        "roughness": 0.6,
+        "polygonOffset": true
+      }
+    },
+    {
+      "id": "coolingTower1",
+      "label": "Cooling Tower 1",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 5.5,
+        "height": 13
+      },
+      "position": [
+        -8,
+        6.65,
+        -6
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "coolingTower2",
+      "label": "Cooling Tower 2",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 5.5,
+        "height": 13
+      },
+      "position": [
+        6,
+        6.65,
+        -6
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "coalBunker",
+      "label": "Coal Bunker",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 6,
+        "height": 4,
+        "depth": 5
+      },
+      "position": [
+        -14.5,
+        2.3,
+        -3
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "bunkerCoal",
+      "label": "Bunker Coal",
+      "parentId": "coalBunker",
+      "geometry": "box",
+      "dims": {
+        "width": 5.4,
+        "height": 0.5,
+        "depth": 4.4
+      },
+      "position": [
+        0,
+        2.2,
+        0
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.95,
+        "polygonOffset": true,
+        "granular": true
+      }
+    },
+    {
+      "id": "stackSmokeEmitter",
+      "label": "Stack Smoke",
+      "parentId": null,
+      "kind": "emitter",
+      "position": [
+        11.5,
+        24.5,
+        5
+      ],
+      "emitter": {
+        "preset": "smoke",
+        "scale": 1.9,
+        "count": 110,
+        "opacity": 0.42,
+        "color": "#99a1a9",
+        "rise": 1.5
+      }
+    },
+    {
+      "id": "ctSteamEmitter",
+      "label": "CT Steam",
+      "parentId": null,
+      "kind": "emitter",
+      "position": [
+        -8,
+        13.5,
+        -6
+      ],
+      "emitter": {
+        "preset": "steam",
+        "scale": 2.4,
+        "count": 130,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "ct2SteamEmitter",
+      "label": "CT2 Steam",
+      "parentId": null,
+      "kind": "emitter",
+      "position": [
+        6,
+        13.5,
+        -6
+      ],
+      "emitter": {
+        "preset": "steam",
+        "scale": 2.4,
+        "count": 124,
+        "opacity": 0.32,
+        "wind": [
+          0.35,
+          0.16
+        ]
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "coal_in",
+      "type": "product",
+      "direction": "in",
+      "offset": [
+        -14.5,
+        3.0,
+        -3
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Plume Rate",
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 3,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "generationMW",
+      "label": "Generation",
+      "unit": "MW",
+      "default": 620,
+      "min": 0,
+      "max": 800,
+      "freq": "5m"
+    },
+    {
+      "key": "coalBurnRate",
+      "label": "Coal Burn Rate",
+      "unit": "t/h",
+      "default": 260,
+      "min": 0,
+      "max": 500,
+      "freq": "5m"
+    },
+    {
+      "key": "stockDays",
+      "label": "Coal Stock",
+      "unit": "days",
+      "default": 12,
+      "min": 0,
+      "max": 60,
+      "freq": "1h"
+    }
+  ],
+  "states": [
+    {
+      "key": "generating",
+      "label": "Generating",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "reduced",
+      "label": "Reduced Load",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "offline",
+      "label": "Offline",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}

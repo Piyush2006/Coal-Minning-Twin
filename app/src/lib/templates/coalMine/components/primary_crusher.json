@@ -1,0 +1,565 @@
+{
+  "label": "Primary Crusher Station",
+  "category": "Coal Mining",
+  "layer": "equipment",
+  "parts": [
+    {
+      "id": "foundation",
+      "label": "Concrete Foundation",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 12,
+        "height": 0.5,
+        "depth": 10
+      },
+      "position": [
+        0,
+        0.25,
+        0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "columnsGrp",
+      "label": "Support Columns",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "col1",
+      "label": "Column 1",
+      "parentId": "columnsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 5.5,
+        "depth": 0.5
+      },
+      "position": [
+        -1.8,
+        3.25,
+        1.8
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "col2",
+      "label": "Column 2",
+      "parentId": "columnsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 5.5,
+        "depth": 0.5
+      },
+      "position": [
+        1.8,
+        3.25,
+        1.8
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "col3",
+      "label": "Column 3",
+      "parentId": "columnsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 5.5,
+        "depth": 0.5
+      },
+      "position": [
+        -1.8,
+        3.25,
+        -1.8
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "col4",
+      "label": "Column 4",
+      "parentId": "columnsGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.5,
+        "height": 5.5,
+        "depth": 0.5
+      },
+      "position": [
+        1.8,
+        3.25,
+        -1.8
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "romWallL",
+      "label": "ROM Wall Left",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 5.0,
+        "height": 3.2,
+        "depth": 0.6
+      },
+      "position": [
+        -3.2,
+        1.9,
+        3.4
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.5
+        }
+      }
+    },
+    {
+      "id": "romWallR",
+      "label": "ROM Wall Right",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 5.0,
+        "height": 3.2,
+        "depth": 0.6
+      },
+      "position": [
+        -3.2,
+        1.9,
+        -3.4
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.5
+        }
+      }
+    },
+    {
+      "id": "romWallBack",
+      "label": "ROM Wall Back",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.6,
+        "height": 3.2,
+        "depth": 7.4
+      },
+      "position": [
+        -5.6,
+        1.9,
+        0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.5
+        }
+      }
+    },
+    {
+      "id": "hopper",
+      "label": "Receival Hopper",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 3.0,
+        "height": 2.6
+      },
+      "position": [
+        0,
+        8.0,
+        0
+      ],
+      "rotation": [
+        3.1416,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "housing",
+      "label": "Crusher Housing",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 4.0,
+        "height": 2.6,
+        "depth": 4.0
+      },
+      "position": [
+        0,
+        5.3,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.35
+        },
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "motor",
+      "label": "Drive Motor",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.6,
+        "height": 1.8
+      },
+      "position": [
+        3.0,
+        5.3,
+        0
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      }
+    },
+    {
+      "id": "flywheelF",
+      "label": "Flywheel Front",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.1,
+        "height": 0.3
+      },
+      "position": [
+        0,
+        5.3,
+        2.3
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "flywheelB",
+      "label": "Flywheel Back",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.1,
+        "height": 0.3
+      },
+      "position": [
+        0,
+        5.3,
+        -2.3
+      ],
+      "rotation": [
+        1.5708,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "dischargeChute",
+      "label": "Discharge Chute",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 1.3,
+        "height": 1.6
+      },
+      "position": [
+        1.2,
+        3.0,
+        0
+      ],
+      "rotation": [
+        3.1416,
+        0,
+        0.5
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "platform",
+      "label": "Maintenance Platform",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 2.2,
+        "height": 0.15,
+        "depth": 4.6
+      },
+      "position": [
+        3.2,
+        6.8,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "ladder",
+      "label": "Access Ladder",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.15,
+        "height": 6.6,
+        "depth": 0.6
+      },
+      "position": [
+        4.3,
+        3.5,
+        1.8
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "dustDuct",
+      "label": "Dust Extraction Duct",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.3,
+        "height": 4.5
+      },
+      "position": [
+        -2.4,
+        6.5,
+        -2.4
+      ],
+      "rotation": [
+        0,
+        0,
+        0.5
+      ],
+      "material": {
+        "color": "#4f555c",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "dustEmitter",
+      "label": "Crusher Dust",
+      "parentId": null,
+      "kind": "emitter",
+      "position": [
+        0,
+        7.6,
+        0
+      ],
+      "emitter": {
+        "preset": "dust",
+        "scale": 1.3
+      }
+    }
+  ],
+  "ports": [
+    {
+      "id": "conveyor_out",
+      "type": "conveyor",
+      "direction": "out",
+      "offset": [
+        5.8,
+        1.2,
+        0
+      ]
+    },
+    {
+      "id": "feed_in",
+      "type": "product",
+      "direction": "in",
+      "offset": [
+        -5.6,
+        3.4,
+        0
+      ]
+    }
+  ],
+  "config": [
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Crusher Speed",
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 3,
+      "step": 0.1
+    }
+  ],
+  "parameters": [
+    {
+      "key": "throughput",
+      "label": "Throughput",
+      "unit": "t/h",
+      "default": 1450,
+      "min": 0,
+      "max": 2500,
+      "freq": "5s"
+    },
+    {
+      "key": "css",
+      "label": "Closed-Side Setting",
+      "unit": "mm",
+      "default": 165,
+      "min": 80,
+      "max": 300,
+      "freq": "manual"
+    },
+    {
+      "key": "motorCurrent",
+      "label": "Motor Current",
+      "unit": "A",
+      "default": 310,
+      "min": 0,
+      "max": 600,
+      "freq": "5s"
+    },
+    {
+      "key": "bearingTemp",
+      "label": "Bearing Temp",
+      "unit": "degC",
+      "default": 68,
+      "min": 0,
+      "max": 120,
+      "freq": "30s"
+    },
+    {
+      "key": "vibration",
+      "label": "Vibration",
+      "unit": "mm/s",
+      "default": 3.2,
+      "min": 0,
+      "max": 25,
+      "freq": "5s"
+    },
+    {
+      "key": "kwhPerTonne",
+      "label": "Specific Energy",
+      "unit": "kWh/t",
+      "default": 1.1,
+      "min": 0,
+      "max": 3,
+      "freq": "5s"
+    }
+  ],
+  "states": [
+    {
+      "key": "crushing",
+      "label": "Crushing",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "standby",
+      "label": "Standby",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "blocked",
+      "label": "Blocked",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
+  ]
+}
