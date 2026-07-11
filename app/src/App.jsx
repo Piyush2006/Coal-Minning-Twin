@@ -28,6 +28,7 @@ import { GridSystem }         from './components/GridSystem'
 import { SkyDome }            from './components/SkyDome'
 import { Floor }              from './components/Floor'
 import { CameraController }   from './components/CameraController'
+import { TourDriver, TourOverlay, useTourStore } from './components/TourPlayer'
 import { CommandPalette }     from './components/CommandPalette'
 import { confirmDialog, alertDialog } from './components/dialogs'
 import { FlowPane }           from './components/flow/FlowPane'
@@ -1173,6 +1174,8 @@ function CloudSaveModal({ projectName, onClose }) {
 
 /* ── Floating viewport controls (zoom · reset view · undo · redo) ── */
 function ViewportControls({ orbitRef, leftEdge }) {
+  const tourActive = useTourStore(s => s.active)
+  const hasTour = useSceneStore(s => (s.tour?.beats?.length ?? 0) > 0)
   const dolly = (factor) => {
     const oc = orbitRef.current; if (!oc) return
     const off = oc.object.position.clone().sub(oc.target)
@@ -1200,13 +1203,23 @@ function ViewportControls({ orbitRef, leftEdge }) {
   return (
     <div style={{ position: 'absolute', left: leftEdge, bottom: 18, zIndex: 8, display: 'flex', flexDirection: 'column',
       background: C.surface, border: `1px solid ${C.line}`, borderRadius: R.lg, boxShadow: SHADOW.panel, overflow: 'hidden', pointerEvents: 'auto' }}>
-      <button title="Zoom in"      onClick={() => dolly(0.82)} style={bs} onMouseEnter={enter} onMouseLeave={leave}>+</button>
-      <button title="Zoom out"     onClick={() => dolly(1.22)} style={bs} onMouseEnter={enter} onMouseLeave={leave}>−</button>
-      <div style={sep} />
-      <button title="Reset view"   onClick={reset} style={bs} onMouseEnter={enter} onMouseLeave={leave}>⌂</button>
-      <div style={sep} />
-      <button title="Rotate left"  onClick={() => rotate(-1)} style={bs} onMouseEnter={enter} onMouseLeave={leave}>↺</button>
-      <button title="Rotate right" onClick={() => rotate(1)}  style={bs} onMouseEnter={enter} onMouseLeave={leave}>↻</button>
+      {!tourActive && <>
+        <button title="Zoom in"      onClick={() => dolly(0.82)} style={bs} onMouseEnter={enter} onMouseLeave={leave}>+</button>
+        <button title="Zoom out"     onClick={() => dolly(1.22)} style={bs} onMouseEnter={enter} onMouseLeave={leave}>−</button>
+        <div style={sep} />
+        <button title="Reset view"   onClick={reset} style={bs} onMouseEnter={enter} onMouseLeave={leave}>⌂</button>
+        <div style={sep} />
+        <button title="Rotate left"  onClick={() => rotate(-1)} style={bs} onMouseEnter={enter} onMouseLeave={leave}>↺</button>
+        <button title="Rotate right" onClick={() => rotate(1)}  style={bs} onMouseEnter={enter} onMouseLeave={leave}>↻</button>
+      </>}
+      {hasTour && <>
+        {!tourActive && <div style={sep} />}
+        <button
+          title={tourActive ? 'Exit tour (Esc)' : 'Play guided tour'}
+          onClick={() => (tourActive ? useTourStore.getState().stop() : useTourStore.getState().start())}
+          style={{ ...bs, color: tourActive ? '#ff3b30' : C.accent, fontSize: 13 }}
+          onMouseEnter={enter} onMouseLeave={leave}>{tourActive ? '■' : '▶'}</button>
+      </>}
     </div>
   )
 }
@@ -1218,6 +1231,7 @@ const SNAP_MODE = typeof window !== 'undefined' && new URLSearchParams(window.lo
 /* ── Root App ────────────────────────────────────────────────────── */
 export default function App() {
   const orbitRef = useRef()
+  const tourActive = useTourStore(s => s.active)
   // Dev-only: expose the orbit controls for headless screenshot tooling.
   useEffect(() => { if (import.meta.env.DEV) window.__dt = { ...(window.__dt || {}), orbit: orbitRef } }, [])
   const {
@@ -1440,6 +1454,7 @@ export default function App() {
           {/* Bruce insight card — view mode, beside the floating nav (collapsible) */}
           {!editMode && !showFlow && <BruceCard title="Shopfloor" recs={shopfloorRecommendations(objects)} offsetLeft={leftEdge} />}
           {!editMode && !showFlow && <CameraFeedPanel />}
+          {!showFlow && <TourOverlay />}
           <div style={{ position:'absolute', inset:0,
             visibility: showFlow ? 'hidden' : 'visible',
             pointerEvents: showFlow ? 'none' : 'auto' }}>
@@ -1490,6 +1505,7 @@ export default function App() {
                 <Connectors />
                 <MaterialFlowLayer />
                 <CameraController orbitRef={orbitRef} />
+                <TourDriver orbitRef={orbitRef} />
                 {!SNAP_MODE && <PostFX />}
                 <CameraFeedRenderer />
 
@@ -1501,9 +1517,11 @@ export default function App() {
                   enableDamping dampingFactor={0.08}
                 />
 
-                <GizmoHelper alignment="bottom-center" margin={[80, 80]}>
-                  <GizmoViewport axisColors={['#ff3b30', '#34c759', '#0a84ff']} labelColor="#1d1d1f" />
-                </GizmoHelper>
+                {!tourActive && (
+                  <GizmoHelper alignment="bottom-center" margin={[80, 80]}>
+                    <GizmoViewport axisColors={['#ff3b30', '#34c759', '#0a84ff']} labelColor="#1d1d1f" />
+                  </GizmoHelper>
+                )}
               </Canvas>
 
               {/* viewport controls — zoom / reset view / undo / redo */}

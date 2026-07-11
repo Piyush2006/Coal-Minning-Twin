@@ -93,13 +93,15 @@ export function validateSpec(raw) {
   // Scene-level environment config (sky, ground/terrain, grid, postfx tuning) —
   // carried verbatim; renderer features read it defensively with defaults.
   const environment = isObj(raw.environment) ? raw.environment : {}
+  // Guided-tour config ({ beats: [...] }) — carried verbatim; TourPlayer reads defensively.
+  const tour = isObj(raw.tour) ? raw.tour : {}
   const stats = { assets: Object.keys(objects).length, groups: Object.keys(groups).length, dropped }
 
   return {
     ok: errors.length === 0,
     errors,
     warnings,
-    scene: { objects, groups, customAssetTypes, flowLayout, environment },
+    scene: { objects, groups, customAssetTypes, flowLayout, environment, tour },
     meta: isObj(raw.meta) ? raw.meta : null,
     stats,
   }
@@ -114,6 +116,7 @@ export function exportSpec(snapshot, meta = {}) {
     customAssetTypes: snapshot.customAssetTypes ?? {},
     flowLayout: snapshot.flowLayout ?? {},
     ...(snapshot.environment && Object.keys(snapshot.environment).length ? { environment: snapshot.environment } : {}),
+    ...(snapshot.tour && Object.keys(snapshot.tour).length ? { tour: snapshot.tour } : {}),
   }
 }
 

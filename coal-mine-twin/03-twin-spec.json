@@ -2975,5 +2975,169 @@
         "bokehScale": 0.9
       }
     }
+  },
+  "tour": {
+    "beats": [
+      {
+        "title": "Mine Operations \u2014 Open Pit",
+        "subtitle": "Drill, dig and load cycles stream live pit telemetry",
+        "position": [
+          -36,
+          23,
+          42
+        ],
+        "target": [
+          -73,
+          3,
+          12
+        ],
+        "travel": 5,
+        "hold": 8
+      },
+      {
+        "title": "Load & Haul \u2014 ROM Circuit",
+        "subtitle": "Trucks haul loaded to the crusher and return empty \u2014 idle & tyre alerts",
+        "position": [
+          -30,
+          14,
+          26
+        ],
+        "target": [
+          -50,
+          2,
+          4
+        ],
+        "travel": 4,
+        "hold": 6
+      },
+      {
+        "title": "Primary Crushing",
+        "subtitle": "Vibration CBM watches the crusher bearings as ROM coal is sized",
+        "position": [
+          -42,
+          12,
+          16
+        ],
+        "target": [
+          -30,
+          4,
+          0
+        ],
+        "travel": 4,
+        "hold": 6
+      },
+      {
+        "title": "Overland Conveying \u2014 CV-01",
+        "subtitle": "Conveyor-vision cameras flag idler hotspots and belt tears in real time",
+        "position": [
+          -25,
+          6.5,
+          11
+        ],
+        "target": [
+          -18,
+          1.5,
+          -0.5
+        ],
+        "travel": 4,
+        "hold": 7
+      },
+      {
+        "title": "Processing \u2014 CHPP",
+        "subtitle": "Dense-media washing, tailings thickening and recycled water",
+        "position": [
+          -6,
+          17,
+          32
+        ],
+        "target": [
+          6,
+          4,
+          9
+        ],
+        "travel": 5,
+        "hold": 6
+      },
+      {
+        "title": "Stockyard \u2014 Stacking & Reclaim",
+        "subtitle": "The stacker-reclaimer builds and blends product stockpiles",
+        "position": [
+          14,
+          15,
+          27
+        ],
+        "target": [
+          32,
+          3,
+          3
+        ],
+        "travel": 4,
+        "hold": 6
+      },
+      {
+        "title": "Blending & Rail Load-Out",
+        "subtitle": "Wagons batch-fill under the load-out bin on a live rake cycle",
+        "position": [
+          88,
+          16,
+          -4
+        ],
+        "target": [
+          52,
+          3,
+          -24
+        ],
+        "travel": 5,
+        "hold": 8
+      },
+      {
+        "title": "Port \u2014 Shiploading",
+        "subtitle": "Ship holds rise as the shiploader works the berth",
+        "position": [
+          68,
+          34,
+          60
+        ],
+        "target": [
+          93,
+          2,
+          27
+        ],
+        "travel": 5,
+        "hold": 8
+      },
+      {
+        "title": "End Use \u2014 Westport Power Station",
+        "subtitle": "Contracted offtake closes the pit-to-port energy chain",
+        "position": [
+          104,
+          17,
+          12
+        ],
+        "target": [
+          128,
+          6,
+          -12
+        ],
+        "travel": 4,
+        "hold": 5
+      },
+      {
+        "title": "Blackridge Coal Mine \u2014 Pit to Port",
+        "subtitle": "One live digital twin \u2014 47 assets, six monitoring use cases, end to end",
+        "position": [
+          16,
+          56,
+          138
+        ],
+        "target": [
+          6,
+          1,
+          0
+        ],
+        "travel": 6,
+        "hold": 9
+      }
+    ]
   }
 }

@@ -18,7 +18,7 @@ import { TEMPLATES } from '../lib/templates'
 // ─────────────────────────────────────────────────────────────────────────────
 
 const GREETING = { role: 'assistant', text: 'Describe what to build or change and I’ll do it — e.g. “add a third line of 4 reduction pots”.' }
-const blankScene = () => ({ objects: {}, groups: {}, customAssetTypes: {}, flowLayout: {}, environment: {} })
+const blankScene = () => ({ objects: {}, groups: {}, customAssetTypes: {}, flowLayout: {}, environment: {}, tour: {} })
 const now = () => Date.now()
 
 // Every new scene starts with a Floor — a real, selectable/editable object (size,
@@ -119,7 +119,7 @@ export const useProjectStore = create(
         const p = makeProject(name || t.name, {
           objects: { ...baseObjects, ...(built.objects ?? built) },
           groups: built.groups ?? {}, customAssetTypes: built.customAssetTypes ?? {},
-          flowLayout: built.flowLayout ?? {}, environment: built.environment ?? {},
+          flowLayout: built.flowLayout ?? {}, environment: built.environment ?? {}, tour: built.tour ?? {},
         })
         set(s => ({ projects: { ...s.projects, [p.id]: p } }))
         get().openProject(p.id)
