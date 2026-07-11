@@ -4,8 +4,13 @@
 //   environment: { sky: { zenith, horizon, ground, fog: { near, far } } }
 // Pure shader — no network HDRIs, works offline and in headless capture.
 import { useMemo, useRef, useEffect } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { resolveColor } from '../lib/paletteTokens'
+import { nightMix, NIGHT_DEFAULTS } from '../lib/dayNight'
+
+const _day = new THREE.Color(), _night = new THREE.Color()
+const mixInto = (target, dayHex, nightHex) => target.copy(_day.set(dayHex)).lerp(_night.set(nightHex), nightMix.v)
 
 const VERT = /* glsl */ `
   varying vec3 vWorld;
@@ -40,13 +45,25 @@ export function SkyDome({ config = {} }) {
     side: THREE.BackSide, depthWrite: false, fog: false,
   }), [zenith, horizon, ground])
   const fog = config.fog === false ? null : { color: config.fog?.color ?? horizon, near: config.fog?.near ?? 260, far: config.fog?.far ?? 1400 }
+
+  // Night blend — sky uniforms + scene fog follow nightMix each frame so the
+  // day/night cross-fade is smooth and distance fade keeps melting correctly.
+  const { scene } = useThree()
+  const night = { ...NIGHT_DEFAULTS, ...(config.night ?? {}) }
+  useFrame(() => {
+    const u = mat.uniforms
+    mixInto(u.uZenith.value, zenith, night.zenith)
+    mixInto(u.uHorizon.value, horizon, night.horizon)
+    mixInto(u.uGround.value, ground, night.ground)
+    if (fog && scene.fog) mixInto(scene.fog.color, fog.color, night.fog)
+  })
   return (
     <>
       <mesh material={mat} renderOrder={-1000} frustumCulled={false}>
         <sphereGeometry args={[1800, 32, 16]} />
       </mesh>
       {fog && <fog attach="fog" args={[fog.color, fog.near, fog.far]} />}
-      {config.ridges !== false && <HorizonRidges config={config.ridges === true ? {} : (config.ridges ?? {})} horizon={horizon} />}
+      {config.ridges !== false && <HorizonRidges config={config.ridges === true ? {} : (config.ridges ?? {})} horizon={horizon} nightColor={night.horizon} />}
     </>
   )
 }
@@ -59,13 +76,14 @@ const h01 = (i, s2) => { const n = Math.sin(i * 127.1 + s2 * 311.7) * 43758.5453
 const RIDGE_GEO = new THREE.ConeGeometry(1, 1, 7, 1)
 const _ro = new THREE.Object3D()
 
-function HorizonRidges({ config = {}, horizon }) {
+function HorizonRidges({ config = {}, horizon, nightColor = '#25303f' }) {
   const ref = useRef()
   const count = Math.min(28, Math.round(config.count ?? 18))
   const dist = config.distance ?? 820
   const hMax = config.height ?? 46
   const color = resolveColor(config.color, '#98a2ad')
   const mat = useMemo(() => new THREE.MeshBasicMaterial({ color }), [color])
+  useFrame(() => { mixInto(mat.color, color, nightColor) })
   useEffect(() => {
     const m = ref.current
     if (!m) return

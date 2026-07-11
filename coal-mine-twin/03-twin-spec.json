@@ -290,6 +290,11 @@
       "name": "Site Services",
       "parentId": "grp_site",
       "order": 9
+    },
+    "grp_personnel": {
+      "name": "Personnel",
+      "parentId": "grp_services",
+      "order": 0
     }
   },
   "objects": {
@@ -1302,22 +1307,22 @@
           {
             "at": [
               0,
-              9.6,
+              9.15,
               0
             ],
-            "drop": 2.4,
-            "spread": 0.9,
+            "drop": 2.5,
+            "spread": 0.5,
             "count": 16,
             "size": 0.17
           },
           {
             "at": [
               3.2,
-              2.9,
+              2.7,
               0
             ],
-            "drop": 1.7,
-            "spread": 0.35,
+            "drop": 1.5,
+            "spread": 0.3,
             "count": 12,
             "size": 0.13
           }
@@ -3124,6 +3129,206 @@
         }
       },
       "parentId": "grp_services"
+    },
+    "worker-1": {
+      "id": "worker-1",
+      "type": "site_worker",
+      "name": "Worker 01",
+      "position": [
+        3,
+        0,
+        5
+      ],
+      "rotation": [
+        0,
+        2.4,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "status": "running",
+      "parentId": "grp_personnel",
+      "config": {
+        "animPhase": 0.0
+      }
+    },
+    "worker-2": {
+      "id": "worker-2",
+      "type": "site_worker",
+      "name": "Worker 02",
+      "position": [
+        5.5,
+        0,
+        3.2
+      ],
+      "rotation": [
+        0,
+        -2.0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "status": "running",
+      "parentId": "grp_personnel",
+      "config": {
+        "animPhase": 0.35
+      }
+    },
+    "worker-3": {
+      "id": "worker-3",
+      "type": "site_worker",
+      "name": "Worker 03",
+      "position": [
+        65.5,
+        0,
+        -22.5
+      ],
+      "rotation": [
+        0,
+        -1.2,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "status": "running",
+      "parentId": "grp_personnel",
+      "config": {
+        "animPhase": 0.6
+      }
+    },
+    "worker-4": {
+      "id": "worker-4",
+      "type": "site_worker",
+      "name": "Worker 04",
+      "position": [
+        92,
+        0,
+        11
+      ],
+      "rotation": [
+        0,
+        0.8,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "status": "running",
+      "parentId": "grp_personnel",
+      "config": {
+        "animPhase": 0.15
+      }
+    },
+    "worker-5": {
+      "id": "worker-5",
+      "type": "site_worker",
+      "name": "Worker 05",
+      "position": [
+        -52.5,
+        0,
+        18.5
+      ],
+      "rotation": [
+        0,
+        -2.6,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "status": "running",
+      "parentId": "grp_personnel",
+      "config": {
+        "animPhase": 0.5
+      }
+    },
+    "worker-6": {
+      "id": "worker-6",
+      "type": "site_worker",
+      "name": "Worker 06",
+      "position": [
+        25,
+        0,
+        7
+      ],
+      "rotation": [
+        0,
+        1.6,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "status": "running",
+      "parentId": "grp_personnel",
+      "config": {
+        "animPhase": 0.8
+      }
+    },
+    "worker-7": {
+      "id": "worker-7",
+      "type": "site_worker",
+      "name": "Worker 07 (Rounds)",
+      "position": [
+        0,
+        0,
+        9
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "status": "running",
+      "parentId": "grp_personnel",
+      "config": {
+        "path": {
+          "waypoints": [
+            [
+              0,
+              0,
+              9
+            ],
+            [
+              11,
+              0,
+              8
+            ],
+            [
+              13,
+              0,
+              12
+            ],
+            [
+              2,
+              0,
+              13
+            ]
+          ],
+          "speed": 0.85,
+          "loop": true
+        }
+      }
     }
   },
   "environment": {
@@ -3136,10 +3341,19 @@
         "far": 850
       },
       "ridges": {
-        "distance": 820,
-        "height": 46,
-        "count": 18,
-        "color": "#98a2ad"
+        "distance": 640,
+        "height": 70,
+        "count": 20,
+        "color": "#5f6b7a"
+      },
+      "night": {
+        "zenith": "#0d1524",
+        "horizon": "#25303f",
+        "ground": "#0b0d10",
+        "fog": "#222c39",
+        "dim": 0.24,
+        "exposure": 0.9,
+        "emissiveBoost": 2.4
       }
     },
     "ground": {
@@ -3228,7 +3442,8 @@
     "postfx": {
       "bloom": {
         "threshold": 1.0,
-        "intensity": 0.5
+        "intensity": 0.5,
+        "nightThreshold": 0.7
       },
       "dof": {
         "focusDistance": 0.045,
@@ -3394,8 +3609,25 @@
         "hold": 5
       },
       {
+        "title": "Night Shift",
+        "subtitle": "The twin runs 24/7 \u2014 floodlit operations, same live telemetry",
+        "position": [
+          18,
+          10,
+          -34
+        ],
+        "target": [
+          4,
+          5,
+          -4
+        ],
+        "travel": 6,
+        "hold": 8,
+        "night": true
+      },
+      {
         "title": "Blackridge Coal Mine \u2014 Pit to Port",
-        "subtitle": "One live digital twin \u2014 47 assets, six monitoring use cases, end to end",
+        "subtitle": "One live digital twin \u2014 {assetCount} assets, seven monitoring use cases, end to end",
         "position": [
           16,
           56,

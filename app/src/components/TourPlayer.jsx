@@ -19,6 +19,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useSceneStore } from '../store/sceneStore'
+import { useDayNight } from '../lib/dayNight'
 import { C, R, FONT, glass, SHADOW } from '../ui/theme'
 
 export const useTourStore = create((set) => ({
@@ -49,7 +50,7 @@ export function TourDriver({ orbitRef }) {
   const active = useTourStore(s => s.active)
   const segs = useRef(null)
   const time = useRef(0)
-  const mem = useRef({ prevEnabled: true, lastCardKey: '' })
+  const mem = useRef({ prevEnabled: true, lastCardKey: '', lastSegI: -1 })
   const { gl } = useThree()
 
   // Build the timeline + take over the controls when the tour starts.
@@ -58,6 +59,9 @@ export function TourDriver({ orbitRef }) {
     if (!active || !ctrl) return
     const beats = useSceneStore.getState().tour?.beats ?? []
     if (!beats.length) { useTourStore.getState().stop(); return }
+    // Live tokens — computed at tour start so titles can never go stale.
+    const assetCount = Object.keys(useSceneStore.getState().objects).length
+    const fill = (str) => String(str ?? '').replace(/\{assetCount\}/g, String(assetCount))
     let start = 0
     let prevP = ctrl.object.position.clone(), prevT = ctrl.target.clone()
     const built = beats.map((b, i) => {
@@ -67,7 +71,7 @@ export function TourDriver({ orbitRef }) {
       const hold = Math.max(0, Number(b.hold) || 6)
       const seg = {
         i, p0: prevP, t0: prevT, p1, t1, start, travel, hold,
-        dist: prevP.distanceTo(p1), title: b.title ?? '', subtitle: b.subtitle ?? '',
+        dist: prevP.distanceTo(p1), title: fill(b.title), subtitle: fill(b.subtitle), night: !!b.night,
       }
       start += travel + hold
       prevP = driftEnd(new THREE.Vector3(), p1, t1, hold)
@@ -79,12 +83,14 @@ export function TourDriver({ orbitRef }) {
     time.current = 0
     mem.current.prevEnabled = ctrl.enabled
     mem.current.lastCardKey = ''
+    mem.current.lastSegI = -1
     ctrl.enabled = false                            // block user orbit input
     useSceneStore.getState().clearFlyTarget?.()     // cancel any pending fly-to
     useSceneStore.getState().clearSelection?.()     // demo polish: no highlight/gizmo
     return () => {
       ctrl.enabled = mem.current.prevEnabled        // handback — camera stays put
       segs.current = null
+      useDayNight.getState().setNight(false)        // tour always hands back daylight
     }
   }, [active, orbitRef])
 
@@ -133,6 +139,13 @@ export function TourDriver({ orbitRef }) {
       ctrl.target.copy(seg.t1)
     }
     ctrl.update()
+    // Night beats: flip the mode when a beat is entered — the ~5 s cross-fade
+    // runs inside the beat's travel, so night arrives with the framing.
+    if (seg.i !== mem.current.lastSegI) {
+      mem.current.lastSegI = seg.i
+      const { night, setNight } = useDayNight.getState()
+      if (night !== seg.night) setNight(seg.night)
+    }
     // Lower third — store write only when the phase flips, never per frame.
     const key = local >= seg.travel * CARD_IN_AT ? `${seg.i}:hold` : ''
     if (key !== mem.current.lastCardKey) {

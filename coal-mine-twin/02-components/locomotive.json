@@ -48,7 +48,11 @@
         "color": "@equipmentBlue",
         "metalness": 0.55,
         "roughness": 0.4,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.3
+        }
       }
     },
     {
@@ -152,7 +156,8 @@
         4.6,
         0,
         0
-      ]
+      ],
+      "material": {}
     },
     {
       "id": "bogieFrameA",
@@ -173,7 +178,11 @@
         "color": "@rubberDark",
         "metalness": 0.4,
         "roughness": 0.6,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.3
+        }
       }
     },
     {
@@ -245,7 +254,8 @@
         -4.6,
         0,
         0
-      ]
+      ],
+      "material": {}
     },
     {
       "id": "bogieFrameB",
@@ -266,7 +276,11 @@
         "color": "@rubberDark",
         "metalness": 0.4,
         "roughness": 0.6,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.3
+        }
       }
     },
     {

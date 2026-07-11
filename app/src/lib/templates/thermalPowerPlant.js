@@ -1058,8 +1058,9 @@ export const TOOLTIP_DEFAULTS = {
 // detailed procedural component (never a placeholder cube). Both models are CC0
 // from Poly Haven; add more entries as you drop more files in (see the README).
 const HERO_MODELS = {
-  pp_condenser:   { url: '/models/exterior_aircon_unit/exterior_aircon_unit_1k.gltf', fit: 9,  yaw: 90 },
-  pp_transformer: { url: '/models/power_box_01/power_box_01_1k.gltf',                 fit: 5.5 },
+  // (empty: the two CC0 files previously listed here are excluded from this
+  // repo snapshot to keep it small — referencing them 404'd on every home-
+  // screen thumbnail render. Re-add entries as files land in public/models/.)
 }
 
 // opts.models = true → swap the HERO_MODELS units to imported-glTF `Model` assets

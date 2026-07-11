@@ -31,6 +31,8 @@ import { CameraController }   from './components/CameraController'
 import { TourDriver, TourOverlay, useTourStore } from './components/TourPlayer'
 import { Kpi3DLayer, useKpiStore } from './components/Kpi3D'
 import { AssetSparklines, AssetAlertHistory } from './components/AssetDrilldown'
+import { DayNightDriver, SiteLights } from './components/DayNight'
+import { useDayNight } from './lib/dayNight'
 import { CommandPalette }     from './components/CommandPalette'
 import { confirmDialog, alertDialog } from './components/dialogs'
 import { FlowPane }           from './components/flow/FlowPane'
@@ -1181,6 +1183,7 @@ function ViewportControls({ orbitRef, leftEdge }) {
   const tourActive = useTourStore(s => s.active)
   const hasTour = useSceneStore(s => (s.tour?.beats?.length ?? 0) > 0)
   const kpiShown = useKpiStore(s => s.shown)
+  const nightOn = useDayNight(s => s.night)
   const dolly = (factor) => {
     const oc = orbitRef.current; if (!oc) return
     const off = oc.object.position.clone().sub(oc.target)
@@ -1219,6 +1222,10 @@ function ViewportControls({ orbitRef, leftEdge }) {
       </>}
       {!tourActive && <>
         <div style={sep} />
+        <button title={nightOn ? 'Switch to day' : 'Switch to night'}
+          onClick={() => useDayNight.getState().toggle()}
+          style={{ ...bs, fontSize: 14, color: nightOn ? C.accent : C.text2 }}
+          onMouseEnter={enter} onMouseLeave={leave}>{nightOn ? '☾' : '☀'}</button>
         <button title={kpiShown ? 'Hide 3D KPI labels' : 'Show 3D KPI labels'}
           onClick={() => useKpiStore.getState().toggle()}
           style={{ ...bs, fontSize: 11, fontWeight: 700, color: kpiShown ? C.accent : C.text3 }}
@@ -1478,16 +1485,8 @@ export default function App() {
               >
                 {/* PCSS soft shadows — real penumbrae instead of hard edges */}
                 {!SNAP_MODE && <SoftShadows size={26} samples={12} focus={0.85} />}
-                <ambientLight intensity={0.32} color="#d8eaf8" />
-                <directionalLight
-                  position={[10, 28, 15]} intensity={2.8} color="#ffffff" castShadow
-                  shadow-mapSize={[4096, 4096]}
-                  shadow-camera-left={-100} shadow-camera-right={100}
-                  shadow-camera-top={70}    shadow-camera-bottom={-70}
-                  shadow-camera-far={260}   shadow-bias={-0.0008}
-                />
-                <directionalLight position={[-18, 20, -10]} intensity={0.6} color="#cce4ff" />
-                <directionalLight position={[0, -8, 20]} intensity={0.25} color="#e8f0ff" />
+                <SiteLights />
+                <DayNightDriver />
 
                 {environment?.sky ? (
                   // Scene opted into an outdoor sky: gradient dome + procedural

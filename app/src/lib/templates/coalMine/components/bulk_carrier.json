@@ -48,9 +48,9 @@
         "roughness": 0.5,
         "weather": {
           "kind": "rust",
-          "amount": 0.25
+          "amount": 0.5
         },
-        "vary": 0.4
+        "vary": 0.25
       }
     },
     {
@@ -76,7 +76,11 @@
         "color": "#6e2f2f",
         "metalness": 0.5,
         "roughness": 0.5,
-        "vary": 0.4
+        "vary": 0.2,
+        "weather": {
+          "kind": "rust",
+          "amount": 0.45
+        }
       }
     },
     {
@@ -98,7 +102,11 @@
         "color": "@structureGrey",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.15,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.45
+        }
       }
     },
     {
@@ -128,10 +136,14 @@
         0
       ],
       "material": {
-        "color": "#9aa3ad",
+        "color": "#c8ccd1",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.2,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.35
+        }
       }
     },
     {
@@ -150,10 +162,14 @@
         0
       ],
       "material": {
-        "color": "#9aa3ad",
+        "color": "#c8ccd1",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.2,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.35
+        }
       }
     },
     {
@@ -172,10 +188,14 @@
         0
       ],
       "material": {
-        "color": "#9aa3ad",
+        "color": "#c8ccd1",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.2,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.35
+        }
       }
     },
     {
@@ -196,7 +216,12 @@
       "material": {
         "color": "#cfd6dd",
         "metalness": 0.3,
-        "roughness": 0.5
+        "roughness": 0.5,
+        "vary": 0.15,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.35
+        }
       }
     },
     {
@@ -295,10 +320,14 @@
         3.3
       ],
       "material": {
-        "color": "@structureGrey",
+        "color": "#6d747c",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.4
+        }
       }
     },
     {
@@ -317,10 +346,14 @@
         -3.3
       ],
       "material": {
-        "color": "@structureGrey",
+        "color": "#6d747c",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.4
+        }
       }
     },
     {
@@ -339,10 +372,14 @@
         0
       ],
       "material": {
-        "color": "@structureGrey",
+        "color": "#6d747c",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.4
+        }
       }
     },
     {
@@ -361,10 +398,14 @@
         0
       ],
       "material": {
-        "color": "@structureGrey",
+        "color": "#6d747c",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.4
+        }
       }
     },
     {
@@ -413,10 +454,14 @@
         3.3
       ],
       "material": {
-        "color": "@structureGrey",
+        "color": "#6d747c",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.4
+        }
       }
     },
     {
@@ -435,10 +480,14 @@
         -3.3
       ],
       "material": {
-        "color": "@structureGrey",
+        "color": "#6d747c",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.4
+        }
       }
     },
     {
@@ -457,10 +506,14 @@
         0
       ],
       "material": {
-        "color": "@structureGrey",
+        "color": "#6d747c",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.4
+        }
       }
     },
     {
@@ -479,10 +532,14 @@
         0
       ],
       "material": {
-        "color": "@structureGrey",
+        "color": "#6d747c",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.4
+        }
       }
     },
     {

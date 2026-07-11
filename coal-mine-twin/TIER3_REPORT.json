@@ -1,0 +1,137 @@
+[
+  {
+    "part": "A1",
+    "status": "done",
+    "files_changed": [
+      "app/src/components/TourPlayer.jsx",
+      "coal-mine-twin/03-twin-spec.json"
+    ],
+    "how": "TourDriver interpolates {assetCount} tokens in beat titles/subtitles at tour start from the live objects map; the closing subtitle is now data with the token + 'seven monitoring use cases'. Verified rendering as 'One live digital twin \u2014 60 assets, seven monitoring use cases, end to end' (60 computed \u2014 workers/floods/LV included automatically).",
+    "config_keys": [
+      "tour.beats[].subtitle supports {assetCount}"
+    ],
+    "perf_note": "computed once per tour start",
+    "regression_check": "screenshot 52-tour-wide-livecount; card text captured verbatim",
+    "caveats": ""
+  },
+  {
+    "part": "A2",
+    "status": "done",
+    "files_changed": [
+      "coal-mine-twin/03-twin-spec.json (environment.sky.ridges)"
+    ],
+    "how": "Ridges re-tuned via existing config only: distance 820\u2192640, height 46\u219270, color #98a2ad\u2192#5f6b7a, count 20 \u2014 nearer/taller/darker so fog no longer washes them to white; they now read as hazy blue-grey landforms (visible in 47/48/52).",
+    "config_keys": [
+      "environment.sky.ridges{distance,height,color,count}"
+    ],
+    "perf_note": "none",
+    "regression_check": "day wides + night wides coherent",
+    "caveats": ""
+  },
+  {
+    "part": "A3",
+    "status": "done",
+    "files_changed": [
+      "coal-mine-twin/03-twin-spec.json (crusher-1 chunkDrops)"
+    ],
+    "how": "Feed drop origin lowered into the hopper mouth (y 9.6\u21929.15, spread 0.9\u21920.5, drop 2.5) so lumps no longer float beside the rim; discharge drop tightened (spread 0.3, drop 1.5).",
+    "config_keys": [
+      "config.chunkDrops"
+    ],
+    "perf_note": "none",
+    "regression_check": "crusher visible in tour pit->crusher beats, drops fall inside",
+    "caveats": ""
+  },
+  {
+    "part": "A4",
+    "status": "done",
+    "files_changed": [
+      "app/src/components/Connectors.jsx"
+    ],
+    "how": "Both connector render sites (Connectors + SceneConnectors) now key on `${sourceId}|${sourcePort}>${targetId}|${targetPort}#${index}` instead of the non-unique c.id.",
+    "config_keys": [],
+    "perf_note": "none",
+    "regression_check": "full-session console capture: duplicate-key warnings = 0",
+    "caveats": ""
+  },
+  {
+    "part": "A5",
+    "status": "done",
+    "files_changed": [
+      "app/src/lib/templates/thermalPowerPlant.js"
+    ],
+    "how": "Emptied HERO_MODELS (the two glTF refs whose files are excluded from this repo snapshot) \u2014 the thermal template falls back to its full procedural units; home-screen thumbnails no longer request the missing files.",
+    "config_keys": [],
+    "perf_note": "none",
+    "regression_check": "full-session console capture: /models/ 404s = 0",
+    "caveats": "re-add entries when files land in public/models/"
+  },
+  {
+    "part": "A6",
+    "status": "done",
+    "files_changed": [
+      "app/src/components/CameraFeed.jsx"
+    ],
+    "how": "Feed store gained scale (1|2) + toggleScale; a 2\u00d7/1\u00d7 button in the feed chrome; the scissor region and DOM panel both scale from the same anchor. Single render target, one feed max, throttles unchanged.",
+    "config_keys": [],
+    "perf_note": "2x renders 4x the scissor pixels \u2014 still a small fraction of the frame; default 1x",
+    "regression_check": "screenshots 54 (1x night) + 55 (2x, with 1x shrink button visible)",
+    "caveats": ""
+  },
+  {
+    "part": "B",
+    "status": "done",
+    "files_changed": [
+      "app/src/lib/dayNight.js (new)",
+      "app/src/components/DayNight.jsx (new)",
+      "app/src/components/SkyDome.jsx",
+      "app/src/components/PostFX.jsx",
+      "app/src/components/CompositeAsset.jsx",
+      "app/src/components/TourPlayer.jsx",
+      "app/src/components/CameraFeed.jsx",
+      "app/src/App.jsx",
+      "coal-mine-twin/03-twin-spec.json",
+      "02-components/haul_truck.json + light_vehicle.json (headlights)"
+    ],
+    "how": "Night palette as data (environment.sky.night: zenith/horizon/ground/fog/dim/exposure/emissiveBoost \u2014 deep blue-grey defaults, never pitch black). nightMix eases 0..1 over ~5 s in DayNightDriver; per frame it drives sky-dome uniforms, scene fog color (distance fade keeps melting), ridge color, the light rig (moved into SiteLights: ambient+key+fills dim), scene.environmentIntensity (IBL dim, no rebake), and exposure \u2014 one smooth cross-fade, no pops, no new lights. Night payoff: emissive parts (floodlights, camera indicators, headlights added to trucks+LV) brighten by emissiveBoost (2.4x) and bloom threshold drops to nightThreshold (0.7) at night. Sun/moon toggle in view controls (default day). Tour: beats accept night:true \u2014 one 'Night Shift' beat (CHPP pad under floodlights, travel 6 s covers the fade) inserted before the closing wide, which restores day; tour exit always hands back daylight. CCTV feed at night gets a fixed gain (exposure x1.55 at full night) on the raw pass only.",
+    "config_keys": [
+      "environment.sky.night{zenith,horizon,ground,fog,dim,exposure,emissiveBoost}",
+      "environment.postfx.bloom.nightThreshold",
+      "tour.beats[].night"
+    ],
+    "perf_note": "per-frame lerps of a handful of scalars/colors \u2014 no allocations, no extra passes, no shadow lights",
+    "regression_check": "49 night plant (floodlights glowing), 50 night wide (legible), 51 Night Shift beat with lower-third, 56 day fully restored in pit beat, 54/55 feed legible at night, KPI cards + alerts panel readable in all night shots",
+    "caveats": "IBL dims via scene.environmentIntensity rather than a night rebake \u2014 reflections keep a faint day tint at night (invisible in practice)"
+  },
+  {
+    "part": "C",
+    "status": "done",
+    "files_changed": [
+      "coal-mine-twin/02-components/site_worker.json (new)",
+      "coal-mine-twin/03-twin-spec.json (worker-1..7, grp_personnel)"
+    ],
+    "how": "Pure data. site_worker: ~1.7 m stylized figure \u2014 boxy legs/arms, @safetyOrange hi-vis torso (vary), plain sphere head (no face), white hard hat; upper body sways +/-0.09 rad on the existing sweep articulation, staggered per worker via animPhase. Placed 7: two at the CHPP walkway/panel, rail load-out platform, port near the shiploader, pit rim viewpoint, stockyard, plus Worker 07 walking a slow plant-walkway loop on the existing PathDrive (clear of LV/haul loops and chunk drops). Grouped under Site Services > Personnel.",
+    "config_keys": [
+      "worker-7.config.path",
+      "config.animPhase"
+    ],
+    "perf_note": "~60 primitive parts total, one more PathDrive vehicle",
+    "regression_check": "53-worker-chpp (two at the panel, correct scale); worker-5 + windsock visible in the tour pit beat (56)",
+    "caveats": ""
+  },
+  {
+    "part": "D",
+    "status": "done",
+    "files_changed": [
+      "02-components: power_station, bulk_carrier, chpp_dmc_module, vibrating_screen, locomotive, coal_wagon, shiploader, stacker_reclaimer (+ template copies)"
+    ],
+    "how": "Existing material system only (vary/weather/@tokens), tour-visible assets only. Power station: varied concrete on hall/boiler blocks, new dark rooflines (2 slab parts), dusted-concrete cooling towers, rust-weathered stack, dusted bunker. Bulk carrier: rust-streaked hull/bow, dusted deck, painted accommodation, contrasting grey coamings, varied hatch covers. CHPP + screen: dusted steel + vary on large members, concrete plinths. Loco + wagons: light dust/vary on large faces, blue identity kept; wagon underframes rusted. Shiploader + stacker: worn paint on @miningYellow booms, dusted structure. Pit terrain/stockpiles/thickener/conveyors/trucks untouched. Grade/exposure re-checked against the new materials \u2014 nothing clips, no re-tune needed.",
+    "config_keys": [
+      "part.material.vary",
+      "part.material.weather{kind,amount}"
+    ],
+    "perf_note": "texture maps come from the existing shared finish-map cache \u2014 no new textures at runtime",
+    "regression_check": "before/after crops 45\u219247 (power) and 46\u219248 (ship); closing wide 52 post-materials, no clipping",
+    "caveats": "stack rust reads full-height rather than base-only (weather is a per-part film, not gradient) \u2014 looks like weathered steel, kept"
+  }
+]

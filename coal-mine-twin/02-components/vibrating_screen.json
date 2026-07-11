@@ -21,7 +21,12 @@
       "material": {
         "color": "@concrete",
         "metalness": 0.04,
-        "roughness": 0.92
+        "roughness": 0.92,
+        "vary": 0.25,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.5
+        }
       }
     },
     {
@@ -33,7 +38,8 @@
         0,
         0,
         0
-      ]
+      ],
+      "material": {}
     },
     {
       "id": "leg1",
@@ -132,7 +138,8 @@
         0,
         0,
         0
-      ]
+      ],
+      "material": {}
     },
     {
       "id": "spring1",
@@ -238,7 +245,11 @@
         "color": "@structureGrey",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.4,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.5
+        }
       },
       "animate": {
         "kind": "bob",

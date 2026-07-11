@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { EffectComposer, Bloom, SMAA, N8AO, Vignette, DepthOfField, BrightnessContrast, HueSaturation, Sepia } from '@react-three/postprocessing'
 import { useSceneStore } from '../store/sceneStore'
+import { useDayNight } from '../lib/dayNight'
 
 // Clean post-processing: N8AO ambient occlusion, bloom that catches emissives
 // (status lamps, molten glow, water glints), a mild depth-of-field, a subtle
@@ -24,6 +25,7 @@ import { useSceneStore } from '../store/sceneStore'
 // so edges don't crawl/shimmer while orbiting; SMAA alone can't hold sub-pixel lines.
 export function PostFX() {
   const pfx = useSceneStore(s => s.environment)?.postfx ?? {}
+  const night = useDayNight(s => s.night)
   const gl = useThree(s => s.gl)
 
   // Exposure re-tune against ACES — scene data can lift the hazy horizon
@@ -42,7 +44,7 @@ export function PostFX() {
       {/* Ambient occlusion — contact darkening in crevices / where parts meet.
           Kept SUBTLE: strong settings read as a grey haze over large flat floors. */}
       <N8AO halfRes aoRadius={1.1} distanceFalloff={0.9} intensity={1.0} color="#0a1016" />
-      <Bloom luminanceThreshold={pfx.bloom?.threshold ?? 0.95} luminanceSmoothing={0.25} intensity={pfx.bloom?.intensity ?? 0.55} mipmapBlur />
+      <Bloom luminanceThreshold={night ? (pfx.bloom?.nightThreshold ?? 0.7) : (pfx.bloom?.threshold ?? 0.95)} luminanceSmoothing={0.25} intensity={pfx.bloom?.intensity ?? 0.55} mipmapBlur />
       {dof !== false && (
         <DepthOfField
           focusDistance={dof?.focusDistance ?? 0.03}

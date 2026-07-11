@@ -21,7 +21,11 @@
       "material": {
         "color": "@concrete",
         "metalness": 0.04,
-        "roughness": 0.92
+        "roughness": 0.92,
+        "weather": {
+          "kind": "concrete",
+          "amount": 0.5
+        }
       }
     },
     {
@@ -40,10 +44,14 @@
         5
       ],
       "material": {
-        "color": "@structureGrey",
+        "color": "#b9bcb7",
         "metalness": 0.7,
         "roughness": 0.35,
-        "vary": 0.4
+        "vary": 0.3,
+        "weather": {
+          "kind": "concrete",
+          "amount": 0.55
+        }
       }
     },
     {
@@ -62,10 +70,14 @@
         5
       ],
       "material": {
-        "color": "#79828c",
+        "color": "#9fa4a6",
         "metalness": 0.7,
         "roughness": 0.4,
-        "vary": 0.4
+        "vary": 0.3,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.5
+        }
       }
     },
     {
@@ -83,9 +95,13 @@
         5
       ],
       "material": {
-        "color": "@concrete",
+        "color": "#b3b8bc",
         "metalness": 0.1,
-        "roughness": 0.8
+        "roughness": 0.8,
+        "weather": {
+          "kind": "rust",
+          "amount": 0.35
+        }
       }
     },
     {
@@ -124,9 +140,14 @@
         -6
       ],
       "material": {
-        "color": "@concrete",
+        "color": "#c6c3ba",
         "metalness": 0.04,
-        "roughness": 0.92
+        "roughness": 0.92,
+        "weather": {
+          "kind": "concrete",
+          "amount": 0.6
+        },
+        "vary": 0.2
       }
     },
     {
@@ -144,9 +165,14 @@
         -6
       ],
       "material": {
-        "color": "@concrete",
+        "color": "#c6c3ba",
         "metalness": 0.04,
-        "roughness": 0.92
+        "roughness": 0.92,
+        "weather": {
+          "kind": "concrete",
+          "amount": 0.6
+        },
+        "vary": 0.2
       }
     },
     {
@@ -168,7 +194,11 @@
         "color": "@darkSteel",
         "metalness": 0.6,
         "roughness": 0.5,
-        "vary": 0.4
+        "vary": 0.25,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.55
+        }
       }
     },
     {
@@ -249,6 +279,52 @@
           0.35,
           0.16
         ]
+      }
+    },
+    {
+      "id": "hallRoof",
+      "geometry": "box",
+      "dims": {
+        "width": 16.4,
+        "height": 0.28,
+        "depth": 9.4
+      },
+      "position": [
+        -6,
+        8.45,
+        5
+      ],
+      "material": {
+        "color": "#4b5157",
+        "metalness": 0.5,
+        "roughness": 0.55,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.4
+        }
+      }
+    },
+    {
+      "id": "boilerRoof",
+      "geometry": "box",
+      "dims": {
+        "width": 9.4,
+        "height": 0.28,
+        "depth": 9.4
+      },
+      "position": [
+        5,
+        15.45,
+        5
+      ],
+      "material": {
+        "color": "#4b5157",
+        "metalness": 0.5,
+        "roughness": 0.55,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.4
+        }
       }
     }
   ],

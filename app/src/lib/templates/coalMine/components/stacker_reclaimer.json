@@ -12,7 +12,8 @@
         0,
         0,
         0
-      ]
+      ],
+      "material": {}
     },
     {
       "id": "railBeam1",
@@ -32,7 +33,12 @@
       "material": {
         "color": "@concrete",
         "metalness": 0.04,
-        "roughness": 0.92
+        "roughness": 0.92,
+        "vary": 0.18,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.4
+        }
       }
     },
     {
@@ -53,7 +59,12 @@
       "material": {
         "color": "@concrete",
         "metalness": 0.04,
-        "roughness": 0.92
+        "roughness": 0.92,
+        "vary": 0.18,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.4
+        }
       }
     },
     {
@@ -119,7 +130,11 @@
         "color": "@miningYellow",
         "metalness": 0.55,
         "roughness": 0.45,
-        "vary": 0.4
+        "vary": 0.22,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.45
+        }
       }
     },
     {
@@ -162,7 +177,11 @@
         "color": "@miningYellow",
         "metalness": 0.55,
         "roughness": 0.45,
-        "vary": 0.4
+        "vary": 0.22,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.45
+        }
       }
     },
     {
@@ -184,7 +203,11 @@
         "color": "@miningYellow",
         "metalness": 0.55,
         "roughness": 0.45,
-        "vary": 0.4
+        "vary": 0.22,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.45
+        }
       }
     },
     {
@@ -257,7 +280,11 @@
         "color": "@miningYellow",
         "metalness": 0.55,
         "roughness": 0.45,
-        "vary": 0.4
+        "vary": 0.22,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.45
+        }
       }
     },
     {
@@ -301,7 +328,11 @@
         "color": "@miningYellow",
         "metalness": 0.55,
         "roughness": 0.45,
-        "vary": 0.4
+        "vary": 0.22,
+        "weather": {
+          "kind": "paint",
+          "amount": 0.45
+        }
       }
     },
     {

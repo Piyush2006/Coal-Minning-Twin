@@ -1,0 +1,152 @@
+{
+  "name": "Site Worker",
+  "category": "Personnel",
+  "parts": [
+    {
+      "id": "legL",
+      "geometry": "box",
+      "dims": {
+        "width": 0.16,
+        "height": 0.78,
+        "depth": 0.16
+      },
+      "position": [
+        0,
+        0.39,
+        0.1
+      ],
+      "material": {
+        "color": "#2c3138",
+        "roughness": 0.85
+      }
+    },
+    {
+      "id": "legR",
+      "geometry": "box",
+      "dims": {
+        "width": 0.16,
+        "height": 0.78,
+        "depth": 0.16
+      },
+      "position": [
+        0,
+        0.39,
+        -0.1
+      ],
+      "material": {
+        "color": "#2c3138",
+        "roughness": 0.85
+      }
+    },
+    {
+      "id": "upperGrp",
+      "kind": "group",
+      "position": [
+        0,
+        0.78,
+        0
+      ],
+      "animate": {
+        "kind": "sweep",
+        "axis": "y",
+        "from": -0.09,
+        "to": 0.09,
+        "period": 5
+      }
+    },
+    {
+      "id": "torso",
+      "parentId": "upperGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.34,
+        "height": 0.6,
+        "depth": 0.44
+      },
+      "position": [
+        0,
+        0.3,
+        0
+      ],
+      "material": {
+        "color": "@safetyOrange",
+        "roughness": 0.8,
+        "vary": 0.25
+      }
+    },
+    {
+      "id": "armL",
+      "parentId": "upperGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.11,
+        "height": 0.52,
+        "depth": 0.11
+      },
+      "position": [
+        0,
+        0.28,
+        0.29
+      ],
+      "material": {
+        "color": "#3a404a",
+        "roughness": 0.85
+      }
+    },
+    {
+      "id": "armR",
+      "parentId": "upperGrp",
+      "geometry": "box",
+      "dims": {
+        "width": 0.11,
+        "height": 0.52,
+        "depth": 0.11
+      },
+      "position": [
+        0,
+        0.28,
+        -0.29
+      ],
+      "material": {
+        "color": "#3a404a",
+        "roughness": 0.85
+      }
+    },
+    {
+      "id": "head",
+      "parentId": "upperGrp",
+      "geometry": "sphere",
+      "dims": {
+        "radius": 0.115
+      },
+      "position": [
+        0,
+        0.74,
+        0
+      ],
+      "material": {
+        "color": "#b6a894",
+        "roughness": 0.7
+      }
+    },
+    {
+      "id": "hardHat",
+      "parentId": "upperGrp",
+      "geometry": "cone",
+      "dims": {
+        "radius": 0.145,
+        "height": 0.13
+      },
+      "position": [
+        0,
+        0.85,
+        0
+      ],
+      "material": {
+        "color": "#f5f7f9",
+        "roughness": 0.45
+      }
+    }
+  ],
+  "parameters": []
+}

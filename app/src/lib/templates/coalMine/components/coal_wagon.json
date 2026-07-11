@@ -24,7 +24,7 @@
         "roughness": 0.6,
         "weather": {
           "kind": "rust",
-          "amount": 0.4
+          "amount": 0.35
         },
         "vary": 0.4
       }
@@ -48,7 +48,11 @@
         "color": "#444a52",
         "metalness": 0.55,
         "roughness": 0.45,
-        "vary": 0.4
+        "vary": 0.22,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.4
+        }
       }
     },
     {

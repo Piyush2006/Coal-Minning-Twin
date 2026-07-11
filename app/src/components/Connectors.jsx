@@ -487,13 +487,13 @@ export function Connectors() {
   return (
     <>
       <BeltEventMarkers objects={objects} />
-      {conns.map(c => {
+      {conns.map((c, i) => {
         const src = objects[c.sourceId]
         const tgt = objects[c.targetId]
         if (!src || !tgt) return null
         if (layers[src.layer]?.visible === false || layers[tgt.layer]?.visible === false) return null
         return (
-          <Connector key={c.id} conn={c} src={src} tgt={tgt}
+          <Connector key={`${c.sourceId}|${c.sourcePort ?? ''}>${c.targetId}|${c.targetPort ?? ''}#${i}`} conn={c} src={src} tgt={tgt}
             selected={c.id === selectedConnectionId}
             onSelect={() => selectConnection(c.id)} />
         )
@@ -508,11 +508,11 @@ export function SceneConnectors({ objects = {} }) {
   const conns = useMemo(() => flattenConnections(objects), [objects])
   return (
     <>
-      {conns.map(c => {
+      {conns.map((c, i) => {
         const src = objects[c.sourceId]
         const tgt = objects[c.targetId]
         if (!src || !tgt) return null
-        return <Connector key={c.id} conn={c} src={src} tgt={tgt} selected={false} onSelect={() => {}} />
+        return <Connector key={`${c.sourceId}|${c.sourcePort ?? ''}>${c.targetId}|${c.targetPort ?? ''}#${i}`} conn={c} src={src} tgt={tgt} selected={false} onSelect={() => {}} />
       })}
     </>
   )

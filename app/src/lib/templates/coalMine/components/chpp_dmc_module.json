@@ -21,7 +21,11 @@
       "material": {
         "color": "@concrete",
         "metalness": 0.04,
-        "roughness": 0.92
+        "roughness": 0.92,
+        "weather": {
+          "kind": "concrete",
+          "amount": 0.55
+        }
       }
     },
     {
@@ -33,7 +37,8 @@
         0,
         0,
         0
-      ]
+      ],
+      "material": {}
     },
     {
       "id": "colA",

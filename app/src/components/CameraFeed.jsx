@@ -18,6 +18,7 @@ import { create } from 'zustand'
 import { useSceneStore } from '../store/sceneStore'
 import { useActiveAlerts, alertSeverityMap, ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
 import { beltWatchWorldPos } from './Connectors'
+import { nightMix } from '../lib/dayNight'
 import { C, R, FONT, glass, SHADOW } from '../ui/theme'
 
 // panel geometry (CSS px, anchored bottom-left clear of the namespace panel)
@@ -27,8 +28,10 @@ export const useFeedStore = create((set) => ({
   feedId: null,
   // detection box projected into the feed (updated by the renderer, throttled)
   box: null,                       // { x, y, w, h } in 0..1 panel coords, or null
+  scale: 1,                        // 1x default; 2x for big-screen demos
   openFeed: (id) => set({ feedId: id, box: null }),
   closeFeed: () => set({ feedId: null, box: null }),
+  toggleScale: () => set(st => ({ scale: st.scale === 1 ? 2 : 1 })),
   _setBox: (box) => set({ box }),
 }))
 
@@ -42,7 +45,7 @@ export function CameraFeedRenderer() {
   const frame = useRef(0)
 
   useFrame(({ gl, scene, size }) => {
-    const { feedId, _setBox, box } = useFeedStore.getState()
+    const { feedId, _setBox, box, scale } = useFeedStore.getState()
     if (!feedId) return                                     // zero cost when closed
     const objects = useSceneStore.getState().objects
     const obj = objects[feedId]
@@ -62,14 +65,17 @@ export function CameraFeedRenderer() {
     // second pass into the panel region (device px, GL origin = bottom-left)
     const dpr = gl.getPixelRatio()
     const x = Math.round(FEED_LEFT * dpr), y = Math.round(FEED_BOTTOM * dpr)
-    const w = Math.round(FEED_W * dpr), h = Math.round(FEED_H * dpr)
+    const w = Math.round(FEED_W * scale * dpr), h = Math.round(FEED_H * scale * dpr)
     const prevAutoClear = gl.autoClear
     gl.autoClear = false
     gl.setScissorTest(true)
     gl.setScissor(x, y, w, h)
     gl.setViewport(x, y, w, h)
     gl.clear(true, true, false)
+    const prevExposure = gl.toneMappingExposure
+    gl.toneMappingExposure = prevExposure * (1 + 0.55 * nightMix.v)   // night gain: raw feed stays legible
     gl.render(scene, fc)
+    gl.toneMappingExposure = prevExposure
     gl.setScissorTest(false)
     gl.setViewport(0, 0, Math.round(size.width * dpr), Math.round(size.height * dpr))
     gl.autoClear = prevAutoClear
@@ -93,7 +99,9 @@ const mono = "'SF Mono', ui-monospace, Menlo, monospace"
 export function CameraFeedPanel() {
   const feedId = useFeedStore(s => s.feedId)
   const box = useFeedStore(s => s.box)
+  const scale = useFeedStore(s => s.scale)
   const closeFeed = useFeedStore(s => s.closeFeed)
+  const toggleScale = useFeedStore(s => s.toggleScale)
   const obj = useSceneStore(s => (feedId ? s.objects[feedId] : null))
   const alerts = useActiveAlerts()
   const [clock, setClock] = useState(() => new Date().toLocaleTimeString())
@@ -113,7 +121,7 @@ export function CameraFeedPanel() {
   const camAlert = alerts.find(a => a.objId === feedId)
 
   return (
-    <div style={{ position: 'absolute', left: FEED_LEFT, bottom: FEED_BOTTOM, width: FEED_W, height: FEED_H,
+    <div style={{ position: 'absolute', left: FEED_LEFT, bottom: FEED_BOTTOM, width: FEED_W * scale, height: FEED_H * scale,
       zIndex: 30, pointerEvents: 'none', fontFamily: FONT,
       border: `2px solid ${sevColor ?? 'rgba(20,26,32,0.85)'}`, borderRadius: 10, overflow: 'hidden',
       boxShadow: SHADOW.panel, ...(sev === 'critical' ? { animation: 'feedPulse 1.2s ease-in-out infinite' } : {}) }}>
@@ -134,6 +142,10 @@ export function CameraFeedPanel() {
         <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff3b30', animation: 'recBlink 1.1s steps(1) infinite' }} />
         <span style={{ fontWeight: 700, letterSpacing: 0.4 }}>{obj.name}</span>
         <span style={{ marginLeft: 'auto', color: '#8fe08f', fontWeight: 700 }}>LIVE</span>
+        <button onClick={toggleScale} title={scale === 1 ? 'Enlarge feed (2x)' : 'Shrink feed (1x)'}
+          style={{ background: 'none', border: '1px solid rgba(232,237,242,0.4)', borderRadius: 3, color: '#e8edf2',
+            fontFamily: 'inherit', fontSize: 9, fontWeight: 700, cursor: 'pointer', lineHeight: 1, padding: '2px 5px' }}>
+          {scale === 1 ? '2×' : '1×'}</button>
         <span>{clock}</span>
         <button onClick={closeFeed}
           style={{ background: 'none', border: 'none', color: '#e8edf2', fontSize: 14, cursor: 'pointer', lineHeight: 1, padding: '0 2px' }}>×</button>

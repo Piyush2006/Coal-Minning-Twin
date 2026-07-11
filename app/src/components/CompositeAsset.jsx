@@ -8,6 +8,7 @@ import { resolveColor } from '../lib/paletteTokens'
 import { ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
 import { pathFillMap } from '../lib/loadStateMap'
 import { useSceneStore } from '../store/sceneStore'
+import { useDayNight, NIGHT_DEFAULTS } from '../lib/dayNight'
 import { Primitive } from './Primitive'
 import { GLBModel } from './assets/GLBModel'
 import { StatusBeacon } from './StatusBeacon'
@@ -128,6 +129,12 @@ const articulationValue = (t, anim, spd, config) => {
 }
 
 function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId }) {
+  // Night shift: emissive lamps brighten so floodlights/beacons pay off under
+  // the dimmed rig (environment.sky.night.emissiveBoost; re-renders on toggle only).
+  const nightOn = useDayNight(s => s.night)
+  const emissiveNightBoost = nightOn && part.material?.emissive
+    ? (useSceneStore.getState().environment?.sky?.night?.emissiveBoost ?? NIGHT_DEFAULTS.emissiveBoost)
+    : 1
   const ref = useRef()
   const phase = useRef(Math.random())   // stable per-instance offset → staggered loops (rising smoke)
   // Generic alert indicator light: a part flagged material.alertGlow renders
@@ -274,7 +281,7 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId 
           map={tx?.map ?? null} roughnessMap={tx?.roughnessMap ?? null}
           normalMap={tx?.normalMap ?? null} normalScale={tx?.normalScale ? [tx.normalScale, tx.normalScale] : undefined}
           emissive={highlighted ? HILITE : (glowSev ? ALERT_SEVERITY_COLOR[glowSev] : resolveColor(m.emissive, '#000000'))}
-          emissiveIntensity={highlighted ? 0.7 : (glowSev ? 3 : (m.emissive ? (m.emissiveIntensity ?? 1) : 0))}
+          emissiveIntensity={highlighted ? 0.7 : (glowSev ? 3 : (m.emissive ? (m.emissiveIntensity ?? 1) * emissiveNightBoost : 0))}
           toneMapped={glowSev ? false : (m.toneMapped === false ? false : true)}
           polygonOffset={!!m.polygonOffset} polygonOffsetFactor={m.polygonOffsetFactor ?? 0} polygonOffsetUnits={m.polygonOffsetUnits ?? 0} />
       )}

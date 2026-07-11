@@ -133,6 +133,46 @@
       "animate": {
         "kind": "spinY"
       }
+    },
+    {
+      "id": "headlightL",
+      "geometry": "box",
+      "dims": {
+        "width": 0.06,
+        "height": 0.18,
+        "depth": 0.3
+      },
+      "position": [
+        2.22,
+        1.0,
+        0.62
+      ],
+      "material": {
+        "color": "#fff3cf",
+        "emissive": "#ffedb8",
+        "emissiveIntensity": 1.3,
+        "roughness": 0.4
+      }
+    },
+    {
+      "id": "headlightR",
+      "geometry": "box",
+      "dims": {
+        "width": 0.06,
+        "height": 0.18,
+        "depth": 0.3
+      },
+      "position": [
+        2.22,
+        1.0,
+        -0.62
+      ],
+      "material": {
+        "color": "#fff3cf",
+        "emissive": "#ffedb8",
+        "emissiveIntensity": 1.3,
+        "roughness": 0.4
+      }
     }
   ],
   "parameters": [
