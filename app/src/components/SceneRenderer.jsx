@@ -4,6 +4,7 @@ import { TransformControls, useHelper, Html } from '@react-three/drei'
 import { BoxHelper, Vector3, Box3, CatmullRomCurve3, RingGeometry, CircleGeometry, SphereGeometry } from 'three'
 import { useSceneStore } from '../store/sceneStore'
 import { useActiveAlerts, alertSeverityMap, ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
+import { useFeedStore } from './CameraFeed'
 import { MACHINE_COMPONENTS, getPorts } from '../lib/machineLibrary'
 import { CompositeAsset } from './CompositeAsset'
 import { SubComponentsLayer } from './SubComponentsLayer'
@@ -291,6 +292,8 @@ function SceneObject({ obj, orbitRef, glowColor, allowLight, inGroup, pointRef, 
     if (isGround) { clearSelection(); return }
     selectObject(obj.id)
     if (!editMode) flyToObject(obj.id)   // view mode: clicking an asset frames + zooms onto it
+    // watch-capable assets (CCTV cameras) also open their live feed panel
+    if (!editMode && obj.config?.watch) useFeedStore.getState().openFeed(obj.id)
   }
 
   const handleTransformChange = () => {

@@ -391,6 +391,38 @@ function Connector({ conn, src, tgt, selected, onSelect }) {
 // The point along the route comes from the asset's `eventPos` parameter
 // (0..100 % of the run). Colour/pulse reuse the shared alert severity system
 // (warn = steady amber, critical = pulsing red) — no parallel visuals.
+
+// World position of a watcher's belt event point (its `eventPos` % along the
+// watched connector / belt asset). Shared by the detection markers AND the
+// CCTV feed camera aim. Returns [x,y,z] or null.
+export function beltWatchWorldPos(objects, watcherId) {
+  const w = objects[watcherId]
+  const watch = w?.config?.watch
+  if (!watch) return null
+  const t = Math.min(0.97, Math.max(0.03, (Number(w.parameters?.eventPos) || 50) / 100))
+  if (watch.assetId && objects[watch.assetId]) {
+    const belt = objects[watch.assetId]
+    const L = belt.config?.length ?? 8
+    const v = new THREE.Vector3(-L / 2 + L * t, 1.05, 0)
+      .applyEuler(new THREE.Euler(belt.rotation?.[0] ?? 0, belt.rotation?.[1] ?? 0, belt.rotation?.[2] ?? 0))
+      .add(new THREE.Vector3(belt.position[0], belt.position[1], belt.position[2]))
+    return [v.x, v.y, v.z]
+  }
+  if (watch.sourceId && watch.targetId) {
+    const src = objects[watch.sourceId], tgt = objects[watch.targetId]
+    const conn = src?.connections?.find(c =>
+      c.targetId === watch.targetId && (!watch.sourcePort || c.sourcePort === watch.sourcePort))
+    if (src && tgt && conn) {
+      const built = buildConnectorCurve(src, tgt, conn)
+      if (built) {
+        const p = built.bezier.getPointAt(t)
+        return [p.x, p.y + 1.0, p.z]
+      }
+    }
+  }
+  return null
+}
+
 const noRay = () => null
 
 function BeltEventMarker({ pos, severity }) {
@@ -436,29 +468,7 @@ function BeltEventMarkers({ objects }) {
     }
     const out = []
     for (const [wid, a] of byWatcher) {
-      const w = objects[wid]
-      const watch = w.config.watch
-      const t = Math.min(0.97, Math.max(0.03, (Number(w.parameters?.eventPos) || 50) / 100))
-      let pos = null
-      if (watch.assetId && objects[watch.assetId]) {
-        const belt = objects[watch.assetId]
-        const L = belt.config?.length ?? 8
-        const v = new THREE.Vector3(-L / 2 + L * t, 1.05, 0)
-          .applyEuler(new THREE.Euler(belt.rotation?.[0] ?? 0, belt.rotation?.[1] ?? 0, belt.rotation?.[2] ?? 0))
-          .add(new THREE.Vector3(belt.position[0], belt.position[1], belt.position[2]))
-        pos = [v.x, v.y, v.z]
-      } else if (watch.sourceId && watch.targetId) {
-        const src = objects[watch.sourceId], tgt = objects[watch.targetId]
-        const conn = src?.connections?.find(c =>
-          c.targetId === watch.targetId && (!watch.sourcePort || c.sourcePort === watch.sourcePort))
-        if (src && tgt && conn) {
-          const built = buildConnectorCurve(src, tgt, conn)
-          if (built) {
-            const p = built.bezier.getPointAt(t)
-            pos = [p.x, p.y + 1.0, p.z]           // lift to the belt surface
-          }
-        }
-      }
+      const pos = beltWatchWorldPos(objects, wid)
       if (pos) out.push({ key: a.key, pos, severity: a.severity })
     }
     return out

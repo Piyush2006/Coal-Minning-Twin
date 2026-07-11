@@ -19,6 +19,7 @@ import { RuleEditor }           from './components/RuleEditor'
 import { SceneRenderer }      from './components/SceneRenderer'
 import { Connectors }         from './components/Connectors'
 import { MaterialFlowLayer }  from './components/effects/MaterialFlow'
+import { CameraFeedRenderer, CameraFeedPanel } from './components/CameraFeed'
 import { ShopFloorEnvironment } from './components/ShopFloorEnvironment'
 import { MACHINE_LIBRARY }    from './lib/machineLibrary'
 import { dragGuard }          from './lib/interactionGuard'
@@ -1438,6 +1439,7 @@ export default function App() {
         <div style={{ position:'absolute', inset:0, zIndex:0 }}>
           {/* Bruce insight card — view mode, beside the floating nav (collapsible) */}
           {!editMode && !showFlow && <BruceCard title="Shopfloor" recs={shopfloorRecommendations(objects)} offsetLeft={leftEdge} />}
+          {!editMode && !showFlow && <CameraFeedPanel />}
           <div style={{ position:'absolute', inset:0,
             visibility: showFlow ? 'hidden' : 'visible',
             pointerEvents: showFlow ? 'none' : 'auto' }}>
@@ -1489,6 +1491,7 @@ export default function App() {
                 <MaterialFlowLayer />
                 <CameraController orbitRef={orbitRef} />
                 {!SNAP_MODE && <PostFX />}
+                <CameraFeedRenderer />
 
                 <OrbitControls
                   ref={orbitRef}

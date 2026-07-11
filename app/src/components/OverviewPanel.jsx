@@ -8,6 +8,7 @@ import { computeKPIs, computeGroupKPIs } from '../lib/kpiSchemas'
 import { stateMeta } from '../lib/stateSchemas'
 import { evaluateAlerts, ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
 import { useSceneStore } from '../store/sceneStore'
+import { useFeedStore } from './CameraFeed'
 import { C, R } from '../ui/theme'
 
 const fmt = (v, d) => Number(v ?? 0).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d })
@@ -40,7 +41,7 @@ function AlertsSection({ objects }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {alerts.map(a => (
             <button key={a.key}
-              onClick={() => { selectObject(a.objId); flyToObject(a.objId) }}
+              onClick={() => { selectObject(a.objId); flyToObject(a.objId); if (objects[a.objId]?.config?.watch) useFeedStore.getState().openFeed(a.objId) }}
               style={{ textAlign: 'left', cursor: 'pointer', padding: '8px 10px', borderRadius: R.md,
                 background: C.surface, border: `1px solid ${C.line}`, font: 'inherit' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
