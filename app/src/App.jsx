@@ -29,6 +29,8 @@ import { SkyDome }            from './components/SkyDome'
 import { Floor }              from './components/Floor'
 import { CameraController }   from './components/CameraController'
 import { TourDriver, TourOverlay, useTourStore } from './components/TourPlayer'
+import { Kpi3DLayer, useKpiStore } from './components/Kpi3D'
+import { AssetSparklines, AssetAlertHistory } from './components/AssetDrilldown'
 import { CommandPalette }     from './components/CommandPalette'
 import { confirmDialog, alertDialog } from './components/dialogs'
 import { FlowPane }           from './components/flow/FlowPane'
@@ -279,6 +281,8 @@ function AssetDetail({ obj, onClose }) {
         </div>
         {defs.length === 0 && <p style={{ fontSize: 12.5, color: C.text3 }}>No parameters for this asset.</p>}
         {defs.map(d => <InspectorParam key={d.key} obj={obj} def={d} />)}
+        <AssetSparklines obj={obj} defs={defs} />
+        <AssetAlertHistory obj={obj} />
         <AssetTrendCharts obj={obj} />
       </div>
     </>
@@ -1176,6 +1180,7 @@ function CloudSaveModal({ projectName, onClose }) {
 function ViewportControls({ orbitRef, leftEdge }) {
   const tourActive = useTourStore(s => s.active)
   const hasTour = useSceneStore(s => (s.tour?.beats?.length ?? 0) > 0)
+  const kpiShown = useKpiStore(s => s.shown)
   const dolly = (factor) => {
     const oc = orbitRef.current; if (!oc) return
     const off = oc.object.position.clone().sub(oc.target)
@@ -1211,6 +1216,13 @@ function ViewportControls({ orbitRef, leftEdge }) {
         <div style={sep} />
         <button title="Rotate left"  onClick={() => rotate(-1)} style={bs} onMouseEnter={enter} onMouseLeave={leave}>↺</button>
         <button title="Rotate right" onClick={() => rotate(1)}  style={bs} onMouseEnter={enter} onMouseLeave={leave}>↻</button>
+      </>}
+      {!tourActive && <>
+        <div style={sep} />
+        <button title={kpiShown ? 'Hide 3D KPI labels' : 'Show 3D KPI labels'}
+          onClick={() => useKpiStore.getState().toggle()}
+          style={{ ...bs, fontSize: 11, fontWeight: 700, color: kpiShown ? C.accent : C.text3 }}
+          onMouseEnter={enter} onMouseLeave={leave}>KPI</button>
       </>}
       {hasTour && <>
         {!tourActive && <div style={sep} />}
@@ -1506,6 +1518,7 @@ export default function App() {
                 <MaterialFlowLayer />
                 <CameraController orbitRef={orbitRef} />
                 <TourDriver orbitRef={orbitRef} />
+                <Kpi3DLayer />
                 {!SNAP_MODE && <PostFX />}
                 <CameraFeedRenderer />
 

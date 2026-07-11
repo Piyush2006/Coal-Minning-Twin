@@ -7,6 +7,7 @@ import { finishFor, getFinishMaps } from '../lib/textures'
 import { resolveColor } from '../lib/paletteTokens'
 import { ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
 import { pathFillMap } from '../lib/loadStateMap'
+import { useSceneStore } from '../store/sceneStore'
 import { Primitive } from './Primitive'
 import { GLBModel } from './assets/GLBModel'
 import { StatusBeacon } from './StatusBeacon'
@@ -134,7 +135,7 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId 
   // severity colour (amber/red), brightens and PULSES while the owning object
   // has an active alert — camera "caught it" lights, stack lamps, beacons.
   const glowSev = part.material?.alertGlow ? alertSev : null
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, dt) => {
     const g = ref.current
     if (!g) return
     if (part.material?.alertGlow) {
@@ -181,6 +182,35 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId 
       case 'slide': {
         const ax = part.animate.axis ?? 'y'
         g.position[ax] = live ? articulationValue(t, part.animate, spd, config) : 0
+        break
+      }
+      // slow breathe between from..to (stockpiles growing on stack, drawing
+      // down on reclaim) — sine cycle, base-anchored, period in seconds
+      case 'level': {
+        const period = Math.max(1, (part.animate.period ?? 300) / (spd || 1))
+        const ph = (part.animate.phase ?? 0) + (Number(config.animPhase) || 0)
+        const w = 0.5 - 0.5 * Math.cos((((t / period + ph) % 1 + 1) % 1) * Math.PI * 2)
+        const lo = part.animate.from ?? 0.6, hi = part.animate.to ?? 1
+        const sy = live ? lo + (hi - lo) * w : hi
+        g.scale.y = sy
+        g.position.y = ((part.dims?.height ?? 1) * (sy - 1)) / 2
+        break
+      }
+      // track a LIVE parameter as a level (bin sight-gauges): scale.y follows
+      // (param - min) / (max - min), smoothed, base-anchored
+      case 'paramLevel': {
+        const key = part.animate.param
+        if (!key || objId == null) break
+        const o = useSceneStore.getState().objects[objId]
+        const v = Number(o?.parameters?.[key])
+        if (!Number.isFinite(v)) break
+        const min = part.animate.min ?? 0, max = part.animate.max ?? 100
+        const f = Math.max(0, Math.min(1, (v - min) / ((max - min) || 1)))
+        const lo = part.animate.from ?? 0.05, hi = part.animate.to ?? 1
+        const target = lo + (hi - lo) * f
+        const sy = g.scale.y + (target - g.scale.y) * Math.min(1, dt * 2)
+        g.scale.y = sy
+        g.position.y = ((part.dims?.height ?? 1) * (sy - 1)) / 2
         break
       }
       // container fill cycle: level rises (78% of the period), holds full,

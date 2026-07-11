@@ -1,0 +1,105 @@
+{
+  "name": "Floodlight Mast",
+  "category": "Infrastructure",
+  "parts": [
+    {
+      "id": "base",
+      "geometry": "box",
+      "dims": {
+        "width": 0.7,
+        "height": 0.35,
+        "depth": 0.7
+      },
+      "position": [
+        0,
+        0.18,
+        0
+      ],
+      "material": {
+        "color": "#b9bec4",
+        "metalness": 0.2,
+        "roughness": 0.7
+      }
+    },
+    {
+      "id": "pole",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.11,
+        "height": 9.2
+      },
+      "position": [
+        0,
+        4.95,
+        0
+      ],
+      "material": {
+        "color": "#9aa1a8",
+        "metalness": 0.7,
+        "roughness": 0.35
+      }
+    },
+    {
+      "id": "crossarm",
+      "geometry": "box",
+      "dims": {
+        "width": 1.7,
+        "height": 0.14,
+        "depth": 0.26
+      },
+      "position": [
+        0,
+        9.6,
+        0
+      ],
+      "material": {
+        "color": "#7d848b",
+        "metalness": 0.6,
+        "roughness": 0.4
+      }
+    },
+    {
+      "id": "lampA",
+      "geometry": "box",
+      "dims": {
+        "width": 0.52,
+        "height": 0.26,
+        "depth": 0.38
+      },
+      "position": [
+        -0.55,
+        9.42,
+        0
+      ],
+      "material": {
+        "color": "#fff6dd",
+        "emissive": "#ffedb8",
+        "emissiveIntensity": 2.6,
+        "metalness": 0.1,
+        "roughness": 0.4
+      }
+    },
+    {
+      "id": "lampB",
+      "geometry": "box",
+      "dims": {
+        "width": 0.52,
+        "height": 0.26,
+        "depth": 0.38
+      },
+      "position": [
+        0.55,
+        9.42,
+        0
+      ],
+      "material": {
+        "color": "#fff6dd",
+        "emissive": "#ffedb8",
+        "emissiveIntensity": 2.6,
+        "metalness": 0.1,
+        "roughness": 0.4
+      }
+    }
+  ],
+  "parameters": []
+}

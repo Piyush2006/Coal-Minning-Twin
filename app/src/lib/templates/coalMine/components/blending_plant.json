@@ -3,40 +3,579 @@
   "category": "Coal Mining",
   "layer": "equipment",
   "parts": [
-    { "id": "pad", "label": "Concrete Pad", "parentId": null, "geometry": "box", "dims": { "width": 11, "height": 0.4, "depth": 7 }, "position": [0, 0.2, 0], "material": { "color": "@concrete", "metalness": 0.04, "roughness": 0.92 } },
-    { "id": "frame", "label": "Bin Support Frame", "parentId": null, "kind": "group", "position": [0, 0, 0] },
-    { "id": "legA1", "label": "Leg A1", "parentId": "frame", "geometry": "box", "dims": { "width": 0.35, "height": 5.5, "depth": 0.35 }, "position": [-3.4, 3.15, 1.6], "material": { "color": "@structureGrey", "metalness": 0.7, "roughness": 0.35, "vary": 0.4 } },
-    { "id": "legA2", "label": "Leg A2", "parentId": "frame", "geometry": "box", "dims": { "width": 0.35, "height": 5.5, "depth": 0.35 }, "position": [-3.4, 3.15, -1.6], "material": { "color": "@structureGrey", "metalness": 0.7, "roughness": 0.35, "vary": 0.4 } },
-    { "id": "legB1", "label": "Leg B1", "parentId": "frame", "geometry": "box", "dims": { "width": 0.35, "height": 5.5, "depth": 0.35 }, "position": [-0.2, 3.15, 1.6], "material": { "color": "@structureGrey", "metalness": 0.7, "roughness": 0.35, "vary": 0.4 } },
-    { "id": "legB2", "label": "Leg B2", "parentId": "frame", "geometry": "box", "dims": { "width": 0.35, "height": 5.5, "depth": 0.35 }, "position": [-0.2, 3.15, -1.6], "material": { "color": "@structureGrey", "metalness": 0.7, "roughness": 0.35, "vary": 0.4 } },
-    { "id": "binA", "label": "Blend Bin A", "parentId": null, "geometry": "cylinder", "dims": { "radius": 1.5, "height": 3.2 }, "position": [-3.4, 7.2, 0], "material": { "color": "@structureGrey", "metalness": 0.7, "roughness": 0.35, "vary": 0.4, "weather": { "kind": "dust", "amount": 0.4 } } },
-    { "id": "binACone", "label": "Bin A Cone", "parentId": null, "geometry": "cone", "dims": { "radius": 1.5, "height": 1.6 }, "position": [-3.4, 4.8, 0], "rotation": [3.1416, 0, 0], "material": { "color": "@darkSteel", "metalness": 0.6, "roughness": 0.5, "vary": 0.4 } },
-    { "id": "binB", "label": "Blend Bin B", "parentId": null, "geometry": "cylinder", "dims": { "radius": 1.5, "height": 3.2 }, "position": [-0.2, 7.2, 0], "material": { "color": "@structureGrey", "metalness": 0.7, "roughness": 0.35, "vary": 0.4, "weather": { "kind": "dust", "amount": 0.4 } } },
-    { "id": "binBCone", "label": "Bin B Cone", "parentId": null, "geometry": "cone", "dims": { "radius": 1.5, "height": 1.6 }, "position": [-0.2, 4.8, 0], "rotation": [3.1416, 0, 0], "material": { "color": "@darkSteel", "metalness": 0.6, "roughness": 0.5, "vary": 0.4 } },
-    { "id": "feederA", "label": "Feeder A", "parentId": null, "geometry": "cylinder", "dims": { "radius": 0.3, "height": 1.4 }, "position": [-3.4, 3.6, 0], "rotation": [0, 0, 1.5708], "material": { "color": "#b0c4d0", "metalness": 0.85, "roughness": 0.12 }, "animate": { "kind": "spinY", "speedKey": "speed" } },
-    { "id": "feederB", "label": "Feeder B", "parentId": null, "geometry": "cylinder", "dims": { "radius": 0.3, "height": 1.4 }, "position": [-0.2, 3.6, 0], "rotation": [0, 0, 1.5708], "material": { "color": "#b0c4d0", "metalness": 0.85, "roughness": 0.12 }, "animate": { "kind": "spinY", "speedKey": "speed" } },
-    { "id": "collectBelt", "label": "Collecting Conveyor", "parentId": null, "geometry": "box", "dims": { "width": 10, "height": 0.5, "depth": 1.4 }, "position": [0.5, 2.4, 0], "rotation": [0, 0, -0.08], "material": { "color": "@rubberDark", "metalness": 0.2, "roughness": 0.8 } },
-    { "id": "sampler", "label": "Sampling Tower", "parentId": null, "geometry": "box", "dims": { "width": 1.2, "height": 3.2, "depth": 1.2 }, "position": [3.6, 2.2, 1.8], "material": { "color": "@structureGrey", "metalness": 0.7, "roughness": 0.35, "vary": 0.4 } },
-    { "id": "stairs", "label": "Access Stairs", "parentId": null, "geometry": "box", "dims": { "width": 6.5, "height": 0.18, "depth": 1.0 }, "position": [-1.8, 2.9, 2.6], "rotation": [0, 0, 0.72], "material": { "color": "@structureGrey", "metalness": 0.7, "roughness": 0.35 } },
-    { "id": "blendLight", "label": "Blending Beacon", "parentId": null, "geometry": "sphere", "dims": { "radius": 0.15 }, "position": [-1.8, 9.2, 0], "material": { "color": "@safetyOrange", "metalness": 0.1, "roughness": 0.4, "emissive": "@safetyOrange", "emissiveIntensity": 1.2 }, "animate": { "kind": "pulse", "speedKey": "speed" } }
+    {
+      "id": "pad",
+      "label": "Concrete Pad",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 11,
+        "height": 0.4,
+        "depth": 7
+      },
+      "position": [
+        0,
+        0.2,
+        0
+      ],
+      "material": {
+        "color": "@concrete",
+        "metalness": 0.04,
+        "roughness": 0.92
+      }
+    },
+    {
+      "id": "frame",
+      "label": "Bin Support Frame",
+      "parentId": null,
+      "kind": "group",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "legA1",
+      "label": "Leg A1",
+      "parentId": "frame",
+      "geometry": "box",
+      "dims": {
+        "width": 0.35,
+        "height": 5.5,
+        "depth": 0.35
+      },
+      "position": [
+        -3.4,
+        3.15,
+        1.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "legA2",
+      "label": "Leg A2",
+      "parentId": "frame",
+      "geometry": "box",
+      "dims": {
+        "width": 0.35,
+        "height": 5.5,
+        "depth": 0.35
+      },
+      "position": [
+        -3.4,
+        3.15,
+        -1.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "legB1",
+      "label": "Leg B1",
+      "parentId": "frame",
+      "geometry": "box",
+      "dims": {
+        "width": 0.35,
+        "height": 5.5,
+        "depth": 0.35
+      },
+      "position": [
+        -0.2,
+        3.15,
+        1.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "legB2",
+      "label": "Leg B2",
+      "parentId": "frame",
+      "geometry": "box",
+      "dims": {
+        "width": 0.35,
+        "height": 5.5,
+        "depth": 0.35
+      },
+      "position": [
+        -0.2,
+        3.15,
+        -1.6
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "binA",
+      "label": "Blend Bin A",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.5,
+        "height": 3.2
+      },
+      "position": [
+        -3.4,
+        7.2,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.4
+        }
+      }
+    },
+    {
+      "id": "binACone",
+      "label": "Bin A Cone",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 1.5,
+        "height": 1.6
+      },
+      "position": [
+        -3.4,
+        4.8,
+        0
+      ],
+      "rotation": [
+        3.1416,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "binB",
+      "label": "Blend Bin B",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 1.5,
+        "height": 3.2
+      },
+      "position": [
+        -0.2,
+        7.2,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4,
+        "weather": {
+          "kind": "dust",
+          "amount": 0.4
+        }
+      }
+    },
+    {
+      "id": "binBCone",
+      "label": "Bin B Cone",
+      "parentId": null,
+      "geometry": "cone",
+      "dims": {
+        "radius": 1.5,
+        "height": 1.6
+      },
+      "position": [
+        -0.2,
+        4.8,
+        0
+      ],
+      "rotation": [
+        3.1416,
+        0,
+        0
+      ],
+      "material": {
+        "color": "@darkSteel",
+        "metalness": 0.6,
+        "roughness": 0.5,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "feederA",
+      "label": "Feeder A",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.3,
+        "height": 1.4
+      },
+      "position": [
+        -3.4,
+        3.6,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        1.5708
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "feederB",
+      "label": "Feeder B",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.3,
+        "height": 1.4
+      },
+      "position": [
+        -0.2,
+        3.6,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        1.5708
+      ],
+      "material": {
+        "color": "#b0c4d0",
+        "metalness": 0.85,
+        "roughness": 0.12
+      },
+      "animate": {
+        "kind": "spinY",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "collectBelt",
+      "label": "Collecting Conveyor",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 10,
+        "height": 0.5,
+        "depth": 1.4
+      },
+      "position": [
+        0.5,
+        2.4,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -0.08
+      ],
+      "material": {
+        "color": "@rubberDark",
+        "metalness": 0.2,
+        "roughness": 0.8
+      }
+    },
+    {
+      "id": "sampler",
+      "label": "Sampling Tower",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 1.2,
+        "height": 3.2,
+        "depth": 1.2
+      },
+      "position": [
+        3.6,
+        2.2,
+        1.8
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "stairs",
+      "label": "Access Stairs",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 6.5,
+        "height": 0.18,
+        "depth": 1.0
+      },
+      "position": [
+        -1.8,
+        2.9,
+        2.6
+      ],
+      "rotation": [
+        0,
+        0,
+        0.72
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35
+      }
+    },
+    {
+      "id": "blendLight",
+      "label": "Blending Beacon",
+      "parentId": null,
+      "geometry": "sphere",
+      "dims": {
+        "radius": 0.15
+      },
+      "position": [
+        -1.8,
+        9.2,
+        0
+      ],
+      "material": {
+        "color": "@safetyOrange",
+        "metalness": 0.1,
+        "roughness": 0.4,
+        "emissive": "@safetyOrange",
+        "emissiveIntensity": 1.2
+      },
+      "animate": {
+        "kind": "pulse",
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "binAGaugeBack",
+      "label": "Bin A gauge",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.22,
+        "height": 3.24,
+        "depth": 0.22
+      },
+      "position": [
+        -1.7799999999999998,
+        7.2,
+        0
+      ],
+      "material": {
+        "color": "#dfe3e8",
+        "metalness": 0.2,
+        "roughness": 0.5
+      }
+    },
+    {
+      "id": "binAGaugeFill",
+      "label": "Bin A level",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.17,
+        "height": 3.1,
+        "depth": 0.17
+      },
+      "position": [
+        -1.7799999999999998,
+        7.13,
+        0
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.85
+      },
+      "animate": {
+        "kind": "paramLevel",
+        "param": "binALevel",
+        "max": 100,
+        "from": 0.05,
+        "to": 1
+      }
+    },
+    {
+      "id": "binBGaugeBack",
+      "label": "Bin B gauge",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.22,
+        "height": 3.24,
+        "depth": 0.22
+      },
+      "position": [
+        1.4200000000000002,
+        7.2,
+        0
+      ],
+      "material": {
+        "color": "#dfe3e8",
+        "metalness": 0.2,
+        "roughness": 0.5
+      }
+    },
+    {
+      "id": "binBGaugeFill",
+      "label": "Bin B level",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.17,
+        "height": 3.1,
+        "depth": 0.17
+      },
+      "position": [
+        1.4200000000000002,
+        7.13,
+        0
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.85
+      },
+      "animate": {
+        "kind": "paramLevel",
+        "param": "binBLevel",
+        "max": 100,
+        "from": 0.05,
+        "to": 1
+      }
+    }
   ],
   "ports": [
-    { "id": "feed_in", "type": "conveyor", "direction": "in", "offset": [-5.2, 1.2, 0] },
-    { "id": "blend_out", "type": "conveyor", "direction": "out", "offset": [5.2, 1.2, 0] }
+    {
+      "id": "feed_in",
+      "type": "conveyor",
+      "direction": "in",
+      "offset": [
+        -5.2,
+        1.2,
+        0
+      ]
+    },
+    {
+      "id": "blend_out",
+      "type": "conveyor",
+      "direction": "out",
+      "offset": [
+        5.2,
+        1.2,
+        0
+      ]
+    }
   ],
   "config": [
-    { "key": "enabled", "label": "Animate", "type": "boolean", "default": true },
-    { "key": "speed", "label": "Feeder Speed", "type": "number", "default": 1.2, "min": 0, "max": 4, "step": 0.1 }
+    {
+      "key": "enabled",
+      "label": "Animate",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "label": "Feeder Speed",
+      "type": "number",
+      "default": 1.2,
+      "min": 0,
+      "max": 4,
+      "step": 0.1
+    }
   ],
   "parameters": [
-    { "key": "blendRatio", "label": "Blend Ratio (A:B)", "unit": "%", "default": 60, "min": 0, "max": 100, "freq": "5m" },
-    { "key": "throughput", "label": "Blend Throughput", "unit": "t/h", "default": 3800, "min": 0, "max": 6000, "freq": "5s" },
-    { "key": "binALevel", "label": "Bin A Level", "unit": "%", "default": 62, "min": 0, "max": 100, "freq": "1m" },
-    { "key": "binBLevel", "label": "Bin B Level", "unit": "%", "default": 48, "min": 0, "max": 100, "freq": "1m" }
+    {
+      "key": "blendRatio",
+      "label": "Blend Ratio (A:B)",
+      "unit": "%",
+      "default": 60,
+      "min": 0,
+      "max": 100,
+      "freq": "5m"
+    },
+    {
+      "key": "throughput",
+      "label": "Blend Throughput",
+      "unit": "t/h",
+      "default": 3800,
+      "min": 0,
+      "max": 6000,
+      "freq": "5s"
+    },
+    {
+      "key": "binALevel",
+      "label": "Bin A Level",
+      "unit": "%",
+      "default": 62,
+      "min": 0,
+      "max": 100,
+      "freq": "1m"
+    },
+    {
+      "key": "binBLevel",
+      "label": "Bin B Level",
+      "unit": "%",
+      "default": 48,
+      "min": 0,
+      "max": 100,
+      "freq": "1m"
+    }
   ],
   "states": [
-    { "key": "blending", "label": "Blending", "color": "#34c759", "severity": "ok" },
-    { "key": "standby", "label": "Standby", "color": "#ff9f0a", "severity": "warn" },
-    { "key": "fault", "label": "Fault", "color": "#ff3b30", "severity": "down" }
+    {
+      "key": "blending",
+      "label": "Blending",
+      "color": "#34c759",
+      "severity": "ok"
+    },
+    {
+      "key": "standby",
+      "label": "Standby",
+      "color": "#ff9f0a",
+      "severity": "warn"
+    },
+    {
+      "key": "fault",
+      "label": "Fault",
+      "color": "#ff3b30",
+      "severity": "down"
+    }
   ]
 }

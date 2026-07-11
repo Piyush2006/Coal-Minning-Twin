@@ -1,0 +1,65 @@
+{
+  "name": "Windsock",
+  "category": "Infrastructure",
+  "parts": [
+    {
+      "id": "pole",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.07,
+        "height": 6.2
+      },
+      "position": [
+        0,
+        3.1,
+        0
+      ],
+      "material": {
+        "color": "#c7ccd2",
+        "metalness": 0.5,
+        "roughness": 0.4
+      }
+    },
+    {
+      "id": "sockGrp",
+      "kind": "group",
+      "position": [
+        0,
+        6.0,
+        0
+      ],
+      "animate": {
+        "kind": "sweep",
+        "axis": "y",
+        "from": -0.35,
+        "to": 0.35,
+        "period": 5
+      }
+    },
+    {
+      "id": "sock",
+      "parentId": "sockGrp",
+      "geometry": "cone",
+      "dims": {
+        "radius": 0.34,
+        "height": 1.7
+      },
+      "position": [
+        0.85,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -1.5708
+      ],
+      "material": {
+        "color": "#ff7a1a",
+        "metalness": 0.0,
+        "roughness": 0.8
+      }
+    }
+  ],
+  "parameters": []
+}

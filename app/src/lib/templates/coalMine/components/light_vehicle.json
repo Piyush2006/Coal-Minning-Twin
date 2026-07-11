@@ -1,0 +1,149 @@
+{
+  "name": "Light Vehicle (LV)",
+  "category": "Mobile Equipment",
+  "parts": [
+    {
+      "id": "chassis",
+      "geometry": "box",
+      "dims": {
+        "width": 4.4,
+        "height": 0.4,
+        "depth": 1.9
+      },
+      "position": [
+        0,
+        0.78,
+        0
+      ],
+      "material": {
+        "color": "#e9edf1",
+        "metalness": 0.3,
+        "roughness": 0.45
+      }
+    },
+    {
+      "id": "cab",
+      "geometry": "box",
+      "dims": {
+        "width": 1.9,
+        "height": 1.35,
+        "depth": 1.86
+      },
+      "position": [
+        0.75,
+        1.62,
+        0
+      ],
+      "material": {
+        "color": "#e9edf1",
+        "metalness": 0.3,
+        "roughness": 0.4
+      }
+    },
+    {
+      "id": "tray",
+      "geometry": "box",
+      "dims": {
+        "width": 1.9,
+        "height": 0.55,
+        "depth": 1.86
+      },
+      "position": [
+        -1.15,
+        1.22,
+        0
+      ],
+      "material": {
+        "color": "#d4d9de",
+        "metalness": 0.35,
+        "roughness": 0.5
+      }
+    },
+    {
+      "id": "flag",
+      "geometry": "box",
+      "dims": {
+        "width": 0.02,
+        "height": 0.3,
+        "depth": 0.4
+      },
+      "position": [
+        -2.1,
+        3.0,
+        0
+      ],
+      "material": {
+        "color": "#ff9f0a"
+      }
+    },
+    {
+      "id": "flagPole",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.02,
+        "height": 1.9
+      },
+      "position": [
+        -2.1,
+        2.1,
+        0
+      ],
+      "material": {
+        "color": "#5c636a",
+        "metalness": 0.6,
+        "roughness": 0.4
+      }
+    },
+    {
+      "id": "axleF",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.44,
+        "height": 2.05
+      },
+      "position": [
+        1.4,
+        0.44,
+        0
+      ],
+      "material": {
+        "color": "#23262a",
+        "roughness": 0.9
+      },
+      "animate": {
+        "kind": "spinY"
+      }
+    },
+    {
+      "id": "axleR",
+      "geometry": "cylinder",
+      "dims": {
+        "radius": 0.44,
+        "height": 2.05
+      },
+      "position": [
+        -1.3,
+        0.44,
+        0
+      ],
+      "material": {
+        "color": "#23262a",
+        "roughness": 0.9
+      },
+      "animate": {
+        "kind": "spinY"
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "key": "speedKph",
+      "label": "Speed",
+      "unit": "km/h",
+      "default": 24,
+      "min": 0,
+      "max": 60,
+      "freq": "5s"
+    }
+  ]
+}

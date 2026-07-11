@@ -33,7 +33,7 @@ export const GEOMETRIES = Object.keys(GEOMETRY_DEFS)
 // sweep = oscillating rotation about one axis (articulated booms, masts);
 // slide = oscillating translation along one axis (drill carriages, rams).
 // Both take { axis, from, to, period (s), phase (0..1) } alongside speedKey.
-export const ANIMATIONS = ['none', 'spinY', 'spinX', 'pulse', 'bob', 'rise', 'sweep', 'slide', 'fill']
+export const ANIMATIONS = ['none', 'spinY', 'spinX', 'pulse', 'bob', 'rise', 'sweep', 'slide', 'fill', 'level', 'paramLevel']
 export const PORT_TYPES = ['product', 'conveyor', 'utility', 'co2', 'power']
 export const PORT_DIRECTIONS = ['in', 'out', 'bidirectional']
 
@@ -117,6 +117,9 @@ function animExtras(raw = {}) {
     ...(Number.isFinite(Number(raw.to)) ? { to: Number(raw.to) } : {}),
     ...(Number.isFinite(Number(raw.period)) ? { period: Number(raw.period) } : {}),
     ...(Number.isFinite(Number(raw.phase)) ? { phase: Number(raw.phase) } : {}),
+    ...(typeof raw.param === 'string' && raw.param ? { param: raw.param } : {}),   // paramLevel: parameter key
+    ...(Number.isFinite(Number(raw.min)) ? { min: Number(raw.min) } : {}),
+    ...(Number.isFinite(Number(raw.max)) ? { max: Number(raw.max) } : {}),
   }
 }
 // A colour is a hex literal OR a "@token" palette reference (lib/paletteTokens).

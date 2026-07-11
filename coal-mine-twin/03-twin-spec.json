@@ -285,6 +285,11 @@
           "agg": "count"
         }
       ]
+    },
+    "grp_services": {
+      "name": "Site Services",
+      "parentId": "grp_site",
+      "order": 9
     }
   },
   "objects": {
@@ -621,7 +626,18 @@
             "message": "Active fault code {faultCode}"
           }
         ],
-        "animPhase": 0.0
+        "animPhase": 0.0,
+        "kpi3d": {
+          "param": "bucketPayload",
+          "label": "Bucket Payload",
+          "unit": "t",
+          "offset": [
+            0,
+            9,
+            0
+          ],
+          "decimals": 1
+        }
       }
     },
     "loader-1": {
@@ -1325,7 +1341,17 @@
         "length": 10,
         "itemType": "coal",
         "itemSpacing": 6,
-        "material": "coal"
+        "material": "coal",
+        "kpi3d": {
+          "param": "load",
+          "label": "Belt Load",
+          "unit": "%",
+          "offset": [
+            0,
+            5.5,
+            0
+          ]
+        }
       },
       "parameters": {
         "lineSpeed": 2.1,
@@ -1578,7 +1604,20 @@
             "flowing": true
           }
         }
-      ]
+      ],
+      "config": {
+        "kpi3d": {
+          "param": "bedLevel",
+          "label": "Bed Level",
+          "unit": "m",
+          "offset": [
+            0,
+            7,
+            0
+          ],
+          "decimals": 1
+        }
+      }
     },
     "pipe-tails": {
       "type": "PipeSegment",
@@ -1826,6 +1865,18 @@
       "parameters": {
         "stockTonnes": 46000,
         "moisture": 9.2
+      },
+      "config": {
+        "kpi3d": {
+          "param": "stockTonnes",
+          "label": "Stock A",
+          "unit": "t",
+          "offset": [
+            0,
+            8,
+            0
+          ]
+        }
       }
     },
     "pile-2": {
@@ -1841,6 +1892,9 @@
       "parameters": {
         "stockTonnes": 13500,
         "moisture": 10.4
+      },
+      "config": {
+        "animPhase": 0.5
       }
     },
     "loadout-1": {
@@ -2121,6 +2175,18 @@
         "generationMW": 640,
         "coalBurnRate": 270,
         "stockDays": 14
+      },
+      "config": {
+        "kpi3d": {
+          "param": "generationMW",
+          "label": "Generation",
+          "unit": "MW",
+          "offset": [
+            0,
+            18,
+            0
+          ]
+        }
       }
     },
     "road-3": {
@@ -2263,7 +2329,17 @@
             "count": 10,
             "size": 0.13
           }
-        ]
+        ],
+        "kpi3d": {
+          "param": "blendRatio",
+          "label": "Blend A:B",
+          "unit": "%",
+          "offset": [
+            0,
+            11,
+            0
+          ]
+        }
       }
     },
     "pm-1": {
@@ -2863,6 +2939,191 @@
         1.1,
         0
       ]
+    },
+    "flood-1": {
+      "id": "flood-1",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "flood_light",
+      "name": "Floodlight FL-01 (CHPP)",
+      "position": [
+        -4,
+        0,
+        -12
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "flood-2": {
+      "id": "flood-2",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "flood_light",
+      "name": "Floodlight FL-02 (CHPP)",
+      "position": [
+        18,
+        0,
+        16
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "flood-3": {
+      "id": "flood-3",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "flood_light",
+      "name": "Floodlight FL-03 (Rail)",
+      "position": [
+        58,
+        0,
+        -32
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "flood-4": {
+      "id": "flood-4",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "flood_light",
+      "name": "Floodlight FL-04 (Rail)",
+      "position": [
+        78,
+        0,
+        -32
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "windsock-1": {
+      "id": "windsock-1",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "windsock",
+      "name": "Windsock - ROM Pad",
+      "position": [
+        -56,
+        0,
+        20
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "lv-1": {
+      "id": "lv-1",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "light_vehicle",
+      "name": "LV-14 Patrol",
+      "position": [
+        2,
+        0,
+        -20
+      ],
+      "config": {
+        "path": {
+          "waypoints": [
+            [
+              2,
+              0,
+              -20
+            ],
+            [
+              24,
+              0,
+              -22
+            ],
+            [
+              46,
+              0,
+              -14
+            ],
+            [
+              64,
+              0,
+              -2
+            ],
+            [
+              78,
+              0,
+              6
+            ],
+            [
+              64,
+              0,
+              10
+            ],
+            [
+              40,
+              0,
+              4
+            ],
+            [
+              16,
+              0,
+              -6
+            ]
+          ],
+          "speed": 2.4,
+          "loop": true
+        }
+      },
+      "parentId": "grp_services"
     }
   },
   "environment": {
@@ -2973,6 +3234,16 @@
         "focusDistance": 0.045,
         "focalLength": 0.5,
         "bokehScale": 0.9
+      },
+      "exposure": 1.08,
+      "grade": {
+        "contrast": 0.06,
+        "saturation": 0.05,
+        "warmth": 0.05
+      },
+      "vignette": {
+        "offset": 0.26,
+        "darkness": 0.3
       }
     }
   },

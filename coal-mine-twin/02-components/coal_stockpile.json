@@ -42,6 +42,14 @@
         "metalness": 0.05,
         "roughness": 0.95,
         "granular": true
+      },
+      "animate": {
+        "kind": "level",
+        "period": 360,
+        "from": 0.62,
+        "to": 1.04,
+        "phase": 0.0,
+        "speedKey": "speed"
       }
     },
     {
@@ -63,6 +71,14 @@
         "metalness": 0.05,
         "roughness": 0.95,
         "granular": true
+      },
+      "animate": {
+        "kind": "level",
+        "period": 360,
+        "from": 0.5,
+        "to": 1.0,
+        "phase": 0.33,
+        "speedKey": "speed"
       }
     },
     {
@@ -84,6 +100,14 @@
         "metalness": 0.05,
         "roughness": 0.95,
         "granular": true
+      },
+      "animate": {
+        "kind": "level",
+        "period": 360,
+        "from": 0.45,
+        "to": 1.0,
+        "phase": 0.62,
+        "speedKey": "speed"
       }
     }
   ],

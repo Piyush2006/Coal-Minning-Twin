@@ -46,6 +46,16 @@ function interpolate(msg, obj) {
 // re-order while they stay active. Module-level (render-independent).
 const firstSeen = new Map()
 
+// Session log of FIRED alerts (each key logged once per firing episode) for
+// the drill-down's alert history. Ring buffer, newest first, hard cap.
+const ALERT_LOG = []
+const LOG_CAP = 100
+
+/** Recent fired alerts, newest first — optionally filtered to one asset. */
+export function getAlertLog(objId) {
+  return objId ? ALERT_LOG.filter(e => e.objId === objId) : ALERT_LOG
+}
+
 /** Evaluate all alert rules over an objects map → active alerts, newest first. */
 export function evaluateAlerts(objects) {
   const out = []
@@ -59,7 +69,15 @@ export function evaluateAlerts(objects) {
       if (!fires(r, o.parameters?.[r.param])) continue
       const key = `${id}:${r.id ?? r.param}`
       active.add(key)
-      if (!firstSeen.has(key)) firstSeen.set(key, Date.now())
+      if (!firstSeen.has(key)) {
+        firstSeen.set(key, Date.now())
+        ALERT_LOG.unshift({
+          t: Date.now(), objId: id, asset: o.name ?? id,
+          severity: r.severity === 'critical' ? 'critical' : 'warn',
+          useCase: r.useCase ?? '', message: interpolate(r.message, o),
+        })
+        if (ALERT_LOG.length > LOG_CAP) ALERT_LOG.pop()
+      }
       out.push({
         key, objId: id, asset: o.name ?? id,
         severity: r.severity === 'critical' ? 'critical' : 'warn',

@@ -285,6 +285,11 @@
           "agg": "count"
         }
       ]
+    },
+    "grp_services": {
+      "name": "Site Services",
+      "parentId": "grp_site",
+      "order": 9
     }
   },
   "objects": {
@@ -621,7 +626,18 @@
             "message": "Active fault code {faultCode}"
           }
         ],
-        "animPhase": 0.0
+        "animPhase": 0.0,
+        "kpi3d": {
+          "param": "bucketPayload",
+          "label": "Bucket Payload",
+          "unit": "t",
+          "offset": [
+            0,
+            9,
+            0
+          ],
+          "decimals": 1
+        }
       }
     },
     "loader-1": {
@@ -1325,7 +1341,17 @@
         "length": 10,
         "itemType": "coal",
         "itemSpacing": 6,
-        "material": "coal"
+        "material": "coal",
+        "kpi3d": {
+          "param": "load",
+          "label": "Belt Load",
+          "unit": "%",
+          "offset": [
+            0,
+            5.5,
+            0
+          ]
+        }
       },
       "parameters": {
         "lineSpeed": 2.1,
@@ -1578,7 +1604,20 @@
             "flowing": true
           }
         }
-      ]
+      ],
+      "config": {
+        "kpi3d": {
+          "param": "bedLevel",
+          "label": "Bed Level",
+          "unit": "m",
+          "offset": [
+            0,
+            7,
+            0
+          ],
+          "decimals": 1
+        }
+      }
     },
     "pipe-tails": {
       "type": "PipeSegment",
@@ -1826,6 +1865,18 @@
       "parameters": {
         "stockTonnes": 46000,
         "moisture": 9.2
+      },
+      "config": {
+        "kpi3d": {
+          "param": "stockTonnes",
+          "label": "Stock A",
+          "unit": "t",
+          "offset": [
+            0,
+            8,
+            0
+          ]
+        }
       }
     },
     "pile-2": {
@@ -1841,6 +1892,9 @@
       "parameters": {
         "stockTonnes": 13500,
         "moisture": 10.4
+      },
+      "config": {
+        "animPhase": 0.5
       }
     },
     "loadout-1": {
@@ -2121,6 +2175,18 @@
         "generationMW": 640,
         "coalBurnRate": 270,
         "stockDays": 14
+      },
+      "config": {
+        "kpi3d": {
+          "param": "generationMW",
+          "label": "Generation",
+          "unit": "MW",
+          "offset": [
+            0,
+            18,
+            0
+          ]
+        }
       }
     },
     "road-3": {
@@ -2263,7 +2329,17 @@
             "count": 10,
             "size": 0.13
           }
-        ]
+        ],
+        "kpi3d": {
+          "param": "blendRatio",
+          "label": "Blend A:B",
+          "unit": "%",
+          "offset": [
+            0,
+            11,
+            0
+          ]
+        }
       }
     },
     "pm-1": {
@@ -2863,6 +2939,191 @@
         1.1,
         0
       ]
+    },
+    "flood-1": {
+      "id": "flood-1",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "flood_light",
+      "name": "Floodlight FL-01 (CHPP)",
+      "position": [
+        -4,
+        0,
+        -12
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "flood-2": {
+      "id": "flood-2",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "flood_light",
+      "name": "Floodlight FL-02 (CHPP)",
+      "position": [
+        18,
+        0,
+        16
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "flood-3": {
+      "id": "flood-3",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "flood_light",
+      "name": "Floodlight FL-03 (Rail)",
+      "position": [
+        58,
+        0,
+        -32
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "flood-4": {
+      "id": "flood-4",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "flood_light",
+      "name": "Floodlight FL-04 (Rail)",
+      "position": [
+        78,
+        0,
+        -32
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "windsock-1": {
+      "id": "windsock-1",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "windsock",
+      "name": "Windsock - ROM Pad",
+      "position": [
+        -56,
+        0,
+        20
+      ],
+      "config": {},
+      "parentId": "grp_services"
+    },
+    "lv-1": {
+      "id": "lv-1",
+      "status": "running",
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "type": "light_vehicle",
+      "name": "LV-14 Patrol",
+      "position": [
+        2,
+        0,
+        -20
+      ],
+      "config": {
+        "path": {
+          "waypoints": [
+            [
+              2,
+              0,
+              -20
+            ],
+            [
+              24,
+              0,
+              -22
+            ],
+            [
+              46,
+              0,
+              -14
+            ],
+            [
+              64,
+              0,
+              -2
+            ],
+            [
+              78,
+              0,
+              6
+            ],
+            [
+              64,
+              0,
+              10
+            ],
+            [
+              40,
+              0,
+              4
+            ],
+            [
+              16,
+              0,
+              -6
+            ]
+          ],
+          "speed": 2.4,
+          "loop": true
+        }
+      },
+      "parentId": "grp_services"
     }
   },
   "environment": {
@@ -2973,6 +3234,16 @@
         "focusDistance": 0.045,
         "focalLength": 0.5,
         "bokehScale": 0.9
+      },
+      "exposure": 1.08,
+      "grade": {
+        "contrast": 0.06,
+        "saturation": 0.05,
+        "warmth": 0.05
+      },
+      "vignette": {
+        "offset": 0.26,
+        "darkness": 0.3
       }
     }
   },
@@ -3946,6 +4217,104 @@
           "animate": {
             "kind": "pulse",
             "speedKey": "speed"
+          }
+        },
+        {
+          "id": "binAGaugeBack",
+          "label": "Bin A gauge",
+          "parentId": null,
+          "geometry": "box",
+          "dims": {
+            "width": 0.22,
+            "height": 3.24,
+            "depth": 0.22
+          },
+          "position": [
+            -1.7799999999999998,
+            7.2,
+            0
+          ],
+          "material": {
+            "color": "#dfe3e8",
+            "metalness": 0.2,
+            "roughness": 0.5
+          }
+        },
+        {
+          "id": "binAGaugeFill",
+          "label": "Bin A level",
+          "parentId": null,
+          "geometry": "box",
+          "dims": {
+            "width": 0.17,
+            "height": 3.1,
+            "depth": 0.17
+          },
+          "position": [
+            -1.7799999999999998,
+            7.13,
+            0
+          ],
+          "material": {
+            "color": "@coalBlack",
+            "metalness": 0.05,
+            "roughness": 0.85
+          },
+          "animate": {
+            "kind": "paramLevel",
+            "param": "binALevel",
+            "max": 100,
+            "from": 0.05,
+            "to": 1
+          }
+        },
+        {
+          "id": "binBGaugeBack",
+          "label": "Bin B gauge",
+          "parentId": null,
+          "geometry": "box",
+          "dims": {
+            "width": 0.22,
+            "height": 3.24,
+            "depth": 0.22
+          },
+          "position": [
+            1.4200000000000002,
+            7.2,
+            0
+          ],
+          "material": {
+            "color": "#dfe3e8",
+            "metalness": 0.2,
+            "roughness": 0.5
+          }
+        },
+        {
+          "id": "binBGaugeFill",
+          "label": "Bin B level",
+          "parentId": null,
+          "geometry": "box",
+          "dims": {
+            "width": 0.17,
+            "height": 3.1,
+            "depth": 0.17
+          },
+          "position": [
+            1.4200000000000002,
+            7.13,
+            0
+          ],
+          "material": {
+            "color": "@coalBlack",
+            "metalness": 0.05,
+            "roughness": 0.85
+          },
+          "animate": {
+            "kind": "paramLevel",
+            "param": "binBLevel",
+            "max": 100,
+            "from": 0.05,
+            "to": 1
           }
         }
       ],
@@ -5482,6 +5851,14 @@
             "metalness": 0.05,
             "roughness": 0.95,
             "granular": true
+          },
+          "animate": {
+            "kind": "level",
+            "period": 360,
+            "from": 0.62,
+            "to": 1.04,
+            "phase": 0.0,
+            "speedKey": "speed"
           }
         },
         {
@@ -5503,6 +5880,14 @@
             "metalness": 0.05,
             "roughness": 0.95,
             "granular": true
+          },
+          "animate": {
+            "kind": "level",
+            "period": 360,
+            "from": 0.5,
+            "to": 1.0,
+            "phase": 0.33,
+            "speedKey": "speed"
           }
         },
         {
@@ -5524,6 +5909,14 @@
             "metalness": 0.05,
             "roughness": 0.95,
             "granular": true
+          },
+          "animate": {
+            "kind": "level",
+            "period": 360,
+            "from": 0.45,
+            "to": 1.0,
+            "phase": 0.62,
+            "speedKey": "speed"
           }
         }
       ],
@@ -6541,6 +6934,112 @@
         }
       ]
     },
+    "flood_light": {
+      "id": "flood_light",
+      "name": "Floodlight Mast",
+      "category": "Infrastructure",
+      "parts": [
+        {
+          "id": "base",
+          "geometry": "box",
+          "dims": {
+            "width": 0.7,
+            "height": 0.35,
+            "depth": 0.7
+          },
+          "position": [
+            0,
+            0.18,
+            0
+          ],
+          "material": {
+            "color": "#b9bec4",
+            "metalness": 0.2,
+            "roughness": 0.7
+          }
+        },
+        {
+          "id": "pole",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.11,
+            "height": 9.2
+          },
+          "position": [
+            0,
+            4.95,
+            0
+          ],
+          "material": {
+            "color": "#9aa1a8",
+            "metalness": 0.7,
+            "roughness": 0.35
+          }
+        },
+        {
+          "id": "crossarm",
+          "geometry": "box",
+          "dims": {
+            "width": 1.7,
+            "height": 0.14,
+            "depth": 0.26
+          },
+          "position": [
+            0,
+            9.6,
+            0
+          ],
+          "material": {
+            "color": "#7d848b",
+            "metalness": 0.6,
+            "roughness": 0.4
+          }
+        },
+        {
+          "id": "lampA",
+          "geometry": "box",
+          "dims": {
+            "width": 0.52,
+            "height": 0.26,
+            "depth": 0.38
+          },
+          "position": [
+            -0.55,
+            9.42,
+            0
+          ],
+          "material": {
+            "color": "#fff6dd",
+            "emissive": "#ffedb8",
+            "emissiveIntensity": 2.6,
+            "metalness": 0.1,
+            "roughness": 0.4
+          }
+        },
+        {
+          "id": "lampB",
+          "geometry": "box",
+          "dims": {
+            "width": 0.52,
+            "height": 0.26,
+            "depth": 0.38
+          },
+          "position": [
+            0.55,
+            9.42,
+            0
+          ],
+          "material": {
+            "color": "#fff6dd",
+            "emissive": "#ffedb8",
+            "emissiveIntensity": 2.6,
+            "metalness": 0.1,
+            "roughness": 0.4
+          }
+        }
+      ],
+      "parameters": []
+    },
     "haul_road": {
       "id": "haul_road",
       "label": "Haul Road",
@@ -7257,6 +7756,156 @@
           "label": "Down",
           "color": "#ff3b30",
           "severity": "down"
+        }
+      ]
+    },
+    "light_vehicle": {
+      "id": "light_vehicle",
+      "name": "Light Vehicle (LV)",
+      "category": "Mobile Equipment",
+      "parts": [
+        {
+          "id": "chassis",
+          "geometry": "box",
+          "dims": {
+            "width": 4.4,
+            "height": 0.4,
+            "depth": 1.9
+          },
+          "position": [
+            0,
+            0.78,
+            0
+          ],
+          "material": {
+            "color": "#e9edf1",
+            "metalness": 0.3,
+            "roughness": 0.45
+          }
+        },
+        {
+          "id": "cab",
+          "geometry": "box",
+          "dims": {
+            "width": 1.9,
+            "height": 1.35,
+            "depth": 1.86
+          },
+          "position": [
+            0.75,
+            1.62,
+            0
+          ],
+          "material": {
+            "color": "#e9edf1",
+            "metalness": 0.3,
+            "roughness": 0.4
+          }
+        },
+        {
+          "id": "tray",
+          "geometry": "box",
+          "dims": {
+            "width": 1.9,
+            "height": 0.55,
+            "depth": 1.86
+          },
+          "position": [
+            -1.15,
+            1.22,
+            0
+          ],
+          "material": {
+            "color": "#d4d9de",
+            "metalness": 0.35,
+            "roughness": 0.5
+          }
+        },
+        {
+          "id": "flag",
+          "geometry": "box",
+          "dims": {
+            "width": 0.02,
+            "height": 0.3,
+            "depth": 0.4
+          },
+          "position": [
+            -2.1,
+            3.0,
+            0
+          ],
+          "material": {
+            "color": "#ff9f0a"
+          }
+        },
+        {
+          "id": "flagPole",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.02,
+            "height": 1.9
+          },
+          "position": [
+            -2.1,
+            2.1,
+            0
+          ],
+          "material": {
+            "color": "#5c636a",
+            "metalness": 0.6,
+            "roughness": 0.4
+          }
+        },
+        {
+          "id": "axleF",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.44,
+            "height": 2.05
+          },
+          "position": [
+            1.4,
+            0.44,
+            0
+          ],
+          "material": {
+            "color": "#23262a",
+            "roughness": 0.9
+          },
+          "animate": {
+            "kind": "spinY"
+          }
+        },
+        {
+          "id": "axleR",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.44,
+            "height": 2.05
+          },
+          "position": [
+            -1.3,
+            0.44,
+            0
+          ],
+          "material": {
+            "color": "#23262a",
+            "roughness": 0.9
+          },
+          "animate": {
+            "kind": "spinY"
+          }
+        }
+      ],
+      "parameters": [
+        {
+          "key": "speedKph",
+          "label": "Speed",
+          "unit": "km/h",
+          "default": 24,
+          "min": 0,
+          "max": 60,
+          "freq": "5s"
         }
       ]
     },
@@ -12641,6 +13290,72 @@
           "severity": "down"
         }
       ]
+    },
+    "windsock": {
+      "id": "windsock",
+      "name": "Windsock",
+      "category": "Infrastructure",
+      "parts": [
+        {
+          "id": "pole",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.07,
+            "height": 6.2
+          },
+          "position": [
+            0,
+            3.1,
+            0
+          ],
+          "material": {
+            "color": "#c7ccd2",
+            "metalness": 0.5,
+            "roughness": 0.4
+          }
+        },
+        {
+          "id": "sockGrp",
+          "kind": "group",
+          "position": [
+            0,
+            6.0,
+            0
+          ],
+          "animate": {
+            "kind": "sweep",
+            "axis": "y",
+            "from": -0.35,
+            "to": 0.35,
+            "period": 5
+          }
+        },
+        {
+          "id": "sock",
+          "parentId": "sockGrp",
+          "geometry": "cone",
+          "dims": {
+            "radius": 0.34,
+            "height": 1.7
+          },
+          "position": [
+            0.85,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            -1.5708
+          ],
+          "material": {
+            "color": "#ff7a1a",
+            "metalness": 0.0,
+            "roughness": 0.8
+          }
+        }
+      ],
+      "parameters": []
     }
   }
 }

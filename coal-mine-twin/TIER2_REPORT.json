@@ -1,0 +1,92 @@
+[
+  {
+    "part": 1,
+    "title": "Premium render pass",
+    "status": "done",
+    "files_changed": [
+      "app/src/components/PostFX.jsx",
+      "coal-mine-twin/03-twin-spec.json (environment.postfx)"
+    ],
+    "how": "Tone mapping was ALREADY ACES filmic at the renderer (Canvas gl props) \u2014 materials tone-map during the scene pass and composer effects operate on the filmic image; verified rather than switched. Added scene-tunable exposure (gl.toneMappingExposure via environment.postfx.exposure, re-set on config change), a config-gated final grade (BrightnessContrast + HueSaturation + Sepia warmth; default barely-there, grade:false restores the raw chain), and made the vignette tunable. Re-exposed the scene at 1.08 with grade {contrast:0.06, saturation:0.05, warmth:0.05} and verified against the tour's pit + closing-wide beats: hazy horizon keeps depth, whites don't clip, granular coal still reads black (screenshots 33/34 vs 29/31 before). CCTV feed confirmed correct: the scissor pass renders outside the composer so it gets ACES (from the renderer) but no effects \u2014 reads as intended 'raw camera', no double-apply.",
+    "config_keys": [
+      "environment.postfx.exposure",
+      "environment.postfx.grade{contrast,brightness,saturation,warmth}|false",
+      "environment.postfx.vignette{offset,darkness}"
+    ],
+    "perf_note": "Grade adds three trivial LDR effects to the existing composer pass \u2014 negligible. SSR NOT shipped: the SSR in @react-three/postprocessing 2.19 is the deprecated experimental screen-space-reflections effect, requires dropping the composer's 4x MSAA (which the whole scene's thin geometry relies on) and is known to shimmer on large outdoor planes. Skipped deliberately rather than shipped off-by-default broken; water/glossy already carry envMap reflections.",
+    "regression_check": "Tour pit + wide beats re-shot with overlay (33/34); coal blackness, alert rings, chunk streams visible in the same frames; CCTV feed re-verified raw-but-ACES (44).",
+    "caveats": "No SSR config key was added since no SSR pass exists \u2014 adding a dead key would be misleading."
+  },
+  {
+    "part": 2,
+    "title": "Live 3D KPI overlays",
+    "status": "done",
+    "files_changed": [
+      "app/src/components/Kpi3D.jsx (new)",
+      "app/src/App.jsx (layer mount + KPI toggle button)",
+      "coal-mine-twin/03-twin-spec.json (6 config.kpi3d blocks)"
+    ],
+    "how": "Generic Kpi3D billboard: any object opts in via config.kpi3d {param, label, unit, offset, decimals}. One drei <Html> card per label (app typography, frosted card), value via a narrow per-object store subscription (only that label re-renders at the 1 Hz sim tick), distance fade written straight to DOM opacity in useFrame (full 10-125m, fades out by 170m and under 10m) with module-level temp vectors \u2014 no per-frame allocations. Global toggle: KPI button in the viewport controls (default ON); hidden in build mode; zIndexRange keeps cards under all UI overlays incl. the tour lower-third. Wired 6: cv-01 Belt Load %, pile-1 Stock A t, thickener-1 Bed Level m, power-1 Generation MW, blend-1 Blend A:B %, exc-coal-1 Bucket Payload t.",
+    "config_keys": [
+      "<object>.config.kpi3d{param,label,unit,offset,decimals}"
+    ],
+    "perf_note": "6 DOM billboards + 1 Hz value updates \u2014 no measurable impact.",
+    "regression_check": "Screenshot 35 (three cards mid-shot over plant/stockyard with alerts + rings live); cards visible non-colliding in tour beats 42/43.",
+    "caveats": "Spec suggested 'Open Pit depth' and 'CV-01 throughput' \u2014 pit terrain has no ticking parameter and cv-01's schema exposes load/lineSpeed, so the excavator's bucketPayload and Belt Load % were wired instead (honest live params over invented ones)."
+  },
+  {
+    "part": 3,
+    "title": "Asset drill-down panel",
+    "status": "done",
+    "files_changed": [
+      "app/src/components/AssetDrilldown.jsx (new)",
+      "app/src/lib/paramHistory.js (new)",
+      "app/src/lib/alertsEngine.js (fired-alert ring buffer)",
+      "app/src/App.jsx (AssetDetail sections)"
+    ],
+    "how": "Extended the existing view-mode Asset tab (name/type/state badge already present). Added LIVE TRENDS: SVG polyline sparklines over the asset's first 4 non-manual params, fed by in-memory ring buffers (cap 64 \u2248 last minute) that record only while a panel displaying them is mounted; duplicate values skipped. Added RECENT ALERTS: alertsEngine now keeps a session ring buffer (cap 100) of FIRED alerts \u2014 each alert logged once per firing episode with interpolated message, severity, useCase, timestamp \u2014 and the panel lists the selected asset's last 6. Fully generic: any asset with params/alertRules gets both sections; no per-type code.",
+    "config_keys": [],
+    "perf_note": "Buffers only for displayed params of the selected asset; sparklines re-render at 1 Hz only while the panel is open. Alert log is O(1) per firing.",
+    "regression_check": "Screenshots 36 + 40: crusher panel with 4 live sparklines (Vibration trending up to 11 mm/s) and alert history (critical bearing fault + 2 warns with timestamps + use-case chips) while its red alert ring pulses in-scene.",
+    "caveats": "History starts buffering on first view (per spec); manual-entry params are excluded from sparklines since they never tick."
+  },
+  {
+    "part": 4,
+    "title": "Dynamic stockpiles + bin levels",
+    "status": "done",
+    "files_changed": [
+      "app/src/components/CompositeAsset.jsx ('level' + 'paramLevel' animate kinds)",
+      "app/src/lib/componentSpec.js (kinds + param/min/max whitelist)",
+      "coal-mine-twin/02-components/coal_stockpile.json",
+      "coal-mine-twin/02-components/blending_plant.json",
+      "coal-mine-twin/03-twin-spec.json (pile-2 animPhase)"
+    ],
+    "how": "New generic animate kinds: 'level' \u2014 slow base-anchored sine breathe of scale.y between from..to (no geometry regeneration); 'paramLevel' \u2014 scale.y tracks a LIVE parameter ((v-min)/(max-min)), smoothed, base-anchored. Stockpile cones breathe on a 360 s cycle (pileMain 0.62\u21921.04, lobes staggered by phase), and Product piles A/B run counter-phase (pile-2 animPhase 0.5) so one grows while the other draws down \u2014 reads as stack/reclaim. Blend bins got industrial sight-gauges on the flank (static back column + coal-dark fill column) whose fill height tracks the ticking binALevel/binBLevel params.",
+    "config_keys": [
+      "part.animate{kind:'level',period,from,to,phase}",
+      "part.animate{kind:'paramLevel',param,min,max,from,to}",
+      "<object>.config.animPhase (existing, reused for counter-phase)"
+    ],
+    "perf_note": "Scale/position writes in the existing per-part useFrame \u2014 zero allocations, zero extra draw calls (4 new gauge parts total).",
+    "regression_check": "Scene renders with piles at differing heights (35 vs 39); load-state fills (same code path family) still verified in tour beats.",
+    "caveats": "Breathing is deliberately slow \u2014 full cycle 6 minutes (visible over ~1 minute of watching as a few % height change; pileMain swings 0.62x-1.04x height). Sight-gauge columns are slim and read best within ~40m."
+  },
+  {
+    "part": 5,
+    "title": "Ambient life",
+    "status": "done",
+    "files_changed": [
+      "coal-mine-twin/02-components/flood_light.json (new)",
+      "coal-mine-twin/02-components/windsock.json (new)",
+      "coal-mine-twin/02-components/light_vehicle.json (new)",
+      "coal-mine-twin/03-twin-spec.json (6 new objects + grp_services)"
+    ],
+    "how": "Pure data \u2014 zero engine changes. flood_light: pole/crossarm + two emissive lamp heads (emissiveIntensity 2.6 \u2192 the existing bloom pass provides the faint glow; NO new real-time lights or shadows). 4 masts: 2 at the CHPP pad, 2 at the rail load-out. windsock: pole + horizontal orange cone on a group swaying \u00b10.35 rad (existing sweep articulation), at the ROM pad clear of truck loops. light_vehicle: mining-white pickup with amber buggy-whip flag, patrolling the yard/port access roads on the existing PathDrive (loop of 8 waypoints, speed 2.4, clear of haul loops, rail and tour framings). All grouped under a new 'Site Services' namespace node.",
+    "config_keys": [
+      "lv-1.config.path (existing PathDrive schema)"
+    ],
+    "perf_note": "~30 additional primitive parts scene-wide, no lights, one more PathDrive vehicle \u2014 negligible.",
+    "regression_check": "Screenshots 37 (floodlight masts at the plant), 38 (windsock at the pit rim), 44 (LV visible on patrol near the wharf road, upper centre-right). Object IDs untouched; 53 objects total (47 + 6 new).",
+    "caveats": "Floodlight glow is subtle in daytime lighting by design \u2014 it reads via bloom, strongest against the darker horizon."
+  }
+]
