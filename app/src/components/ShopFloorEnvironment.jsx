@@ -3,7 +3,15 @@
 //   { style: 'earth', … }    → noise-displaced natural terrain (open-cast sites,
 //                              yards, quarries): gentle heightmap undulation, no
 //                              lanes, matte earth material.
-//   options: color, noiseAmp (m), noiseScale (m per undulation), margin
+//   options: color, noiseAmp (m), noiseScale (m per undulation), margin,
+//            farColor (horizon ground tint),
+//            zones: [{ shape:'rect'|'disc', at:[x,z], size:[w,d]|radius,
+//                      style:'dirt'|'concrete'|'gravel'|'hardstand', rotation? }]
+// Earth mode also lays a HUGE far-ground disc under everything so the land
+// runs to the horizon — scene fog melts its far reaches into the sky colour,
+// so no "end of the world" edge is ever visible. `zones` paints flat decal
+// regions (worn dirt aprons, plant pads, gravel, hardstands) over the earth
+// so the site reads as built-up industrial land.
 // The slab AUTO-SIZES to the twin: it always covers every placed object with a
 // generous margin, quantised to 20 m steps so the geometry isn't reallocated on
 // every drag/sim tick — big generated plants never hang off the edge.
@@ -22,6 +30,42 @@ const STEP     = 20    // resize quantum
 const hashNoise = (x, z) => {
   const n = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453
   return (n - Math.floor(n)) * 2 - 1
+}
+
+// zone style → colour + procedural finish (reuses the shared texture module)
+const ZONE_STYLES = {
+  dirt:      { color: '#93846c', finish: 'dust',     rough: 0.97 },   // worn pit/dump apron
+  concrete:  { color: '#c3c6ca', finish: 'concrete', rough: 0.93 },   // plant / CHPP pads
+  gravel:    { color: '#9b948a', finish: 'granular', rough: 0.95 },   // yards, access standing
+  hardstand: { color: '#b3aea3', finish: 'concrete', rough: 0.94 },   // rail / port compacted pads
+}
+
+function GroundZone({ zone }) {
+  const st = ZONE_STYLES[zone.style] ?? ZONE_STYLES.dirt
+  const zmaps = getFinishMaps(st.finish)
+  const at = zone.at ?? [0, 0]
+  const mat = (
+    <meshStandardMaterial color={resolveColor(zone.color, st.color)} metalness={0.03} roughness={st.rough}
+      map={zmaps?.map ?? null} roughnessMap={zmaps?.roughnessMap ?? null}
+      normalMap={zmaps?.normalMap ?? null}
+      normalScale={zmaps?.normalScale ? [zmaps.normalScale, zmaps.normalScale] : undefined}
+      polygonOffset polygonOffsetFactor={-1} />
+  )
+  if (zone.shape === 'disc') {
+    return (
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[at[0], 0.025, at[1]]} receiveShadow renderOrder={-1}>
+        <circleGeometry args={[zone.radius ?? 20, 40]} />
+        {mat}
+      </mesh>
+    )
+  }
+  const [w, d] = zone.size ?? [20, 20]
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, zone.rotation ?? 0]} position={[at[0], 0.025, at[1]]} receiveShadow renderOrder={-1}>
+      <planeGeometry args={[w, d]} />
+      {mat}
+    </mesh>
+  )
 }
 
 export function ShopFloorEnvironment() {
@@ -63,14 +107,25 @@ export function ShopFloorEnvironment() {
   const maps = isEarth ? getFinishMaps('concrete') : null
 
   if (isEarth) {
+    const zones = Array.isArray(ground.zones) ? ground.zones : []
     return (
-      <group position={[cx, 0, cz]}>
-        <mesh geometry={earthGeo} receiveShadow>
-          <meshStandardMaterial color={resolveColor(ground.color, '#a99c86')} metalness={0.02} roughness={0.97}
-            roughnessMap={maps?.roughnessMap ?? null} normalMap={maps?.normalMap ?? null}
-            normalScale={maps?.normalScale ? [maps.normalScale, maps.normalScale] : undefined} />
+      <>
+        {/* far ground — runs to the horizon; fog fades it into the sky */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, -0.06, cz]} renderOrder={-2}>
+          <circleGeometry args={[1400, 48]} />
+          <meshStandardMaterial color={resolveColor(ground.farColor ?? ground.color, '#a49780')}
+            metalness={0.02} roughness={0.98} />
         </mesh>
-      </group>
+        <group position={[cx, 0, cz]}>
+          <mesh geometry={earthGeo} receiveShadow>
+            <meshStandardMaterial color={resolveColor(ground.color, '#a99c86')} metalness={0.02} roughness={0.97}
+              roughnessMap={maps?.roughnessMap ?? null} normalMap={maps?.normalMap ?? null}
+              normalScale={maps?.normalScale ? [maps.normalScale, maps.normalScale] : undefined} />
+          </mesh>
+        </group>
+        {/* zone decals — worn dirt / concrete pads / gravel / hardstands */}
+        {zones.map((z, i) => <GroundZone key={i} zone={z} />)}
+      </>
     )
   }
 

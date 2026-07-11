@@ -3,7 +3,7 @@
 // scene's `environment.sky` block (any twin can opt in):
 //   environment: { sky: { zenith, horizon, ground, fog: { near, far } } }
 // Pure shader — no network HDRIs, works offline and in headless capture.
-import { useMemo } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { resolveColor } from '../lib/paletteTokens'
 
@@ -46,6 +46,41 @@ export function SkyDome({ config = {} }) {
         <sphereGeometry args={[1800, 32, 16]} />
       </mesh>
       {fog && <fog attach="fog" args={[fog.color, fog.near, fog.far]} />}
+      {config.ridges !== false && <HorizonRidges config={config.ridges === true ? {} : (config.ridges ?? {})} horizon={horizon} />}
     </>
   )
+}
+
+// ── Distant terrain silhouettes ─────────────────────────────────────────────
+// A ring of big, flat, low-poly hills far outside the site, heavily melted
+// into the haze by the scene fog — a sense of landscape, not a mountain range.
+// Config (environment.sky.ridges): { distance, height, color, count } or false.
+const h01 = (i, s2) => { const n = Math.sin(i * 127.1 + s2 * 311.7) * 43758.5453; return n - Math.floor(n) }
+const RIDGE_GEO = new THREE.ConeGeometry(1, 1, 7, 1)
+const _ro = new THREE.Object3D()
+
+function HorizonRidges({ config = {}, horizon }) {
+  const ref = useRef()
+  const count = Math.min(28, Math.round(config.count ?? 18))
+  const dist = config.distance ?? 820
+  const hMax = config.height ?? 46
+  const color = resolveColor(config.color, '#98a2ad')
+  const mat = useMemo(() => new THREE.MeshBasicMaterial({ color }), [color])
+  useEffect(() => {
+    const m = ref.current
+    if (!m) return
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2 + h01(i, 1) * 0.25
+      const d = dist * (0.85 + h01(i, 2) * 0.35)
+      const h = hMax * (0.35 + h01(i, 3) * 0.65)
+      const w = 130 + h01(i, 4) * 190
+      _ro.position.set(Math.cos(a) * d, h * 0.32, Math.sin(a) * d)   // slightly sunk, wide + flat
+      _ro.scale.set(w, h, w * (0.7 + h01(i, 5) * 0.5))
+      _ro.rotation.set(0, h01(i, 6) * Math.PI, 0)
+      _ro.updateMatrix()
+      m.setMatrixAt(i, _ro.matrix)
+    }
+    m.instanceMatrix.needsUpdate = true
+  }, [count, dist, hMax])
+  return <instancedMesh ref={ref} args={[RIDGE_GEO, mat, count]} frustumCulled={false} renderOrder={-500} />
 }

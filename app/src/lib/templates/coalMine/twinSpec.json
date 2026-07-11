@@ -2850,15 +2850,94 @@
       "horizon": "#e8ecee",
       "ground": "#c6c1b8",
       "fog": {
-        "near": 280,
-        "far": 1500
+        "near": 120,
+        "far": 850
+      },
+      "ridges": {
+        "distance": 820,
+        "height": 46,
+        "count": 18,
+        "color": "#98a2ad"
       }
     },
     "ground": {
       "style": "earth",
       "color": "#a49780",
       "noiseAmp": 0.35,
-      "noiseScale": 55
+      "noiseScale": 55,
+      "farColor": "#a49780",
+      "zones": [
+        {
+          "shape": "disc",
+          "at": [
+            -92,
+            0
+          ],
+          "radius": 58,
+          "style": "dirt"
+        },
+        {
+          "shape": "rect",
+          "at": [
+            -14,
+            12
+          ],
+          "size": [
+            58,
+            42
+          ],
+          "style": "concrete"
+        },
+        {
+          "shape": "rect",
+          "at": [
+            30,
+            0
+          ],
+          "size": [
+            40,
+            38
+          ],
+          "style": "gravel"
+        },
+        {
+          "shape": "rect",
+          "at": [
+            56,
+            -21
+          ],
+          "size": [
+            76,
+            18
+          ],
+          "style": "hardstand"
+        },
+        {
+          "shape": "rect",
+          "at": [
+            98,
+            16
+          ],
+          "size": [
+            44,
+            26
+          ],
+          "style": "hardstand"
+        },
+        {
+          "shape": "rect",
+          "at": [
+            50,
+            -4
+          ],
+          "size": [
+            56,
+            14
+          ],
+          "style": "gravel",
+          "rotation": -0.35
+        }
+      ]
     },
     "grid": {
       "opacity": 0.1,
