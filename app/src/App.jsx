@@ -18,6 +18,7 @@ import { getConnectorSchema }   from './lib/connectorSchemas'
 import { RuleEditor }           from './components/RuleEditor'
 import { SceneRenderer }      from './components/SceneRenderer'
 import { Connectors }         from './components/Connectors'
+import { MaterialFlowLayer }  from './components/effects/MaterialFlow'
 import { ShopFloorEnvironment } from './components/ShopFloorEnvironment'
 import { MACHINE_LIBRARY }    from './lib/machineLibrary'
 import { dragGuard }          from './lib/interactionGuard'
@@ -1485,6 +1486,7 @@ export default function App() {
                 <GridSystem editMode={editMode} />
                 <SceneRenderer orbitRef={orbitRef} glowMap={glowMap} />
                 <Connectors />
+                <MaterialFlowLayer />
                 <CameraController orbitRef={orbitRef} />
                 {!SNAP_MODE && <PostFX />}
 

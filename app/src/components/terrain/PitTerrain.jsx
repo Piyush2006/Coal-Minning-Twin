@@ -103,8 +103,11 @@ export function PitTerrain({ config = {} }) {
           const a = corner(g0, f0), b = corner(g1, f0), c = corner(g1, f1), d = corner(g0, f1)
           const cA = vColor(a[0], a[1], a[2], s.face), cB = vColor(b[0], b[1], b[2], s.face)
           const cC = vColor(c[0], c[1], c[2], s.face), cD = vColor(d[0], d[1], d[2], s.face)
-          pushV(...a, cA); pushV(...b, cB); pushV(...c, cC)
-          pushV(...a, cA); pushV(...c, cC); pushV(...d, cD)
+          // CCW as seen FROM THE PIT (−Z / above): a→c→b, a→d→c. The previous
+          // a→b→c winding pointed the normals INTO the hill, so FrontSide
+          // culling made the slant faces invisible from the pit side.
+          pushV(...a, cA); pushV(...c, cC); pushV(...b, cB)
+          pushV(...a, cA); pushV(...d, cD); pushV(...c, cC)
         }
       }
     }
@@ -194,14 +197,16 @@ export function PitTerrain({ config = {} }) {
 
   return (
     <group>
+      {/* side=DoubleSide as belt-and-braces: terrain must NEVER be see-through
+          from any orbit angle, even if a future edit slips a winding */}
       <mesh geometry={benchGeo} castShadow receiveShadow>
-        <meshStandardMaterial vertexColors metalness={0.02} roughness={0.95}
+        <meshStandardMaterial vertexColors metalness={0.02} roughness={0.95} side={THREE.DoubleSide}
           roughnessMap={earthMaps?.roughnessMap ?? null} normalMap={earthMaps?.normalMap ?? null}
           normalScale={earthMaps?.normalScale ? [earthMaps.normalScale, earthMaps.normalScale] : undefined} />
       </mesh>
       {config.seam !== false && (
         <mesh geometry={seamGeo}>
-          <meshStandardMaterial color={seamCol} metalness={0.06} roughness={0.85}
+          <meshStandardMaterial color={seamCol} metalness={0.06} roughness={0.85} side={THREE.DoubleSide}
             map={coalMaps?.map ?? null} roughnessMap={coalMaps?.roughnessMap ?? null}
             normalMap={coalMaps?.normalMap ?? null}
             normalScale={coalMaps?.normalScale ? [coalMaps.normalScale, coalMaps.normalScale] : undefined}
