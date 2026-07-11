@@ -6,6 +6,7 @@ import { LatheGeometry, ExtrudeGeometry, Shape, Vector2 } from 'three'
 import { finishFor, getFinishMaps } from '../lib/textures'
 import { resolveColor } from '../lib/paletteTokens'
 import { ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
+import { pathFillMap } from '../lib/loadStateMap'
 import { Primitive } from './Primitive'
 import { GLBModel } from './assets/GLBModel'
 import { StatusBeacon } from './StatusBeacon'
@@ -125,7 +126,7 @@ const articulationValue = (t, anim, spd, config) => {
   return from + (to - from) * w
 }
 
-function AnimatedPrimitive({ part, config, status, highlighted, alertSev }) {
+function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId }) {
   const ref = useRef()
   const phase = useRef(Math.random())   // stable per-instance offset → staggered loops (rising smoke)
   // Generic alert indicator light: a part flagged material.alertGlow renders
@@ -139,6 +140,17 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev }) {
     if (part.material?.alertGlow) {
       const k = glowSev ? 1.45 + 0.35 * Math.sin(clock.elapsedTime * 5) : 1
       g.scale.setScalar(k)
+    }
+    // load-state part (truck bed heap …): follow the vehicle's fill 0..1,
+    // scaling toward its own base so the heap grows/vanishes in place
+    if (part.material?.loadState) {
+      const f = objId != null ? pathFillMap[objId] : undefined
+      if (f !== undefined) {
+        g.visible = f > 0.04
+        const sy = 0.12 + 0.88 * f
+        g.scale.y = sy
+        g.position.y = ((part.dims?.height ?? 1) * (sy - 1)) / 2
+      }
     }
     if (!part.animate) return
     const live = config.enabled !== false && status === 'running'
@@ -169,6 +181,20 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev }) {
       case 'slide': {
         const ax = part.animate.axis ?? 'y'
         g.position[ax] = live ? articulationValue(t, part.animate, spd, config) : 0
+        break
+      }
+      // container fill cycle: level rises (78% of the period), holds full,
+      // then resets — wagons under a load-out, ship holds under a shiploader.
+      // Uses from/to as min/max Y-scale; base of the part stays fixed.
+      case 'fill': {
+        const period = Math.max(1, (part.animate.period ?? 40) / (spd || 1))
+        const ph = (part.animate.phase ?? 0) + (Number(config.animPhase) || 0)
+        const pr = ((t / period + ph) % 1 + 1) % 1
+        const v = live ? Math.min(1, pr / 0.78) : 1
+        const lo = part.animate.from ?? 0.06, hi = part.animate.to ?? 1
+        const sy = lo + (hi - lo) * v
+        g.scale.y = sy
+        g.position.y = ((part.dims?.height ?? 1) * (sy - 1)) / 2
         break
       }
       default: break
@@ -238,11 +264,11 @@ function ModelVisual({ part }) {
 
 // The visual of a single part WITHOUT its outer transform (the caller applies
 // position/rotation/scale on a wrapping group — so the Studio can attach a gizmo).
-export function PartVisual({ part, config = {}, status = 'running', depth = 0, highlighted = false, alertSev = null }) {
+export function PartVisual({ part, config = {}, status = 'running', depth = 0, highlighted = false, alertSev = null, objId = null }) {
   if (part.kind === 'component') return <RefBlock refType={part.ref} depth={depth} />
   if (part.kind === 'model') return <ModelVisual part={part} />
   if (part.kind === 'emitter') return <ParticleEmitter {...(part.emitter || {})} active={config.enabled !== false && status === 'running'} />
-  return <AnimatedPrimitive part={part} config={config} status={status} highlighted={highlighted} alertSev={alertSev} />
+  return <AnimatedPrimitive part={part} config={config} status={status} highlighted={highlighted} alertSev={alertSev} objId={objId} />
 }
 
 function autoBeaconY(parts) {
@@ -301,11 +327,11 @@ function AnimatedGroup({ part, config, status, children }) {
   )
 }
 
-function renderPartTree(parts, idSet, parentId, config, status, depth, highlightId, alertSev) {
+function renderPartTree(parts, idSet, parentId, config, status, depth, highlightId, alertSev, objId) {
   return parts
     .filter(p => { const pid = p.parentId || null; return parentId === null ? (pid === null || !idSet.has(pid)) : pid === parentId })
     .map(part => {
-      const children = renderPartTree(parts, idSet, part.id, config, status, depth, highlightId, alertSev)
+      const children = renderPartTree(parts, idSet, part.id, config, status, depth, highlightId, alertSev, objId)
       if (part.kind === 'logical') return <group key={part.id}>{children}</group>
       if ((part.kind === 'group' || part.kind === 'model') && part.animate) {
         return (
@@ -315,7 +341,7 @@ function renderPartTree(parts, idSet, parentId, config, status, depth, highlight
           </AnimatedGroup>
         )
       }
-      const visual = part.kind === 'group' ? null : <PartVisual part={part} config={config} status={status} depth={depth} highlighted={!!highlightId && part.id === highlightId} alertSev={alertSev} />
+      const visual = part.kind === 'group' ? null : <PartVisual part={part} config={config} status={status} depth={depth} highlighted={!!highlightId && part.id === highlightId} alertSev={alertSev} objId={objId} />
       return (
         <group key={part.id} position={part.position || [0, 0, 0]} rotation={part.rotation || [0, 0, 0]} scale={part.scale || [1, 1, 1]}>
           {visual}
@@ -325,13 +351,13 @@ function renderPartTree(parts, idSet, parentId, config, status, depth, highlight
     })
 }
 
-export function CompositeAsset({ config = {}, status = 'running', typeDef, _depth = 0, highlightId = null, alertSev = null }) {
+export function CompositeAsset({ config = {}, status = 'running', typeDef, _depth = 0, highlightId = null, alertSev = null, objId = null }) {
   if (!typeDef?.parts?.length) return <Primitive config={config} typeDef={typeDef} />
   const beaconPos = typeDef.beacon === null ? null : (typeDef.beacon?.offset ?? [0, autoBeaconY(typeDef.parts), 0])
   const idSet = new Set(typeDef.parts.map(p => p.id))
   return (
     <group>
-      {renderPartTree(typeDef.parts, idSet, null, config, status, _depth, highlightId, alertSev)}
+      {renderPartTree(typeDef.parts, idSet, null, config, status, _depth, highlightId, alertSev, objId)}
       {beaconPos && <StatusBeacon status={status} position={beaconPos} />}
     </group>
   )

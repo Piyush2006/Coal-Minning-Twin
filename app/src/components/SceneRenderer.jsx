@@ -5,6 +5,7 @@ import { BoxHelper, Vector3, Box3, CatmullRomCurve3, RingGeometry, CircleGeometr
 import { useSceneStore } from '../store/sceneStore'
 import { useActiveAlerts, alertSeverityMap, ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
 import { useFeedStore } from './CameraFeed'
+import { pathFillMap } from '../lib/loadStateMap'
 import { MACHINE_COMPONENTS, getPorts } from '../lib/machineLibrary'
 import { CompositeAsset } from './CompositeAsset'
 import { SubComponentsLayer } from './SubComponentsLayer'
@@ -127,6 +128,19 @@ function PathDrive({ obj, editMode, children }) {
     const cycle = travel + dwell
     const u = (clock.elapsedTime + (path.phase ?? 0) * cycle) % cycle
     const t = u < dwell ? 0 : Math.min((u - dwell) / travel, 0.9999)   // park at waypoint 0, then drive
+
+    // ── load state (generic): parts flagged material.loadState read this ──
+    // While dwelling at waypoint 0 the load RAMPS 0→1 (being loaded, e.g. by
+    // the excavator's dig-swings); it stays full until `loadState.dumpAt`
+    // (fraction of the loop where the vehicle tips), then empty for the
+    // return leg. Vehicles without loadState stay permanently full (legacy).
+    const ls = path.loadState
+    if (ls) {
+      let fill
+      if (dwell > 0 && u < dwell) fill = Math.min(1, u / (dwell * 0.85))
+      else fill = t < (ls.dumpAt ?? 0.5) ? 1 : 0
+      pathFillMap[obj.id] = fill
+    }
     const p = curve.getPointAt(t)
     const tan = curve.getTangentAt(t)
     g.position.set(p.x - obj.position[0], p.y - obj.position[1], p.z - obj.position[2])
@@ -353,7 +367,7 @@ function SceneObject({ obj, orbitRef, glowColor, allowLight, inGroup, pointRef, 
           {/* visualRef wraps ONLY the asset's own visual — the AlertIndicator
               measures it as a sibling, so its ring never inflates itself */}
           <group ref={visualRef}>
-            <Component status={obj.status} state={obj.state} config={obj.config} typeDef={typeDef} name={obj.name} alertSev={alertSev} />
+            <Component status={obj.status} state={obj.state} config={obj.config} typeDef={typeDef} name={obj.name} alertSev={alertSev} objId={obj.id} />
             {getSubComponents(obj.type, customAssetTypes).filter(d => d.scene).map(d => (
               <SubComponentsLayer key={d.id} obj={obj} def={d} />
             ))}

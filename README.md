@@ -7,7 +7,7 @@ app (with all custom engine features) needed to render it.
 | Folder | What it is |
 |---|---|
 | [`coal-mine-twin/`](coal-mine-twin/) | The twin **data**: build plan, 23 component specs, twin spec, merged `scene-export.json`, verification reports (`POLISH_REPORT.json`, `USECASE_REPORT.json`) and screenshots. |
-| [`app/`](app/) | The Digital Twin Creator app snapshot (React + three.js / React-Three-Fiber) including every engine feature the twin uses: generic alert/threshold layer + alerts panel + severity rings, parametric benched pit terrain, GPU particle plumes, part-level articulation (dig cycles, drills), path-follow vehicles with dwell, conveyor-vision CCTV with belt-point detection highlights, palette tokens, weathered/granular materials, sky + terrain environment. |
+| [`app/`](app/) | The Digital Twin Creator app snapshot (React + three.js / React-Three-Fiber) including every engine feature the twin uses: generic alert/threshold layer + alerts panel + severity rings, parametric benched pit terrain, GPU particle plumes, part-level articulation (dig cycles, drills), path-follow vehicles with dwell + visible load states (trucks haul loaded / return empty, wagons & ship holds fill), conveyor-vision CCTV with belt-point detection highlights, palette tokens, weathered/granular materials, sky + terrain environment. |
 
 ## Run it
 

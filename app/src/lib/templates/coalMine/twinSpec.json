@@ -743,7 +743,10 @@
           "speed": 3.0,
           "loop": true,
           "dwell": 14,
-          "phase": 0
+          "phase": 0,
+          "loadState": {
+            "dumpAt": 0.46
+          }
         },
         "alertRules": [
           {
@@ -907,7 +910,10 @@
           ],
           "speed": 3.2,
           "loop": true,
-          "phase": 0.5
+          "phase": 0.5,
+          "loadState": {
+            "dumpAt": 0.46
+          }
         },
         "alertRules": [
           {
@@ -1074,7 +1080,10 @@
           ],
           "speed": 3.6,
           "loop": true,
-          "phase": 0.25
+          "phase": 0.25,
+          "loadState": {
+            "dumpAt": 0.42
+          }
         },
         "alertRules": [
           {
@@ -1926,7 +1935,10 @@
             "flowing": false
           }
         }
-      ]
+      ],
+      "config": {
+        "animPhase": 0.0
+      }
     },
     "wagon-2": {
       "type": "coal_wagon",
@@ -1952,7 +1964,10 @@
             "flowing": false
           }
         }
-      ]
+      ],
+      "config": {
+        "animPhase": 0.12
+      }
     },
     "wagon-3": {
       "type": "coal_wagon",
@@ -1978,7 +1993,10 @@
             "flowing": false
           }
         }
-      ]
+      ],
+      "config": {
+        "animPhase": 0.24
+      }
     },
     "wagon-4": {
       "type": "coal_wagon",
@@ -2004,7 +2022,10 @@
             "flowing": false
           }
         }
-      ]
+      ],
+      "config": {
+        "animPhase": 0.36
+      }
     },
     "shiploader-1": {
       "type": "shiploader",

@@ -135,28 +135,6 @@
       }
     },
     {
-      "id": "hatch2",
-      "label": "Hatch 2",
-      "parentId": "hatchGrp",
-      "geometry": "box",
-      "dims": {
-        "width": 5.6,
-        "height": 0.4,
-        "depth": 6.4
-      },
-      "position": [
-        5,
-        5.5,
-        0
-      ],
-      "material": {
-        "color": "#9aa3ad",
-        "metalness": 0.7,
-        "roughness": 0.35,
-        "vary": 0.4
-      }
-    },
-    {
       "id": "hatch3",
       "label": "Hatch 3",
       "parentId": "hatchGrp",
@@ -168,28 +146,6 @@
       },
       "position": [
         -2,
-        5.5,
-        0
-      ],
-      "material": {
-        "color": "#9aa3ad",
-        "metalness": 0.7,
-        "roughness": 0.35,
-        "vary": 0.4
-      }
-    },
-    {
-      "id": "hatch4",
-      "label": "Hatch 4",
-      "parentId": "hatchGrp",
-      "geometry": "box",
-      "dims": {
-        "width": 5.6,
-        "height": 0.4,
-        "depth": 6.4
-      },
-      "position": [
-        -9,
         5.5,
         0
       ],
@@ -321,6 +277,242 @@
         "count": 55,
         "color": "#b9c0c8",
         "opacity": 0.26
+      }
+    },
+    {
+      "id": "h1CoamF",
+      "label": "Hatch coaming 1F",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 6.0,
+        "height": 0.6,
+        "depth": 0.25
+      },
+      "position": [
+        5,
+        5.55,
+        3.3
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "h1CoamB",
+      "label": "Hatch coaming 1B",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 6.0,
+        "height": 0.6,
+        "depth": 0.25
+      },
+      "position": [
+        5,
+        5.55,
+        -3.3
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "h1CoamL",
+      "label": "Hatch coaming 1L",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.25,
+        "height": 0.6,
+        "depth": 6.85
+      },
+      "position": [
+        1.88,
+        5.55,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "h1CoamR",
+      "label": "Hatch coaming 1R",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.25,
+        "height": 0.6,
+        "depth": 6.85
+      },
+      "position": [
+        8.120000000000001,
+        5.55,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "holdCoal1",
+      "label": "Hold 1 coal",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 5.6,
+        "height": 1.5,
+        "depth": 6.3
+      },
+      "position": [
+        5,
+        5.05,
+        0
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.9,
+        "granular": true
+      },
+      "animate": {
+        "kind": "fill",
+        "period": 88,
+        "phase": 0.3,
+        "from": 0.08,
+        "to": 1,
+        "speedKey": "speed"
+      }
+    },
+    {
+      "id": "h2CoamF",
+      "label": "Hatch coaming 2F",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 6.0,
+        "height": 0.6,
+        "depth": 0.25
+      },
+      "position": [
+        -9,
+        5.55,
+        3.3
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "h2CoamB",
+      "label": "Hatch coaming 2B",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 6.0,
+        "height": 0.6,
+        "depth": 0.25
+      },
+      "position": [
+        -9,
+        5.55,
+        -3.3
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "h2CoamL",
+      "label": "Hatch coaming 2L",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.25,
+        "height": 0.6,
+        "depth": 6.85
+      },
+      "position": [
+        -12.120000000000001,
+        5.55,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "h2CoamR",
+      "label": "Hatch coaming 2R",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 0.25,
+        "height": 0.6,
+        "depth": 6.85
+      },
+      "position": [
+        -5.88,
+        5.55,
+        0
+      ],
+      "material": {
+        "color": "@structureGrey",
+        "metalness": 0.7,
+        "roughness": 0.35,
+        "vary": 0.4
+      }
+    },
+    {
+      "id": "holdCoal2",
+      "label": "Hold 2 coal",
+      "parentId": null,
+      "geometry": "box",
+      "dims": {
+        "width": 5.6,
+        "height": 1.5,
+        "depth": 6.3
+      },
+      "position": [
+        -9,
+        5.05,
+        0
+      ],
+      "material": {
+        "color": "@coalBlack",
+        "metalness": 0.05,
+        "roughness": 0.9,
+        "granular": true
+      },
+      "animate": {
+        "kind": "fill",
+        "period": 88,
+        "phase": 0.62,
+        "from": 0.08,
+        "to": 1,
+        "speedKey": "speed"
       }
     }
   ],

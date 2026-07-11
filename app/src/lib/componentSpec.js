@@ -33,7 +33,7 @@ export const GEOMETRIES = Object.keys(GEOMETRY_DEFS)
 // sweep = oscillating rotation about one axis (articulated booms, masts);
 // slide = oscillating translation along one axis (drill carriages, rams).
 // Both take { axis, from, to, period (s), phase (0..1) } alongside speedKey.
-export const ANIMATIONS = ['none', 'spinY', 'spinX', 'pulse', 'bob', 'rise', 'sweep', 'slide']
+export const ANIMATIONS = ['none', 'spinY', 'spinX', 'pulse', 'bob', 'rise', 'sweep', 'slide', 'fill']
 export const PORT_TYPES = ['product', 'conveyor', 'utility', 'co2', 'power']
 export const PORT_DIRECTIONS = ['in', 'out', 'bidirectional']
 
@@ -218,7 +218,8 @@ function cleanPart(raw) {
       ...(m.granular ? { granular: true } : {}),                                                                            // bulk-solids finish (coal/ore)
       ...(m.weather && m.weather.kind ? { weather: { kind: String(m.weather.kind), amount: clampNum(m.weather.amount, 0.5, 0, 1) } } : {}),  // rust/dust/concrete/paint film
       ...(m.water ? { water: true, waterRipple: clampNum(m.waterRipple, 0.35, 0, 2), waterSpeed: clampNum(m.waterSpeed, 1, 0, 10) } : {}),   // animated shimmer surface
-      ...(m.alertGlow ? { alertGlow: true } : {}),                                                                              // indicator light driven by the owning object's alert severity
+      ...(m.alertGlow ? { alertGlow: true } : {}),
+      ...(m.loadState ? { loadState: true } : {}),                                                                              // heap follows the vehicle's path-fill state                                                                              // indicator light driven by the owning object's alert severity
       ...(Number.isFinite(Number(m.envMapIntensity)) ? { envMapIntensity: clampNum(m.envMapIntensity, 1.25, 0, 4) } : {}),
     },
     ...(animKind ? { animate: { kind: animKind, speedKey: raw.animate.speedKey || undefined, ...(Number.isFinite(raw.animate.rate) ? { rate: raw.animate.rate } : {}), ...animExtras(raw.animate) } } : { animate: null }),
