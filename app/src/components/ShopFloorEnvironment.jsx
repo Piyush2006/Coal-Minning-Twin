@@ -40,10 +40,13 @@ const ZONE_STYLES = {
   hardstand: { color: '#b3aea3', finish: 'concrete', rough: 0.94 },   // rail / port compacted pads
 }
 
-function GroundZone({ zone }) {
+function GroundZone({ zone, idx = 0 }) {
   const st = ZONE_STYLES[zone.style] ?? ZONE_STYLES.dirt
   const zmaps = getFinishMaps(st.finish)
   const at = zone.at ?? [0, 0]
+  // Stagger each decal's height by array index: overlapping zones were all at
+  // one y and z-fought wherever they crossed. ~14 mm steps stay visually flush.
+  const y = 0.02 + idx * 0.014
   const mat = (
     <meshStandardMaterial color={resolveColor(zone.color, st.color)} metalness={0.03} roughness={st.rough}
       map={zmaps?.map ?? null} roughnessMap={zmaps?.roughnessMap ?? null}
@@ -53,7 +56,7 @@ function GroundZone({ zone }) {
   )
   if (zone.shape === 'disc') {
     return (
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[at[0], 0.025, at[1]]} receiveShadow renderOrder={-1}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[at[0], y, at[1]]} receiveShadow renderOrder={-1}>
         <circleGeometry args={[zone.radius ?? 20, 40]} />
         {mat}
       </mesh>
@@ -61,7 +64,7 @@ function GroundZone({ zone }) {
   }
   const [w, d] = zone.size ?? [20, 20]
   return (
-    <mesh rotation={[-Math.PI / 2, 0, zone.rotation ?? 0]} position={[at[0], 0.025, at[1]]} receiveShadow renderOrder={-1}>
+    <mesh rotation={[-Math.PI / 2, 0, zone.rotation ?? 0]} position={[at[0], y, at[1]]} receiveShadow renderOrder={-1}>
       <planeGeometry args={[w, d]} />
       {mat}
     </mesh>
@@ -111,7 +114,9 @@ export function ShopFloorEnvironment() {
     return (
       <>
         {/* far ground — runs to the horizon; fog fades it into the sky */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, -0.06, cz]} renderOrder={-2}>
+        {/* -0.55: safely below the earth plane's deepest dip (-amp - 0.02) so the
+            two horizon-scale planes can never intersect and shimmer */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, -0.55, cz]} renderOrder={-2}>
           <circleGeometry args={[1400, 48]} />
           <meshStandardMaterial color={resolveColor(ground.farColor ?? ground.color, '#a49780')}
             metalness={0.02} roughness={0.98} />
@@ -124,7 +129,7 @@ export function ShopFloorEnvironment() {
           </mesh>
         </group>
         {/* zone decals — worn dirt / concrete pads / gravel / hardstands */}
-        {zones.map((z, i) => <GroundZone key={i} zone={z} />)}
+        {zones.map((z, i) => <GroundZone key={i} zone={z} idx={i} />)}
       </>
     )
   }

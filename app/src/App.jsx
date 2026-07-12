@@ -1478,7 +1478,7 @@ export default function App() {
             visibility: showFlow ? 'hidden' : 'visible',
             pointerEvents: showFlow ? 'none' : 'auto' }}>
               <Canvas
-                camera={{ position:[-5, 32, 55], fov:60, near:0.5, far:2400 }}
+                camera={{ position:[-5, 32, 55], fov:60, near:1.2, far:2400 }}
                 shadows="soft"
                 gl={{ antialias:true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
                 onPointerMissed={() => { if (!dragGuard.transforming) clearSelection() }}

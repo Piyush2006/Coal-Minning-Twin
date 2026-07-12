@@ -207,14 +207,14 @@ function AlertIndicator({ severity, targetRef }) {
   return (
     <group>
       <mesh ref={ringRef} geometry={ALERT_RING_GEO} raycast={noRaycast}
-        rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.07, 0]} renderOrder={3}>
+        rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.12, 0]} renderOrder={3}>
         <meshBasicMaterial ref={ringMat} color={color} transparent opacity={0.85}
           depthWrite={false} side={2} toneMapped={false} />
       </mesh>
       {/* faint filled disc inside the band — makes the alert footprint read
           clearly even on busy ground textures */}
       <mesh ref={fillRef} geometry={ALERT_FILL_GEO} raycast={noRaycast}
-        rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.055, 0]} renderOrder={2}>
+        rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.105, 0]} renderOrder={2}>
         <meshBasicMaterial color={color} transparent opacity={0.14}
           depthWrite={false} side={2} toneMapped={false} />
       </mesh>

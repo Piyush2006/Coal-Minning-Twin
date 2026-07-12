@@ -10,12 +10,12 @@
       "geometry": "box",
       "dims": {
         "width": 30,
-        "height": 0.12,
+        "height": 0.16,
         "depth": 6
       },
       "position": [
         0,
-        0.06,
+        0.08,
         0
       ],
       "material": {

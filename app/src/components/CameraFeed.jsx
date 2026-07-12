@@ -41,7 +41,7 @@ const _proj = new THREE.Vector3()
 // ── Inside-canvas scissor pass (mount inside <Canvas>, after PostFX) ────────
 export function CameraFeedRenderer() {
   const camRef = useRef()
-  if (!camRef.current) camRef.current = new THREE.PerspectiveCamera(52, FEED_W / FEED_H, 0.6, 900)
+  if (!camRef.current) camRef.current = new THREE.PerspectiveCamera(52, FEED_W / FEED_H, 1.0, 900)
   const frame = useRef(0)
 
   useFrame(({ gl, scene, size }) => {

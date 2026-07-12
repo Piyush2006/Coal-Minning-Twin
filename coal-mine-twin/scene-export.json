@@ -4452,38 +4452,17 @@
           }
         },
         {
-          "id": "binAGaugeBack",
-          "label": "Bin A gauge",
-          "parentId": null,
-          "geometry": "box",
-          "dims": {
-            "width": 0.22,
-            "height": 3.24,
-            "depth": 0.22
-          },
-          "position": [
-            -1.7799999999999998,
-            7.2,
-            0
-          ],
-          "material": {
-            "color": "#dfe3e8",
-            "metalness": 0.2,
-            "roughness": 0.5
-          }
-        },
-        {
           "id": "binAGaugeFill",
           "label": "Bin A level",
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 0.17,
+            "width": 0.2,
             "height": 3.1,
-            "depth": 0.17
+            "depth": 0.2
           },
           "position": [
-            -1.7799999999999998,
+            -1.68,
             7.13,
             0
           ],
@@ -4501,38 +4480,17 @@
           }
         },
         {
-          "id": "binBGaugeBack",
-          "label": "Bin B gauge",
-          "parentId": null,
-          "geometry": "box",
-          "dims": {
-            "width": 0.22,
-            "height": 3.24,
-            "depth": 0.22
-          },
-          "position": [
-            1.4200000000000002,
-            7.2,
-            0
-          ],
-          "material": {
-            "color": "#dfe3e8",
-            "metalness": 0.2,
-            "roughness": 0.5
-          }
-        },
-        {
           "id": "binBGaugeFill",
           "label": "Bin B level",
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 0.17,
+            "width": 0.2,
             "height": 3.1,
-            "depth": 0.17
+            "depth": 0.2
           },
           "position": [
-            1.4200000000000002,
+            1.52,
             7.13,
             0
           ],
@@ -7351,12 +7309,12 @@
           "geometry": "box",
           "dims": {
             "width": 30,
-            "height": 0.12,
+            "height": 0.16,
             "depth": 6
           },
           "position": [
             0,
-            0.06,
+            0.08,
             0
           ],
           "material": {
@@ -10146,7 +10104,7 @@
           },
           "position": [
             -6,
-            8.45,
+            8.5,
             5
           ],
           "material": {
@@ -10169,7 +10127,7 @@
           },
           "position": [
             5,
-            15.45,
+            15.5,
             5
           ],
           "material": {
