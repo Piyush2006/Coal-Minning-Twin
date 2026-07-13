@@ -1958,7 +1958,7 @@
       "type": "locomotive",
       "name": "Locomotive DL-401",
       "position": [
-        84,
+        83,
         0,
         -26
       ],
@@ -1972,8 +1972,8 @@
       "config": {
         "model": {
           "file": "/models/diesel_locomotive_tgm3.glb",
-          "fit": 16,
-          "rotationYDeg": 0,
+          "fit": 14,
+          "rotationYDeg": -90,
           "hide": [
             "rail30"
           ]
@@ -3595,12 +3595,12 @@
         "title": "Blending & Rail Load-Out",
         "subtitle": "Wagons batch-fill under the load-out bin on a live rake cycle",
         "position": [
-          88,
-          16,
-          -4
+          94,
+          17,
+          -2
         ],
         "target": [
-          52,
+          58,
           3,
           -24
         ],
