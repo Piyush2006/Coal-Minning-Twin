@@ -56,35 +56,58 @@ function tourCleanupUI() {
 
 // Timed beat action — every type fails soft (log in dev, tour keeps flying).
 function runTourAction(a, segIndex) {
-  let ok = true
+  let ok = true, assert = ''
   try {
     const objects = useSceneStore.getState().objects
     const resolve = (t) => (objects[t] ? t : Object.keys(objects).find(id => objects[id].name === t))
     switch (a.type) {
-      case 'triggerScenario': ok = triggerScenario(a.target); break
-      case 'clearScenario':   ok = clearScenario(a.target); break
-      case 'blast':           useBlastStore.getState().trigger({ beaconSec: a.params?.beaconSec }); break
+      case 'triggerScenario': ok = triggerScenario(a.target); assert = ok ? 'armed' : 'unknown scenario'; break
+      case 'clearScenario':   ok = clearScenario(a.target); assert = 'cleared'; break
+      case 'blast':
+        useBlastStore.getState().trigger({ beaconSec: a.params?.beaconSec })
+        ok = useBlastStore.getState().firing
+        assert = `firing=${ok}`
+        break
       case 'openFeed': {
         const id = resolve(a.target)
-        if (!id) { ok = false; break }
+        if (!id) { ok = false; assert = 'target not found'; break }
         if ((a.params?.size ?? 1) === 2) useFeedStore.setState({ scale: 2 })
         useFeedStore.getState().openFeed(id)
+        const st = useFeedStore.getState()
+        ok = st.feedId === id && st.scale === (a.params?.size ?? 1)
+        assert = `feedId=${st.feedId} scale=${st.scale}`
         break
       }
-      case 'closeFeed':       useFeedStore.getState().closeFeed(); break
-      case 'switchTab':       useViewTab.getState().setTab(a.target); break
+      case 'closeFeed':
+        useFeedStore.getState().closeFeed()
+        ok = useFeedStore.getState().feedId === null
+        assert = 'feed closed'
+        break
+      case 'switchTab':
+        useViewTab.getState().setTab(a.target)
+        ok = useViewTab.getState().tab === a.target
+        assert = `tab=${useViewTab.getState().tab}`
+        break
       case 'openDrilldown': {
         const id = resolve(a.target)
-        if (!id) { ok = false; break }
-        useSceneStore.getState().selectObject?.(id)      // panel effect flips to the Asset tab
+        if (!id) { ok = false; assert = 'target not found'; break }
+        const store = useSceneStore.getState()
+        if (typeof store.selectObject !== 'function') { ok = false; assert = 'selectObject missing'; break }
+        store.selectObject(id)
         useViewTab.getState().setTab('asset')
+        ok = useSceneStore.getState().selectedId === id && useViewTab.getState().tab === 'asset'
+        assert = `selected=${useSceneStore.getState().selectedId} tab=${useViewTab.getState().tab}`
         break
       }
-      case 'closePanels':     tourCleanupUI(); break
-      default: ok = false
+      case 'closePanels':
+        tourCleanupUI()
+        ok = useSceneStore.getState().selectedId == null && useFeedStore.getState().feedId == null && useViewTab.getState().tab === 'overview'
+        assert = 'panels closed'
+        break
+      default: ok = false; assert = 'unknown type'
     }
-  } catch { ok = false }
-  if (import.meta.env.DEV) console.log(`[tour] B${segIndex + 1} ${a.type} ${a.target ?? ''} ${ok ? 'ok' : 'FAILED (continuing)'}`)
+  } catch (err) { ok = false; assert = String(err).slice(0, 60) }
+  if (import.meta.env.DEV) console.log(`[tour] B${segIndex + 1} ${a.type} ${a.target ?? ''} ${ok ? 'PASS' : 'FAIL'} (${assert})`)
   return ok
 }
 

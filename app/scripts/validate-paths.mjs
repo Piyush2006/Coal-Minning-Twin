@@ -175,20 +175,35 @@ function pitAnnulusViolation(px, pz) {
 }
 
 // ── generated road-following paths (written with --write) ──────────────────
-const rampUp = (side) => RAMP_TABLE.slice(1).map(([th, y]) => polar(rOf(y) + side, th, y))
-const rampDown = (side) => [...RAMP_TABLE.slice(1)].reverse().map(([th, y]) => polar(rOf(y) + side, th, y))
+// Dense ramp lanes: one waypoint every ~15 deg of arc so the Catmull spline
+// stays on the deck in BOTH plan and height (sparse chords cut into the wall
+// and dipped below the stepped decks — trucks read as swallowed by the pit).
+function rampLane(side, fromIdx = 0, toIdx = RAMP_TABLE.length - 1) {
+  const pts = []
+  for (let i = fromIdx; i < toIdx; i++) {
+    const [t0, y0] = RAMP_TABLE[i], [t1, y1] = RAMP_TABLE[i + 1]
+    const steps = Math.max(1, Math.round(Math.abs(t1 - t0) / 15))
+    for (let k = i === fromIdx ? 0 : 1; k <= steps; k++) {
+      const f = k / steps, y = y0 + (y1 - y0) * f
+      pts.push(polar(rOf(y) + side, t0 + (t1 - t0) * f, y))
+    }
+  }
+  return pts
+}
+const rampUp = (side) => rampLane(side, 0)
+const rampDown = (side) => [...rampLane(side, 0)].reverse()
 const GEN = {
   'truck-1': {
     dwell: 14, speed: 6.0, phase: 0, loadedSlow: 1.45, dump: [-39.5, 0],
     wps: [
       polar(21, 203, 0),                                   // load beside EX-02 (dwell)
-      polar(20, 232, 0), polar(21.5, 252, 0),              // floor run to the ramp toe
-      ...rampUp(1.1),                                      // climb, outer side
+      polar(20, 228, 0), polar(20.5, 244, 0),              // flat floor run — keeps the climb tangent level
+      ...rampUp(1.1),                                      // climb, outer side (toe included, dense)
       [-86, 0, 15.5], [-66, 0, 10], [-50, 0, 5], [-42, 0, 1],
       [-39.5, 0, 0],                                       // DUMP: ROM bin, west of the crusher
       [-44, 0, -3.5], [-58, 0, 1.5], [-76, 0, 9], [-87.5, 0, 16.8],
       ...rampDown(-1.1),                                   // descend, inner side
-      polar(23, 240, 0),
+      polar(20.5, 246, 0), polar(21, 226, 0),
     ],
   },
   'truck-2': { same: 'truck-1', dwell: 10, speed: 6.2, phase: 0.5 },
@@ -196,13 +211,13 @@ const GEN = {
     dwell: 12, speed: 6.5, phase: 0.3, loadedSlow: 1.4, dump: [-108.5, -63.5],
     wps: [
       polar(40.5, 82, 7.2),                                // load in the tread-1 bay beside EX-01
-      polar(40.5, 94, 7.2), polar(rOf(7.2) + 1.2, 104, 7.2),
-      ...RAMP_TABLE.slice(6).map(([th, y]) => polar(rOf(y) + 1.2, th, y)),   // leg 2 up, outer side
+      polar(40.5, 88, 7.2), polar(40.5, 96, 7.2), polar(rOf(7.2) + 1.2, 104, 7.2),
+      ...rampLane(1.2, 5),                                 // leg 2 up, outer side (dense)
       [-84, 0, 8], [-87, 0, -18], [-97, 0, -44],
       [-108.5, 0, -63.5],                                  // DUMP: tipping edge, off the mound
       [-99, 0, -42], [-89, 0, -14], [-86, 0, 13],
-      ...[...RAMP_TABLE.slice(6)].reverse().map(([th, y]) => polar(rOf(y) - 1.2, th, y)),
-      polar(rOf(7.2) - 0.5, 103, 7.2), polar(40.5, 92, 7.2),
+      ...[...rampLane(-1.2, 5)].reverse(),
+      polar(rOf(7.2) - 0.5, 103, 7.2), polar(40.5, 96, 7.2), polar(40.5, 88, 7.2),
     ],
   },
   'lv-1': {
@@ -221,6 +236,28 @@ const SKIP = {
   'truck-3': new Set(['exc-ob-1']),
 }
 
+// vertical clearance to the NEAREST drivable surface at (x,z) — several
+// levels overlap in plan (deck over floor at the toe, spur beside leg 2), so
+// a vehicle passes if it sits on ANY of them
+function terrainDy(px, pz, py) {
+  const d = Math.hypot(px - PIT.cx, pz - PIT.cz)
+  const cands = []
+  if (d >= PIT.rimR - 0.3) cands.push(0)                   // grade / apron / roads
+  if (Math.hypot(px - PLATFORM[0], pz - PLATFORM[2]) < 8.5) cands.push(-PIT.depth + 7.2)
+  let best = Infinity, bestY = null
+  for (const p of RAMP_CL) {
+    const dd = Math.hypot(px - p[0], pz - p[2])
+    if (dd < best) { best = dd; bestY = p[1] }
+  }
+  if (best <= 4.6) cands.push(bestY)                       // ramp deck
+  if (distToPolyline(px, pz, SPUR) < 4.5) cands.push(-PIT.depth + 7.2)
+  if (d <= PIT.floorR + 0.5) cands.push(-PIT.depth)        // pit floor
+  if (!cands.length) return null                           // bench wall — 2D rule fails there
+  let dy = Infinity
+  for (const y of cands) if (Math.abs(py - y) < Math.abs(dy)) dy = py - y
+  return dy
+}
+
 // ── validate ────────────────────────────────────────────────────────────────
 const WRITE = process.argv.includes('--write')
 let allPass = true
@@ -236,7 +273,11 @@ for (const [vid, gen] of Object.entries(GEN)) {
   const fails = []
   for (let i = 0; i <= N; i++) {
     const p = pts[i]
-    const hit = hitObstacle(p.x, p.z, margin, SKIP[vid]) || (margin > 0.5 ? pitAnnulusViolation(p.x, p.z) : null)
+    let hit = hitObstacle(p.x, p.z, margin, SKIP[vid]) || (margin > 0.5 ? pitAnnulusViolation(p.x, p.z) : null)
+    if (!hit && margin > 0.5) {
+      const dy = terrainDy(p.x, p.z, p.y)
+      if (dy != null && Math.abs(dy) > 0.9) hit = `terrain(dy ${dy.toFixed(1)})`
+    }
     if (hit) fails.push({ f: i / N, x: +p.x.toFixed(1), z: +p.z.toFixed(1), hit })
   }
   // collapse consecutive fails into spans
