@@ -551,7 +551,7 @@
             "threshold": 25,
             "severity": "warn",
             "useCase": "Haulage",
-            "message": "Shovel idling {idleTime} min — dispatch gap"
+            "message": "Shovel idling {idleTime} min \u2014 dispatch gap"
           },
           {
             "id": "engine-health",
@@ -660,7 +660,7 @@
             "threshold": 25,
             "severity": "warn",
             "useCase": "Haulage",
-            "message": "Shovel idling {idleTime} min — dispatch gap"
+            "message": "Shovel idling {idleTime} min \u2014 dispatch gap"
           },
           {
             "id": "engine-health",
@@ -4284,7 +4284,7 @@
     "presentation": true,
     "beats": [
       {
-        "title": "Blackridge Coal Mine — Pit to Port",
+        "title": "Blackridge Coal Mine \u2014 Pit to Port",
         "subtitle": "A living digital twin of the complete operation.",
         "position": [
           16,
@@ -4317,7 +4317,7 @@
         "hold": 7
       },
       {
-        "title": "Mine Operations — Open Pit",
+        "title": "Mine Operations \u2014 Open Pit",
         "subtitle": "Drill, blast and excavation across four active benches.",
         "position": [
           -100,
@@ -4347,35 +4347,30 @@
         "subtitle": "Engine telemetry flags failures before they stop production.",
         "position": [
           -118,
-          2,
-          56
+          24,
+          64
         ],
         "target": [
           -141,
-          -6,
+          -7,
           42
         ],
         "travel": 1.6,
         "hold": 10,
         "actions": [
           {
-            "at": 2.6,
+            "at": 0.3,
             "type": "triggerScenario",
             "target": "ex01-engine"
           },
           {
-            "at": 4.6,
+            "at": 2.2,
             "type": "openDrilldown",
             "target": "exc-ob-1"
           },
           {
-            "at": 9.6,
+            "at": 10.6,
             "type": "closePanels"
-          },
-          {
-            "at": 9.7,
-            "type": "switchTab",
-            "target": "overview"
           },
           {
             "at": 11.2,
@@ -4389,30 +4384,30 @@
         "title": "ROM Haul Circuit",
         "subtitle": "Cycle time, idle and tyre temperature tracked every trip.",
         "position": [
-          -102,
-          6,
-          54
+          -86,
+          37,
+          68
         ],
         "target": [
-          -136,
+          -128,
           -5,
-          42
+          38
         ],
         "travel": 1.6,
         "hold": 10,
         "actions": [
           {
-            "at": 3.6,
+            "at": 0.3,
             "type": "triggerScenario",
             "target": "ht01-idle"
           },
           {
-            "at": 5.6,
+            "at": 2.0,
             "type": "triggerScenario",
             "target": "ht03-tyre"
           },
           {
-            "at": 11,
+            "at": 11.0,
             "type": "clearScenario",
             "target": "ht01-idle"
           },
@@ -4441,23 +4436,18 @@
         "hold": 10,
         "actions": [
           {
-            "at": 2.6,
+            "at": 0.3,
             "type": "triggerScenario",
             "target": "crusher-vib"
           },
           {
-            "at": 5.6,
+            "at": 2.2,
             "type": "openDrilldown",
             "target": "crusher-1"
           },
           {
-            "at": 10.3,
+            "at": 10.6,
             "type": "closePanels"
-          },
-          {
-            "at": 10.4,
-            "type": "switchTab",
-            "target": "overview"
           },
           {
             "at": 11.2,
@@ -4468,7 +4458,7 @@
       },
       {
         "tag": "AI Conveyor Vision",
-        "title": "Overland Conveying — CV-01",
+        "title": "Overland Conveying \u2014 CV-01",
         "subtitle": "AI vision watches every metre of belt.",
         "position": [
           -25,
@@ -4484,12 +4474,12 @@
         "hold": 11,
         "actions": [
           {
-            "at": 2.6,
+            "at": 0.3,
             "type": "triggerScenario",
             "target": "cv01-idler"
           },
           {
-            "at": 4.1,
+            "at": 2.0,
             "type": "openFeed",
             "target": "cam-2",
             "params": {
@@ -4497,11 +4487,11 @@
             }
           },
           {
-            "at": 10.6,
+            "at": 11.6,
             "type": "closeFeed"
           },
           {
-            "at": 12.2,
+            "at": 12.4,
             "type": "clearScenario",
             "target": "cv01-idler"
           }
@@ -4509,7 +4499,7 @@
       },
       {
         "tag": "Specific Energy",
-        "title": "Processing — CHPP",
+        "title": "Processing \u2014 CHPP",
         "subtitle": "Washing, dewatering and energy per tonne, measured live.",
         "position": [
           -6,
@@ -4525,7 +4515,7 @@
         "hold": 8,
         "actions": [
           {
-            "at": 3.6,
+            "at": 0.5,
             "type": "triggerScenario",
             "target": "sec-dev"
           },
@@ -4554,7 +4544,7 @@
         "hold": 8,
         "actions": [
           {
-            "at": 3.6,
+            "at": 0.5,
             "type": "triggerScenario",
             "target": "pm10"
           },
@@ -4599,7 +4589,7 @@
       },
       {
         "title": "Westport Power Station",
-        "subtitle": "Delivery — one continuous, monitored chain.",
+        "subtitle": "Delivery \u2014 one continuous, monitored chain.",
         "position": [
           104,
           15,
@@ -4631,8 +4621,8 @@
         "night": true
       },
       {
-        "title": "Blackridge Coal Mine — Pit to Port",
-        "subtitle": "One living twin — {assetCount} assets, seven monitoring use cases, end to end.",
+        "title": "Blackridge Coal Mine \u2014 Pit to Port",
+        "subtitle": "One living twin \u2014 {assetCount} assets, seven monitoring use cases, end to end.",
         "position": [
           16,
           56,

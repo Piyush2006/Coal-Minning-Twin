@@ -4347,35 +4347,30 @@
         "subtitle": "Engine telemetry flags failures before they stop production.",
         "position": [
           -118,
-          2,
-          56
+          24,
+          64
         ],
         "target": [
           -141,
-          -6,
+          -7,
           42
         ],
         "travel": 1.6,
         "hold": 10,
         "actions": [
           {
-            "at": 2.6,
+            "at": 0.3,
             "type": "triggerScenario",
             "target": "ex01-engine"
           },
           {
-            "at": 4.6,
+            "at": 2.2,
             "type": "openDrilldown",
             "target": "exc-ob-1"
           },
           {
-            "at": 9.6,
+            "at": 10.6,
             "type": "closePanels"
-          },
-          {
-            "at": 9.7,
-            "type": "switchTab",
-            "target": "overview"
           },
           {
             "at": 11.2,
@@ -4389,30 +4384,30 @@
         "title": "ROM Haul Circuit",
         "subtitle": "Cycle time, idle and tyre temperature tracked every trip.",
         "position": [
-          -102,
-          6,
-          54
+          -86,
+          37,
+          68
         ],
         "target": [
-          -136,
+          -128,
           -5,
-          42
+          38
         ],
         "travel": 1.6,
         "hold": 10,
         "actions": [
           {
-            "at": 3.6,
+            "at": 0.3,
             "type": "triggerScenario",
             "target": "ht01-idle"
           },
           {
-            "at": 5.6,
+            "at": 2.0,
             "type": "triggerScenario",
             "target": "ht03-tyre"
           },
           {
-            "at": 11,
+            "at": 11.0,
             "type": "clearScenario",
             "target": "ht01-idle"
           },
@@ -4441,23 +4436,18 @@
         "hold": 10,
         "actions": [
           {
-            "at": 2.6,
+            "at": 0.3,
             "type": "triggerScenario",
             "target": "crusher-vib"
           },
           {
-            "at": 5.6,
+            "at": 2.2,
             "type": "openDrilldown",
             "target": "crusher-1"
           },
           {
-            "at": 10.3,
+            "at": 10.6,
             "type": "closePanels"
-          },
-          {
-            "at": 10.4,
-            "type": "switchTab",
-            "target": "overview"
           },
           {
             "at": 11.2,
@@ -4484,12 +4474,12 @@
         "hold": 11,
         "actions": [
           {
-            "at": 2.6,
+            "at": 0.3,
             "type": "triggerScenario",
             "target": "cv01-idler"
           },
           {
-            "at": 4.1,
+            "at": 2.0,
             "type": "openFeed",
             "target": "cam-2",
             "params": {
@@ -4497,11 +4487,11 @@
             }
           },
           {
-            "at": 10.6,
+            "at": 11.6,
             "type": "closeFeed"
           },
           {
-            "at": 12.2,
+            "at": 12.4,
             "type": "clearScenario",
             "target": "cv01-idler"
           }
@@ -4525,7 +4515,7 @@
         "hold": 8,
         "actions": [
           {
-            "at": 3.6,
+            "at": 0.5,
             "type": "triggerScenario",
             "target": "sec-dev"
           },
@@ -4554,7 +4544,7 @@
         "hold": 8,
         "actions": [
           {
-            "at": 3.6,
+            "at": 0.5,
             "type": "triggerScenario",
             "target": "pm10"
           },

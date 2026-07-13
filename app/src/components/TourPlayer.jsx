@@ -61,7 +61,11 @@ function runTourAction(a, segIndex) {
     const objects = useSceneStore.getState().objects
     const resolve = (t) => (objects[t] ? t : Object.keys(objects).find(id => objects[id].name === t))
     switch (a.type) {
-      case 'triggerScenario': ok = triggerScenario(a.target); assert = ok ? 'armed' : 'unknown scenario'; break
+      case 'triggerScenario':
+        ok = triggerScenario(a.target)
+        if (ok) useSceneStore.getState().simulateTick?.()   // alert row appears THIS frame, not next tick
+        assert = ok ? 'armed' : 'unknown scenario'
+        break
       case 'clearScenario':   ok = clearScenario(a.target); assert = 'cleared'; break
       case 'blast':
         useBlastStore.getState().trigger({ beaconSec: a.params?.beaconSec })
