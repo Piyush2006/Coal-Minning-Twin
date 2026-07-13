@@ -135,14 +135,26 @@ function PathDrive({ obj, editMode, children }) {
     // (fraction of the loop where the vehicle tips), then empty for the
     // return leg. Vehicles without loadState stay permanently full (legacy).
     const ls = path.loadState
+    // path.loadedSlow (>1): the LOADED leg (up to dumpAt) is driven that much
+    // slower, the empty return correspondingly faster — same cycle time. f is
+    // the warped ARC fraction; position and load state both read it so trucks
+    // still flip loaded/empty exactly at the dump point.
+    let f = t
+    const slow = Number(path.loadedSlow) || 0
+    if (ls && slow > 1) {
+      const dA = ls.dumpAt ?? 0.5
+      const TA = dA * slow, T = TA + (1 - dA)
+      const tau = t * T
+      f = tau < TA ? tau / slow : dA + (tau - TA)
+    }
     if (ls) {
       let fill
       if (dwell > 0 && u < dwell) fill = Math.min(1, u / (dwell * 0.85))
-      else fill = t < (ls.dumpAt ?? 0.5) ? 1 : 0
+      else fill = f < (ls.dumpAt ?? 0.5) ? 1 : 0
       pathFillMap[obj.id] = fill
     }
-    const p = curve.getPointAt(t)
-    const tan = curve.getTangentAt(t)
+    const p = curve.getPointAt(f)
+    const tan = curve.getTangentAt(f)
     g.position.set(p.x - obj.position[0], p.y - obj.position[1], p.z - obj.position[2])
     // vehicle forward = +X; yaw from the path tangent, minus the authored yaw
     g.rotation.y = Math.atan2(-tan.z, tan.x) - (obj.rotation?.[1] ?? 0)
