@@ -43,16 +43,22 @@ function chunkMat() {
 }
 
 // ── Chunks riding a belt curve ──────────────────────────────────────────────
-export function ChunkStream({ curve, speed = 1.2, count = 24, surfaceY = 1.0, width = 0.3, size = 0.16, running = true }) {
+export function ChunkStream({ curve, speed = 1.2, count = 24, surfaceY = 1.0, width = 0.3, size = 0.16, beltHalf = 0.24, running = true }) {
   const ref = useRef()
   const len = useMemo(() => curve.getLength(), [curve])
-  const seeds = useMemo(() => Array.from({ length: count }, (_, i) => ({
-    phase: (i + h01(i, 7) * 0.85) / count,               // ~even spacing with natural bunching
-    lane: (h01(i, 2) - 0.5) * 2 * width,                 // across-belt offset
-    s: size * (0.6 + h01(i, 3) * 0.9),                   // size variation
-    rx: h01(i, 4) * Math.PI, ry: h01(i, 5) * Math.PI * 2,
-    dy: h01(i, 6) * 0.05,
-  })), [count, width, size])
+  const seeds = useMemo(() => {
+    // realism rules: lump diameter ≤ ~1/3 of the belt width; every lump fully
+    // inside the belt edges; even spacing with small jitter (no end blobs)
+    const maxR = beltHalf * 0.66                          // radius cap → diameter ≤ belt/3 · 2
+    const laneMax = Math.max(0.01, Math.min(width, beltHalf - maxR - 0.02))
+    return Array.from({ length: count }, (_, i) => ({
+      phase: (i + 0.5 + (h01(i, 7) - 0.5) * 0.6) / count, // even slots, ±0.3-slot jitter
+      lane: (h01(i, 2) - 0.5) * 2 * laneMax,              // clamped inside the belt edges
+      s: Math.min(size * (0.6 + h01(i, 3) * 0.9), maxR),
+      rx: h01(i, 4) * Math.PI, ry: h01(i, 5) * Math.PI * 2,
+      dy: h01(i, 6) * 0.04,
+    }))
+  }, [count, width, size, beltHalf])
 
   useFrame(({ clock }) => {
     const m = ref.current
@@ -100,7 +106,7 @@ export function ChunkFall({ position = [0, 0, 0], drop = 3, spread = 0.4, count 
     for (let i = 0; i < count; i++) {
       const sd = seeds[i]
       const u = (t + sd.phase) % 1
-      const shrink = u > 0.85 ? Math.max(0.01, 1 - (u - 0.85) / 0.15) : 1   // dissolve into the pile/chute
+      const shrink = u > 0.92 ? Math.max(0.01, 1 - (u - 0.92) / 0.08) : 1   // bury AT the landing surface, not mid-air
       _obj.position.set(
         position[0] + sd.dx * spread * (0.4 + u * 0.6),
         position[1] - drop * u * u,                                          // accelerating fall
@@ -135,11 +141,13 @@ export function MaterialFlowLayer() {
         if (!built) continue
         const cc = c.connectorConfig
         const len = built.bezier.getLength()
+        const roller = cc.beltStyle === 'roller'
         out.push({
           key: c.id ?? `${id}->${c.targetId}`, curve: built.bezier,
           speed: cc.speed ?? 1.2,
-          count: cc.chunkCount ?? Math.min(60, Math.max(10, Math.round(len * 1.1))),
-          surfaceY: (cc.beltStyle === 'roller' ? 1.05 : 0.92) + 0.08,
+          count: cc.chunkCount ?? Math.min(60, Math.max(3, Math.round(len * 1.2))),
+          surfaceY: (roller ? 1.05 : 0.92) + 0.06,
+          beltHalf: roller ? 0.3 : 0.24,                 // chain deck ribbon is 0.48 wide
           running: src.status === 'running',
         })
       }
@@ -151,8 +159,9 @@ export function MaterialFlowLayer() {
         out.push({
           key: `${id}:belt`, curve: new THREE.LineCurve3(A, B),
           speed: src.config.speed ?? 1.2,
-          count: Math.min(40, Math.max(8, Math.round(L * 1.4))),
+          count: Math.min(40, Math.max(4, Math.round(L * 1.4))),
           surfaceY: 1.0,
+          beltHalf: src.config.beltStyle === 'roller' ? 0.3 : 0.24,
           running: src.status === 'running' && src.config.running !== false,
         })
       }

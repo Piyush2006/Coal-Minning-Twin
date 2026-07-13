@@ -453,8 +453,8 @@
       "type": "conveyor",
       "direction": "out",
       "offset": [
-        5.8,
-        1.2,
+        1.4,
+        0,
         0
       ]
     },
