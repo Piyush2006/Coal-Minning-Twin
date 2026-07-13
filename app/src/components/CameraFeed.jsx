@@ -52,8 +52,8 @@ export function CameraFeedRenderer() {
     const watchPos = obj && beltWatchWorldPos(objects, feedId)
     if (!obj || !watchPos) return
 
-    // eye at the camera head, looking at the belt watch-point
-    _tgt.set(watchPos[0], watchPos[1], watchPos[2])
+    // eye at the camera head, looking just above the belt-surface watch point
+    _tgt.set(watchPos[0], watchPos[1] + 0.3, watchPos[2])
     _eye.set(obj.position[0], obj.position[1] + 3.6, obj.position[2])
     _dir.subVectors(_tgt, _eye).normalize()
     _eye.addScaledVector(_dir, 0.55)                        // step past the housing
@@ -82,7 +82,7 @@ export function CameraFeedRenderer() {
 
     // throttled: project the detection point into panel coords for the bbox overlay
     if ((frame.current++ % 10) === 0) {
-      _proj.set(watchPos[0], watchPos[1], watchPos[2]).project(fc)
+      _proj.set(watchPos[0], watchPos[1] + 0.1, watchPos[2]).project(fc)   // box sits ON the spot
       if (_proj.z < 1 && Math.abs(_proj.x) < 1.2 && Math.abs(_proj.y) < 1.2) {
         const nb = { x: (_proj.x + 1) / 2, y: 1 - (_proj.y + 1) / 2 }
         if (!box || Math.abs(box.x - nb.x) > 0.01 || Math.abs(box.y - nb.y) > 0.01) _setBox(nb)

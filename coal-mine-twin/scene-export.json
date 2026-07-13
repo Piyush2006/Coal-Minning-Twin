@@ -3480,13 +3480,13 @@
       "type": "site_worker",
       "name": "Worker 01",
       "position": [
-        3,
+        1.5,
         0,
-        5
+        8.5
       ],
       "rotation": [
         0,
-        2.4,
+        2.6,
         0
       ],
       "scale": [
@@ -3505,13 +3505,13 @@
       "type": "site_worker",
       "name": "Worker 02",
       "position": [
-        5.5,
+        6.5,
         0,
-        3.2
+        7.5
       ],
       "rotation": [
         0,
-        -2.0,
+        -2.2,
         0
       ],
       "scale": [
@@ -3555,13 +3555,13 @@
       "type": "site_worker",
       "name": "Worker 04",
       "position": [
-        92,
+        90,
         0,
-        11
+        19
       ],
       "rotation": [
         0,
-        0.8,
+        0.6,
         0
       ],
       "scale": [
@@ -3605,9 +3605,9 @@
       "type": "site_worker",
       "name": "Worker 06",
       "position": [
-        25,
+        24,
         0,
-        7
+        9.5
       ],
       "rotation": [
         0,

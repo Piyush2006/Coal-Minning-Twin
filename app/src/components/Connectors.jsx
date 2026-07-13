@@ -403,7 +403,7 @@ export function beltWatchWorldPos(objects, watcherId) {
   if (watch.assetId && objects[watch.assetId]) {
     const belt = objects[watch.assetId]
     const L = belt.config?.length ?? 8
-    const v = new THREE.Vector3(-L / 2 + L * t, 1.05, 0)
+    const v = new THREE.Vector3(-L / 2 + L * t, 0.98, 0)   // belt SURFACE at the span
       .applyEuler(new THREE.Euler(belt.rotation?.[0] ?? 0, belt.rotation?.[1] ?? 0, belt.rotation?.[2] ?? 0))
       .add(new THREE.Vector3(belt.position[0], belt.position[1], belt.position[2]))
     return [v.x, v.y, v.z]
@@ -416,7 +416,7 @@ export function beltWatchWorldPos(objects, watcherId) {
       const built = buildConnectorCurve(src, tgt, conn)
       if (built) {
         const p = built.bezier.getPointAt(t)
-        return [p.x, p.y + 1.0, p.z]
+        return [p.x, p.y + 0.98, p.z]                        // belt SURFACE above the curve
       }
     }
   }
@@ -430,26 +430,22 @@ function BeltEventMarker({ pos, severity }) {
   const critical = severity === 'critical'
   const color = ALERT_SEVERITY_COLOR[severity] ?? ALERT_SEVERITY_COLOR.warn
   useFrame(({ clock }) => {
-    if (!critical) return
-    const k = Math.sin(clock.elapsedTime * 4)
-    if (ringMat.current) ringMat.current.opacity = 0.6 + 0.3 * k
-    if (beamMat.current) beamMat.current.opacity = 0.22 + 0.14 * k
+    const k = Math.sin(clock.elapsedTime * (critical ? 4 : 2))
+    if (ringMat.current) ringMat.current.opacity = critical ? 0.6 + 0.3 * k : 0.85
+    if (beamMat.current) beamMat.current.opacity = 0.65 + 0.3 * k
   })
   return (
     <group position={pos}>
-      {/* spot ring lying ON the belt */}
-      <mesh raycast={noRay} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.14, 0]} renderOrder={4}>
-        <ringGeometry args={[0.45, 0.78, 24]} />
+      {/* belt-width-scaled spot ring lying flat ON the belt surface */}
+      <mesh raycast={noRay} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} renderOrder={4}>
+        <ringGeometry args={[0.2, 0.32, 24]} />
         <meshBasicMaterial ref={ringMat} color={color} transparent opacity={0.85} depthWrite={false} side={2} toneMapped={false} />
       </mesh>
-      {/* translucent beacon column so the spot reads from a distance */}
-      <mesh raycast={noRay} position={[0, 1.6, 0]} renderOrder={4}>
-        <cylinderGeometry args={[0.1, 0.17, 3.1, 10, 1, true]} />
-        <meshBasicMaterial ref={beamMat} color={color} transparent opacity={critical ? 0.3 : 0.2} depthWrite={false} side={2} toneMapped={false} />
-      </mesh>
-      <mesh raycast={noRay} position={[0, 3.3, 0]}>
-        <sphereGeometry args={[0.16, 10, 8]} />
-        <meshBasicMaterial color={color} toneMapped={false} />
+      {/* small pulsing marker just above the spot — sized to the DETECTION
+          POINT, never to the watched asset's bounding box */}
+      <mesh raycast={noRay} position={[0, 0.85, 0]}>
+        <sphereGeometry args={[0.13, 10, 8]} />
+        <meshBasicMaterial ref={beamMat} color={color} transparent opacity={0.95} toneMapped={false} />
       </mesh>
     </group>
   )
