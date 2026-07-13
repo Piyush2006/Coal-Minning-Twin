@@ -29,9 +29,11 @@ export const useFeedStore = create((set) => ({
   // detection box projected into the feed (updated by the renderer, throttled)
   box: null,                       // { x, y, w, h } in 0..1 panel coords, or null
   scale: 1,                        // 1x default; 2x for big-screen demos
+  _panelEl: null,                  // DOM panel node — the render rect derives from it
   openFeed: (id) => set({ feedId: id, box: null }),
   closeFeed: () => set({ feedId: null, box: null }),
   toggleScale: () => set(st => ({ scale: st.scale === 1 ? 2 : 1 })),
+  _setPanelEl: (el) => set({ _panelEl: el }),
   _setBox: (box) => set({ box }),
 }))
 
@@ -62,10 +64,21 @@ export function CameraFeedRenderer() {
     fc.lookAt(_tgt)
     fc.updateProjectionMatrix()
 
-    // second pass into the panel region (device px, GL origin = bottom-left)
-    const dpr = gl.getPixelRatio()
-    const x = Math.round(FEED_LEFT * dpr), y = Math.round(FEED_BOTTOM * dpr)
-    const w = Math.round(FEED_W * scale * dpr), h = Math.round(FEED_H * scale * dpr)
+    // second pass into the panel region. Single source of truth: the DOM
+    // panel's live bounding rect, converted to canvas-relative CSS pixels
+    // (GL origin bottom-left). three.js setViewport/setScissor take CSS px
+    // and scale by pixelRatio internally, so devicePixelRatio, the 1x/2x
+    // toggle and browser zoom are all handled by construction.
+    const panelEl = useFeedStore.getState()._panelEl
+    if (!panelEl) return
+    const pr = panelEl.getBoundingClientRect()
+    const cr = gl.domElement.getBoundingClientRect()
+    if (pr.width < 8 || pr.height < 8) return
+    const x = pr.left - cr.left
+    const y = cr.height - (pr.bottom - cr.top)
+    const w = pr.width, h = pr.height
+    if (fc.aspect !== w / h) { fc.aspect = w / h; fc.updateProjectionMatrix() }
+    if (import.meta.env.DEV && typeof window !== 'undefined') window.__dtFeedRect = { x, y, w, h }
     const prevAutoClear = gl.autoClear
     gl.autoClear = false
     gl.setScissorTest(true)
@@ -77,7 +90,7 @@ export function CameraFeedRenderer() {
     gl.render(scene, fc)
     gl.toneMappingExposure = prevExposure
     gl.setScissorTest(false)
-    gl.setViewport(0, 0, Math.round(size.width * dpr), Math.round(size.height * dpr))
+    gl.setViewport(0, 0, size.width, size.height)
     gl.autoClear = prevAutoClear
 
     // throttled: project the detection point into panel coords for the bbox overlay
@@ -121,7 +134,8 @@ export function CameraFeedPanel() {
   const camAlert = alerts.find(a => a.objId === feedId)
 
   return (
-    <div style={{ position: 'absolute', left: FEED_LEFT, bottom: FEED_BOTTOM, width: FEED_W * scale, height: FEED_H * scale,
+    <div ref={el => useFeedStore.getState()._setPanelEl(el)}
+      style={{ position: 'absolute', left: FEED_LEFT, bottom: FEED_BOTTOM, width: FEED_W * scale, height: FEED_H * scale,
       zIndex: 30, pointerEvents: 'none', fontFamily: FONT,
       border: `2px solid ${sevColor ?? 'rgba(20,26,32,0.85)'}`, borderRadius: 10, overflow: 'hidden',
       boxShadow: SHADOW.panel, ...(sev === 'critical' ? { animation: 'feedPulse 1.2s ease-in-out infinite' } : {}) }}>
