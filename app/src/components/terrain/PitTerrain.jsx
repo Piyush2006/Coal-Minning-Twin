@@ -29,6 +29,11 @@ const hashNoise = (x, z) => {
 }
 
 export function PitTerrain({ config = {} }) {
+  if (config.bowl) return <BowlPit config={config} />
+  return <LinearPit config={config} />
+}
+
+function LinearPit({ config = {} }) {
   const depth      = Number(config.depth) || 12.6
   const benches    = Math.max(1, Math.round(Number(config.benches) || 3))
   const benchDepth = Number(config.benchDepth) || 10
@@ -242,6 +247,276 @@ export function PitTerrain({ config = {} }) {
               normalScale={coalMaps?.normalScale ? [coalMaps.normalScale, coalMaps.normalScale] : undefined} />
           ) : (
             <meshStandardMaterial color={resolveColor(config.earthColor, '#8a7a64')} metalness={0.02} roughness={0.95}
+              roughnessMap={earthMaps?.roughnessMap ?? null} normalMap={earthMaps?.normalMap ?? null}
+              normalScale={earthMaps?.normalScale ? [earthMaps.normalScale, earthMaps.normalScale] : undefined} />
+          )}
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+
+// ── BowlPit — full open-cut bowl (config.bowl = true) ───────────────────────
+// A polar sweep of the same stepped face/tread profile: four (config) benches
+// descending from grade to a floor `depth` below, wrapping the pit except for
+// an `openingDeg` gap facing +X (the haul exit). Local origin = centre of the
+// pit FLOOR — place the object at y = -depth so the rim lands at grade.
+// Includes: per-bench geology tinting (lighter overburden up high, coal-dark
+// lowest face + granular seam band), noise-jittered faces with planar treads,
+// arc end caps, a dusty displaced floor, a grade apron ring, a spiral haul
+// ramp of stepped deck segments with outer-edge berms and one switchback
+// platform, an optional murky water sump, and polar-placed muck piles.
+const D2R = Math.PI / 180
+function BowlPit({ config = {} }) {
+  const benches  = Math.max(2, Math.round(Number(config.benches) || 4))
+  const H        = Number(config.benchHeight) || 3.6
+  const faceAng  = THREE.MathUtils.degToRad(Number(config.faceAngle) || 62)
+  const tread    = Number(config.benchDepth) || 8
+  const floorR   = Number(config.floorRadius) || 26
+  const openDeg  = Number(config.openingDeg) || 56
+  const earth    = new THREE.Color(resolveColor(config.earthColor, '#8a7a64'))
+  const floorCol = resolveColor(config.floorColor, '#6e6257')
+  const seamCol  = resolveColor(config.seamColor, '#23262b')
+  const depth    = benches * H
+  const run      = H / Math.tan(faceAng)
+  const crestPad = 4
+  const rimR     = floorR + benches * run + (benches - 1) * tread + crestPad
+
+  const { benchGeo, seamGeo, floorGeo, apronGeo } = useMemo(() => {
+    const th0 = (openDeg / 2) * D2R, th1 = (360 - openDeg / 2) * D2R
+    const A = 72                                              // arc subdivisions
+    const rock = new THREE.Color('#7d7466')
+    const light = new THREE.Color('#a39a88')                  // upper-bench overburden
+    const coalFace = new THREE.Color('#3a3d42')               // lowest face reads coaly
+
+    // radial profile (like the linear pit, radial instead of z)
+    const segs = []
+    let r = floorR, y = 0
+    for (let b = 0; b < benches; b++) {
+      segs.push({ r0: r, y0: y, r1: r + run, y1: y + H, face: true, bench: b }); r += run; y += H
+      const t = b === benches - 1 ? crestPad : tread
+      segs.push({ r0: r, y0: y, r1: r + t, y1: y, face: false, bench: b }); r += t
+    }
+
+    const jit = (th, yy, rr, amp) => {
+      const edge = Math.min(1, Math.min(th - th0, th1 - th) / 0.12)   // pin the arc ends
+      const n1 = hashNoise(th * 21 + yy * 0.7, rr * 0.23)
+      const n2 = hashNoise(th * 57, rr * 0.55 + yy)
+      return (n1 * 0.75 + n2 * 0.25) * amp * Math.max(0, edge)
+    }
+    const pos = [], col = []
+    const pushV = (v, c) => { pos.push(v[0], v[1], v[2]); col.push(c.r, c.g, c.b) }
+    const vColor = (th, yy, rr, face, bench) => {
+      let base
+      if (face && bench === 0) base = earth.clone().lerp(coalFace, 0.62)          // exposed seam zone
+      else if (face) base = earth.clone().lerp(rock, 0.55).lerp(light, bench / benches * 0.5)
+      else base = earth.clone().lerp(new THREE.Color('#9a8d76'), 0.5).lerp(light, bench / benches * 0.35)
+      const local = (yy % H) / H
+      if (face && bench > 0 && local < 0.3) base.lerp(new THREE.Color('#4c463d'), 0.3 * (1 - local / 0.3))
+      base.offsetHSL(0, 0, hashNoise(th * 40, rr * 0.35 + yy * 0.9) * 0.09)
+      return base
+    }
+    const P = (th, sgm, f) => {
+      let yy = sgm.y0 + (sgm.y1 - sgm.y0) * f
+      let rr = sgm.r0 + (sgm.r1 - sgm.r0) * f
+      const midRow = sgm.face && f > 0.01 && f < 0.99
+      rr += jit(th, yy, rr, midRow ? 0.6 : (yy > 0.01 ? 0.2 : 0))
+      if (midRow) yy += jit(th + 1.7, rr, yy, 0.28)
+      return [Math.cos(th) * rr, yy, Math.sin(th) * rr]
+    }
+    for (const sgm of segs) {
+      const rows = sgm.face ? 3 : 2
+      for (let rI = 0; rI < rows - 1; rI++) {
+        const f0 = rI / (rows - 1), f1 = (rI + 1) / (rows - 1)
+        for (let i = 0; i < A; i++) {
+          const ta = th0 + ((th1 - th0) * i) / A, tb = th0 + ((th1 - th0) * (i + 1)) / A
+          const a = P(ta, sgm, f0), b = P(tb, sgm, f0), c = P(tb, sgm, f1), d = P(ta, sgm, f1)
+          const cA = vColor(ta, a[1], floorR, sgm.face, sgm.bench), cB = vColor(tb, b[1], floorR, sgm.face, sgm.bench)
+          const cC = vColor(tb, c[1], floorR + 1, sgm.face, sgm.bench), cD = vColor(ta, d[1], floorR + 1, sgm.face, sgm.bench)
+          // wind so normals face the pit interior (decreasing radius direction)
+          pushV(a, cA); pushV(b, cB); pushV(c, cC)
+          pushV(a, cA); pushV(c, cC); pushV(d, cD)
+        }
+      }
+    }
+    // arc end caps: vertical fans closing the profile at both opening edges
+    for (const [thE, flip] of [[th0, false], [th1, true]]) {
+      const capC = earth.clone().lerp(rock, 0.45)
+      const pts = [[floorR, 0]]
+      for (const sgm of segs) pts.push([sgm.r1, sgm.y1])
+      const cxE = Math.cos(thE), szE = Math.sin(thE)
+      for (let i = 0; i < pts.length - 1; i++) {
+        const [ra, ya] = pts[i], [rb, yb] = pts[i + 1]
+        const v0 = [cxE * pts[pts.length - 1][0], 0, szE * pts[pts.length - 1][0]]
+        const v1 = [cxE * ra, ya, szE * ra], v2 = [cxE * rb, yb, szE * rb]
+        if (flip) { pushV(v0, capC); pushV(v2, capC); pushV(v1, capC) }
+        else { pushV(v0, capC); pushV(v1, capC); pushV(v2, capC) }
+      }
+    }
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3))
+    g.computeVertexNormals()
+
+    // seam band on the LOWEST face, hugging the jittered wall
+    const sPos = [], sUv = []
+    const sSeg = segs[0]
+    const off = 0.14
+    for (let i = 0; i < A; i++) {
+      const ta = th0 + ((th1 - th0) * i) / A, tb = th0 + ((th1 - th0) * (i + 1)) / A
+      const SP = (th, f) => {
+        const fz = 0.08 + 0.52 * f
+        let yy = sSeg.y0 + H * fz
+        let rr = sSeg.r0 + run * fz - off
+        rr += jit(th, yy, rr, 0.4)
+        return [Math.cos(th) * rr, yy, Math.sin(th) * rr]
+      }
+      const a = SP(ta, 0), b = SP(tb, 0), c = SP(tb, 1), d = SP(ta, 1)
+      sPos.push(...a, ...b, ...c, ...a, ...c, ...d)
+      sUv.push(i, 0, i + 1, 0, i + 1, 1, i, 0, i + 1, 1, i, 1)
+    }
+    const sg = new THREE.BufferGeometry()
+    sg.setAttribute('position', new THREE.Float32BufferAttribute(sPos, 3))
+    sg.setAttribute('uv', new THREE.Float32BufferAttribute(sUv, 2))
+    sg.computeVertexNormals()
+
+    // dusty displaced floor
+    const fg = new THREE.CircleGeometry(floorR + 1.5, 56)
+    fg.rotateX(-Math.PI / 2)
+    const fp = fg.attributes.position
+    for (let i = 0; i < fp.count; i++) {
+      const px = fp.getX(i), pz = fp.getZ(i)
+      const edge = Math.min(1, (floorR - Math.hypot(px, pz)) / 5)
+      if (edge > 0) fp.setY(i, (hashNoise(px * 0.18, pz * 0.18) * 0.18 + hashNoise(px * 0.5, pz * 0.5) * 0.07) * edge)
+    }
+    fg.computeVertexNormals()
+
+    // grade apron ring just outside the rim (feathers the crater join)
+    const ag = new THREE.RingGeometry(rimR - 1, rimR + 9, 64)
+    ag.rotateX(-Math.PI / 2)
+    ag.translate(0, depth + 0.05, 0)
+    return { benchGeo: g, seamGeo: sg, floorGeo: fg, apronGeo: ag }
+  }, [benches, H, faceAng, tread, floorR, openDeg, depth, run, rimR, earth.getHex()]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // spiral haul ramp: stepped deck segments hugging the wall, one switchback.
+  // Leg 1 climbs CCW from the floor toe to half depth; a flat platform turns
+  // it; leg 2 climbs CW and exits at grade through the opening. Outer-edge
+  // (drop-side) berm mounds run along every deck — real pits demand them.
+  const ramp = useMemo(() => {
+    if (config.ramp === false) return null
+    const halfY = depth / 2
+    const rOf = (yy) => floorR + (yy * (run + tread)) / H - 5
+    const legs = [
+      { thA: 260, thB: 105, yA: 0, yB: halfY },
+      { thA: 105, thB: 14, yA: halfY, yB: depth },
+    ]
+    const decks = []
+    for (const leg of legs) {
+      const N = 10
+      for (let i = 0; i < N; i++) {
+        const f0 = i / N, f1 = (i + 1) / N
+        const th0 = (leg.thA + (leg.thB - leg.thA) * f0) * D2R
+        const th1 = (leg.thA + (leg.thB - leg.thA) * f1) * D2R
+        const y0 = leg.yA + (leg.yB - leg.yA) * f0, y1 = leg.yA + (leg.yB - leg.yA) * f1
+        const r0 = rOf(y0), r1 = rOf(y1)
+        const a = [Math.cos(th0) * r0, y0, Math.sin(th0) * r0]
+        const b = [Math.cos(th1) * r1, y1, Math.sin(th1) * r1]
+        const yMid = (y0 + y1) / 2
+        const mid = [(a[0] + b[0]) / 2, yMid - 0.25, (a[2] + b[2]) / 2]   // box top = nominal ramp height
+        const L = Math.hypot(b[0] - a[0], b[2] - a[2]) + 1.2
+        const yaw = -Math.atan2(b[2] - a[2], b[0] - a[0])
+        // berm on the drop side (toward pit centre), grounded on the deck top
+        const inward = Math.atan2(-mid[2], -mid[0])
+        const bx = mid[0] + Math.cos(inward) * 4.6, bz = mid[2] + Math.sin(inward) * 4.6
+        decks.push({ mid, L, yaw, berm: [bx, yMid + 0.3, bz] })
+      }
+    }
+    const pTh = 105 * D2R, pR = rOf(halfY)
+    // platform top 2 cm below the deck joint — never coplanar with deck ends
+    return { decks, platform: [Math.cos(pTh) * pR, halfY - 0.27, Math.sin(pTh) * pR] }
+  }, [config.ramp, depth, floorR, run, tread, H])
+
+  // polar muck piles: config.muckAt = [{ theta, r, radius, height, coal }]
+  const muck = useMemo(() => {
+    const list = Array.isArray(config.muckAt) ? config.muckAt : []
+    return list.map((m, i) => ({
+      geo: moundGeo(m.radius ?? 3.5, m.height ?? 2, 0.55, i * 4.3),
+      pos: [Math.cos((m.theta ?? 0) * D2R) * (m.r ?? 10), m.y ?? 0, Math.sin((m.theta ?? 0) * D2R) * (m.r ?? 10)],
+      coal: m.coal !== false,
+    }))
+  }, [JSON.stringify(config.muckAt)]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sump = config.sump
+  const earthMaps = getFinishMaps('concrete')
+  const dustMaps  = getFinishMaps('dust')
+  const coalMaps  = getFinishMaps('granular')
+  const earthHex  = resolveColor(config.earthColor, '#8a7a64')
+
+  return (
+    <group>
+      <mesh geometry={benchGeo} castShadow receiveShadow>
+        <meshStandardMaterial vertexColors metalness={0.02} roughness={0.95} side={THREE.DoubleSide}
+          roughnessMap={earthMaps?.roughnessMap ?? null} normalMap={earthMaps?.normalMap ?? null}
+          normalScale={earthMaps?.normalScale ? [earthMaps.normalScale, earthMaps.normalScale] : undefined} />
+      </mesh>
+      {config.seam !== false && (
+        <mesh geometry={seamGeo}>
+          <meshStandardMaterial color={seamCol} metalness={0.06} roughness={0.85} side={THREE.DoubleSide}
+            map={coalMaps?.map ?? null} roughnessMap={coalMaps?.roughnessMap ?? null}
+            normalMap={coalMaps?.normalMap ?? null}
+            normalScale={coalMaps?.normalScale ? [coalMaps.normalScale, coalMaps.normalScale] : undefined}
+            polygonOffset polygonOffsetFactor={-2} />
+        </mesh>
+      )}
+      <mesh geometry={floorGeo} receiveShadow>
+        <meshStandardMaterial color={floorCol} metalness={0.02} roughness={0.96}
+          map={dustMaps?.map ?? null} roughnessMap={dustMaps?.roughnessMap ?? null}
+          normalMap={dustMaps?.normalMap ?? null}
+          normalScale={dustMaps?.normalScale ? [dustMaps.normalScale, dustMaps.normalScale] : undefined} />
+      </mesh>
+      <mesh geometry={apronGeo} receiveShadow>
+        <meshStandardMaterial color={earthHex} metalness={0.02} roughness={0.96} />
+      </mesh>
+      {ramp && ramp.decks.map((d, i) => (
+        <group key={i}>
+          <mesh position={d.mid} rotation={[0, d.yaw, 0]} castShadow receiveShadow>
+            <boxGeometry args={[d.L, 0.5, 9]} />
+            <meshStandardMaterial color="#5a544d" metalness={0.02} roughness={0.95} />
+          </mesh>
+          <mesh position={d.berm} rotation={[0, d.yaw, 0]} castShadow>
+            <boxGeometry args={[d.L, 1.1, 1.4]} />
+            <meshStandardMaterial color={earthHex} metalness={0.02} roughness={0.95} />
+          </mesh>
+        </group>
+      ))}
+      {ramp && (
+        <mesh position={ramp.platform} castShadow receiveShadow>
+          <boxGeometry args={[16, 0.5, 14]} />
+          <meshStandardMaterial color="#5a544d" metalness={0.02} roughness={0.95} />
+        </mesh>
+      )}
+      {sump && (
+        <group position={[Math.cos((sump.theta ?? 235) * D2R) * (sump.r ?? 16), 0.34, Math.sin((sump.theta ?? 235) * D2R) * (sump.r ?? 16)]}>
+          <mesh rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[(sump.radius ?? 7) + 1.6, 36]} />
+            <meshStandardMaterial color="#4a423a" metalness={0.02} roughness={0.98} />
+          </mesh>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.08, 0]}>
+            <circleGeometry args={[sump.radius ?? 7, 36]} />
+            <meshStandardMaterial color="#5c5648" metalness={0.35} roughness={0.25} />
+          </mesh>
+        </group>
+      )}
+      {muck.map((m, i) => (
+        <mesh key={i} geometry={m.geo} position={m.pos} castShadow receiveShadow>
+          {m.coal ? (
+            <meshStandardMaterial color="#2a2d33" metalness={0.06} roughness={0.85}
+              map={coalMaps?.map ?? null} roughnessMap={coalMaps?.roughnessMap ?? null}
+              normalMap={coalMaps?.normalMap ?? null}
+              normalScale={coalMaps?.normalScale ? [coalMaps.normalScale, coalMaps.normalScale] : undefined} />
+          ) : (
+            <meshStandardMaterial color={earthHex} metalness={0.02} roughness={0.95}
               roughnessMap={earthMaps?.roughnessMap ?? null} normalMap={earthMaps?.normalMap ?? null}
               normalScale={earthMaps?.normalScale ? [earthMaps.normalScale, earthMaps.normalScale] : undefined} />
           )}

@@ -32,6 +32,7 @@ import { TourDriver, TourOverlay, useTourStore } from './components/TourPlayer'
 import { Kpi3DLayer, useKpiStore } from './components/Kpi3D'
 import { AssetSparklines, AssetAlertHistory } from './components/AssetDrilldown'
 import { DayNightDriver, SiteLights } from './components/DayNight'
+import { BlastLayer, useBlastStore } from './components/effects/BlastFX'
 import { useDayNight } from './lib/dayNight'
 import { CommandPalette }     from './components/CommandPalette'
 import { confirmDialog, alertDialog } from './components/dialogs'
@@ -1184,6 +1185,7 @@ function ViewportControls({ orbitRef, leftEdge }) {
   const hasTour = useSceneStore(s => (s.tour?.beats?.length ?? 0) > 0)
   const kpiShown = useKpiStore(s => s.shown)
   const nightOn = useDayNight(s => s.night)
+  const hasBlast = useSceneStore(s => Object.values(s.objects).some(o => o.config?.blast?.from))
   const dolly = (factor) => {
     const oc = orbitRef.current; if (!oc) return
     const off = oc.object.position.clone().sub(oc.target)
@@ -1219,6 +1221,13 @@ function ViewportControls({ orbitRef, leftEdge }) {
         <div style={sep} />
         <button title="Rotate left"  onClick={() => rotate(-1)} style={bs} onMouseEnter={enter} onMouseLeave={leave}>↺</button>
         <button title="Rotate right" onClick={() => rotate(1)}  style={bs} onMouseEnter={enter} onMouseLeave={leave}>↻</button>
+      </>}
+      {!tourActive && hasBlast && <>
+        <div style={sep} />
+        <button title="Fire blast sequence (demo)"
+          onClick={() => useBlastStore.getState().trigger()}
+          style={{ ...bs, fontSize: 10.5, fontWeight: 700, color: '#ff9f0a' }}
+          onMouseEnter={enter} onMouseLeave={leave}>BLAST</button>
       </>}
       {!tourActive && <>
         <div style={sep} />
@@ -1518,6 +1527,7 @@ export default function App() {
                 <CameraController orbitRef={orbitRef} />
                 <TourDriver orbitRef={orbitRef} />
                 <Kpi3DLayer />
+                <BlastLayer />
                 {!SNAP_MODE && <PostFX />}
                 <CameraFeedRenderer />
 

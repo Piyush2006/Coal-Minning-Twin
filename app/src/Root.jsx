@@ -9,7 +9,7 @@ import { HomeScreen } from './components/home/HomeScreen'
 import { ComponentStudio } from './components/studio/ComponentStudio'
 import { ComponentDetails } from './components/details/ComponentDetails'
 import { ThumbnailFactory } from './components/home/ThumbnailFactory'
-import { UnsDebugPanel } from './components/UnsDebugPanel'   // TEMPORARY debug window
+// import { UnsDebugPanel } from './components/UnsDebugPanel'   // TEMPORARY debug window (disabled)
 import { DialogHost } from './components/dialogs'
 import App from './App'
 
@@ -146,7 +146,7 @@ export default function Root() {
       )}
       </AnimatePresence>
       {/* TEMPORARY: UNS live-data debug window (remove this line + the component file) */}
-      {view === 'editor' && <UnsDebugPanel />}
+      {/* UNS debug window intentionally disabled for the demo twin */}
       {/* Global in-app confirm/alert host — native dialogs don't render in the platform iframe */}
       <DialogHost />
     </>

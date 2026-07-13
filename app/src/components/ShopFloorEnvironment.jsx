@@ -89,23 +89,37 @@ export function ShopFloorEnvironment() {
   }, [objects, ground.margin])
 
   // Earth mode: displaced heightmap plane — dips DOWN only (undulation must not
-  // poke through floor-standing assets, which sit at y = 0).
+  // poke through floor-standing assets, which sit at y = 0). ground.pits
+  // ([{ at:[x,z], radius, depth }]) additionally sink smooth craters so a
+  // below-grade PitTerrain bowl can nest inside the world ground.
+  const pitsKey = JSON.stringify(ground.pits ?? null)
   const earthGeo = useMemo(() => {
     if (!isEarth) return null
     const amp = ground.noiseAmp ?? 0.35
     const scale = ground.noiseScale ?? 55
-    const segX = Math.min(180, Math.round(len / 4)), segZ = Math.min(140, Math.round(wid / 4))
+    const pits = Array.isArray(ground.pits) ? ground.pits : []
+    const segX = Math.min(220, Math.round(len / 4)), segZ = Math.min(180, Math.round(wid / 4))
     const g = new THREE.PlaneGeometry(len, wid, segX, segZ)
     g.rotateX(-Math.PI / 2)
     const p = g.attributes.position
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i), z = p.getZ(i)
       const n = hashNoise(x / scale, z / scale) * 0.7 + hashNoise(x / (scale * 0.31), z / (scale * 0.31)) * 0.3
-      p.setY(i, -Math.abs(n) * amp - 0.02)
+      let y = -Math.abs(n) * amp - 0.02
+      for (const pit of pits) {
+        const dx = (x + cx) - pit.at[0], dz = (z + cz) - pit.at[1]
+        const d = Math.hypot(dx, dz)
+        if (d < pit.radius) {
+          // linear cone, STEEPER than a benched pit's envelope (dy/dr ≈ 0.36),
+          // so the crater always hides under the bench terrain nested in it
+          y -= Math.min(pit.depth ?? 15, (pit.radius - d) * (pit.slope ?? 0.55))
+        }
+      }
+      p.setY(i, y)
     }
     g.computeVertexNormals()
     return g
-  }, [isEarth, len, wid, ground.noiseAmp, ground.noiseScale])
+  }, [isEarth, len, wid, cx, cz, ground.noiseAmp, ground.noiseScale, pitsKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const maps = isEarth ? getFinishMaps('concrete') : null
 
@@ -114,9 +128,11 @@ export function ShopFloorEnvironment() {
     return (
       <>
         {/* far ground — runs to the horizon; fog fades it into the sky */}
-        {/* -0.55: safely below the earth plane's deepest dip (-amp - 0.02) so the
-            two horizon-scale planes can never intersect and shimmer */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, -0.55, cz]} renderOrder={-2}>
+        {/* below the earth plane's deepest dip — including any pit craters — so
+            the two horizon-scale planes can never intersect and shimmer */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]}
+          position={[cx, Array.isArray(ground.pits) && ground.pits.length ? -(Math.max(...ground.pits.map(p2 => p2.depth ?? 15)) + 3) : -0.55, cz]}
+          renderOrder={-2}>
           <circleGeometry args={[1400, 48]} />
           <meshStandardMaterial color={resolveColor(ground.farColor ?? ground.color, '#a49780')}
             metalness={0.02} roughness={0.98} />

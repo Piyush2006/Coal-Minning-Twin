@@ -20,6 +20,7 @@ import * as THREE from 'three'
 import { create } from 'zustand'
 import { useSceneStore } from '../store/sceneStore'
 import { useDayNight } from '../lib/dayNight'
+import { useBlastStore } from './effects/BlastFX'
 import { C, R, FONT, glass, SHADOW } from '../ui/theme'
 
 export const useTourStore = create((set) => ({
@@ -71,7 +72,7 @@ export function TourDriver({ orbitRef }) {
       const hold = Math.max(0, Number(b.hold) || 6)
       const seg = {
         i, p0: prevP, t0: prevT, p1, t1, start, travel, hold,
-        dist: prevP.distanceTo(p1), title: fill(b.title), subtitle: fill(b.subtitle), night: !!b.night,
+        dist: prevP.distanceTo(p1), title: fill(b.title), subtitle: fill(b.subtitle), night: !!b.night, blast: !!b.blast,
       }
       start += travel + hold
       prevP = driftEnd(new THREE.Vector3(), p1, t1, hold)
@@ -145,6 +146,9 @@ export function TourDriver({ orbitRef }) {
       mem.current.lastSegI = seg.i
       const { night, setNight } = useDayNight.getState()
       if (night !== seg.night) setNight(seg.night)
+      // blast-flagged beat: arm on entry — the ~5 s warning beacon runs during
+      // the camera move, so the dust columns erupt as the hold begins
+      if (seg.blast) useBlastStore.getState().trigger()
     }
     // Lower third — store write only when the phase flips, never per frame.
     const key = local >= seg.travel * CARD_IN_AT ? `${seg.i}:hold` : ''
