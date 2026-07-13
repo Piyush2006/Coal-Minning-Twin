@@ -16,6 +16,7 @@
 // so events (anode effects, anode changes) are rare and slow, never per-second.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { scenarioExclusive, scenarioPatch } from './demoScenarios'
 import { getParameterSchema } from './parameterSchemas'
 import { statusFromState, defaultState } from './stateSchemas'
 
@@ -212,6 +213,13 @@ export function stepSimulation(objects, customAssetTypes = {}) {
       params = { ...params }
       for (const tr of o.config.demoTrends) {
         if (!tr?.param) continue
+        if (scenarioExclusive()) {
+          // tour presentation: pin sweeps to the parameter's default so ONLY
+          // scripted scenarios fire — identical alerts every recording
+          const def = (customAssetTypes?.[o.type]?.parameters ?? []).find(pd => pd.key === tr.param)
+          params[tr.param] = def?.default ?? params[tr.param]
+          continue
+        }
         const period = Math.max(10, Number(tr.period) || 120)         // one tick ≈ 1 s
         const phase = ((rec.t + (Number(tr.offset) || 0)) % period) / period
         const wave = 0.5 - 0.5 * Math.cos(phase * 2 * Math.PI)        // 0 → 1 → 0
@@ -219,6 +227,9 @@ export function stepSimulation(objects, customAssetTypes = {}) {
         params[tr.param] = Math.round((lo + (hi - lo) * wave) * 100) / 100
       }
     }
+    // scripted scenario overrides (tour actions / dev console) apply LAST
+    const scen = scenarioPatch(id)
+    if (scen) params = { ...params, ...scen }
 
     out[id] = {
       ...o,

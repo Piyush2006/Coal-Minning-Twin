@@ -21,6 +21,9 @@ import { create } from 'zustand'
 import { useSceneStore } from '../store/sceneStore'
 import { useDayNight } from '../lib/dayNight'
 import { useBlastStore } from './effects/BlastFX'
+import { useFeedStore } from './CameraFeed'
+import { useViewTab } from '../lib/viewTab'
+import { triggerScenario, clearScenario, clearAllScenarios, setScenarioExclusive } from '../lib/demoScenarios'
 import { C, R, FONT, glass, SHADOW } from '../ui/theme'
 
 export const useTourStore = create((set) => ({
@@ -39,6 +42,52 @@ const smootherstep = (u) => u * u * u * (u * (u * 6 - 15) + 10)
 
 const _p = new THREE.Vector3(), _t = new THREE.Vector3(), _off = new THREE.Vector3()
 
+// Close everything a beat may have opened — runs between beats and on exit,
+// so panels/feeds never leak past their beat and manual use is untouched after.
+function tourCleanupUI() {
+  try {
+    const feed = useFeedStore.getState()
+    if (feed.feedId) feed.closeFeed()
+    if (feed.scale !== 1) useFeedStore.setState({ scale: 1 })
+    useSceneStore.getState().clearSelection?.()
+    useViewTab.getState().setTab('overview')
+  } catch { /* never stall the tour */ }
+}
+
+// Timed beat action — every type fails soft (log in dev, tour keeps flying).
+function runTourAction(a, segIndex) {
+  let ok = true
+  try {
+    const objects = useSceneStore.getState().objects
+    const resolve = (t) => (objects[t] ? t : Object.keys(objects).find(id => objects[id].name === t))
+    switch (a.type) {
+      case 'triggerScenario': ok = triggerScenario(a.target); break
+      case 'clearScenario':   ok = clearScenario(a.target); break
+      case 'blast':           useBlastStore.getState().trigger({ beaconSec: a.params?.beaconSec }); break
+      case 'openFeed': {
+        const id = resolve(a.target)
+        if (!id) { ok = false; break }
+        if ((a.params?.size ?? 1) === 2) useFeedStore.setState({ scale: 2 })
+        useFeedStore.getState().openFeed(id)
+        break
+      }
+      case 'closeFeed':       useFeedStore.getState().closeFeed(); break
+      case 'switchTab':       useViewTab.getState().setTab(a.target); break
+      case 'openDrilldown': {
+        const id = resolve(a.target)
+        if (!id) { ok = false; break }
+        useSceneStore.getState().selectObject?.(id)      // panel effect flips to the Asset tab
+        useViewTab.getState().setTab('asset')
+        break
+      }
+      case 'closePanels':     tourCleanupUI(); break
+      default: ok = false
+    }
+  } catch { ok = false }
+  if (import.meta.env.DEV) console.log(`[tour] B${segIndex + 1} ${a.type} ${a.target ?? ''} ${ok ? 'ok' : 'FAILED (continuing)'}`)
+  return ok
+}
+
 // Where the hold's drift leaves the camera — the next move starts from here so
 // segments chain with no position jump.
 function driftEnd(out, pos, tgt, hold) {
@@ -51,7 +100,7 @@ export function TourDriver({ orbitRef }) {
   const active = useTourStore(s => s.active)
   const segs = useRef(null)
   const time = useRef(0)
-  const mem = useRef({ prevEnabled: true, lastCardKey: '', lastSegI: -1 })
+  const mem = useRef({ prevEnabled: true, lastCardKey: '', lastSegI: -1, fired: new Set() })
   const { gl } = useThree()
 
   // Build the timeline + take over the controls when the tour starts.
@@ -72,7 +121,7 @@ export function TourDriver({ orbitRef }) {
       const hold = Math.max(0, Number(b.hold) || 6)
       const seg = {
         i, p0: prevP, t0: prevT, p1, t1, start, travel, hold,
-        dist: prevP.distanceTo(p1), title: fill(b.title), subtitle: fill(b.subtitle), night: !!b.night, blast: !!b.blast,
+        dist: prevP.distanceTo(p1), title: fill(b.title), subtitle: fill(b.subtitle), tag: b.tag ?? null, night: !!b.night, blast: !!b.blast, actions: Array.isArray(b.actions) ? b.actions : null,
       }
       start += travel + hold
       prevP = driftEnd(new THREE.Vector3(), p1, t1, hold)
@@ -88,10 +137,17 @@ export function TourDriver({ orbitRef }) {
     ctrl.enabled = false                            // block user orbit input
     useSceneStore.getState().clearFlyTarget?.()     // cancel any pending fly-to
     useSceneStore.getState().clearSelection?.()     // demo polish: no highlight/gizmo
+    mem.current.fired = new Set()
+    clearAllScenarios()
+    setScenarioExclusive(!!useSceneStore.getState().tour?.presentation)
+    tourCleanupUI()
     return () => {
       ctrl.enabled = mem.current.prevEnabled        // handback — camera stays put
       segs.current = null
       useDayNight.getState().setNight(false)        // tour always hands back daylight
+      tourCleanupUI()                               // close anything a beat opened
+      clearAllScenarios()
+      setScenarioExclusive(false)                   // demo trends resume
     }
   }, [active, orbitRef])
 
@@ -144,17 +200,28 @@ export function TourDriver({ orbitRef }) {
     // runs inside the beat's travel, so night arrives with the framing.
     if (seg.i !== mem.current.lastSegI) {
       mem.current.lastSegI = seg.i
+      tourCleanupUI()                               // previous beat's panels/feeds close as the move starts
+      clearAllScenarios()                           // beats fully reset scenarios even if a clear action was skipped
       const { night, setNight } = useDayNight.getState()
       if (night !== seg.night) setNight(seg.night)
-      // blast-flagged beat: arm on entry — the ~5 s warning beacon runs during
-      // the camera move, so the dust columns erupt as the hold begins
-      if (seg.blast) useBlastStore.getState().trigger()
+      if (seg.blast) useBlastStore.getState().trigger()   // legacy blast flag (actions preferred)
+    }
+    // timed beat actions — each fires once at its offset into the beat
+    if (seg.actions) {
+      for (let ai = 0; ai < seg.actions.length; ai++) {
+        const a = seg.actions[ai]
+        const key = `${seg.i}:${ai}`
+        if (local >= (a.at ?? 0) && !mem.current.fired.has(key)) {
+          mem.current.fired.add(key)
+          runTourAction(a, seg.i)
+        }
+      }
     }
     // Lower third — store write only when the phase flips, never per frame.
     const key = local >= seg.travel * CARD_IN_AT ? `${seg.i}:hold` : ''
     if (key !== mem.current.lastCardKey) {
       mem.current.lastCardKey = key
-      _setCard(key ? { title: seg.title, subtitle: seg.subtitle } : null)
+      _setCard(key ? { title: seg.title, subtitle: seg.subtitle, tag: seg.tag } : null)
     }
   }, 1)
 
@@ -176,6 +243,12 @@ export function TourOverlay() {
         transition: 'opacity 650ms ease, transform 650ms ease',
         fontFamily: FONT, textAlign: 'center', ...glass, border: `1px solid ${C.line}`,
         borderRadius: R.lg, boxShadow: SHADOW.panel, padding: '13px 28px', maxWidth: 620 }}>
+        {shown?.tag ? (
+          <div style={{ marginBottom: 5 }}>
+            <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: C.text2,
+              background: 'rgba(120,120,128,0.12)', borderRadius: 4, padding: '2px 8px' }}>{shown.tag}</span>
+          </div>
+        ) : null}
         <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: 0.2, color: C.text, whiteSpace: 'nowrap' }}>{shown?.title}</div>
         {shown?.subtitle ? <div style={{ fontSize: 13, color: C.text2, marginTop: 4 }}>{shown.subtitle}</div> : null}
       </div>

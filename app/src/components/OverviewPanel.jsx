@@ -7,6 +7,7 @@ import { useMemo } from 'react'
 import { computeKPIs, computeGroupKPIs } from '../lib/kpiSchemas'
 import { stateMeta } from '../lib/stateSchemas'
 import { evaluateAlerts, ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
+import { useTourStore } from './TourPlayer'
 import { useSceneStore } from '../store/sceneStore'
 import { useFeedStore } from './CameraFeed'
 import { C, R } from '../ui/theme'
@@ -32,8 +33,10 @@ function AlertsSection({ objects }) {
             {alerts.length}
           </span>
         )}
-        <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, letterSpacing: 0.5, color: C.text3,
-          border: `1px solid ${C.line}`, borderRadius: R.pill, padding: '1px 7px' }}>MOCK DATA</span>
+        {!(useTourStore.getState().active && useSceneStore.getState().tour?.presentation) && (
+          <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, letterSpacing: 0.5, color: C.text3,
+            border: `1px solid ${C.line}`, borderRadius: R.pill, padding: '1px 7px' }}>MOCK DATA</span>
+        )}
       </div>
       {alerts.length === 0 ? (
         <p style={{ fontSize: 12, color: C.text3, padding: '10px 2px' }}>No active alerts</p>

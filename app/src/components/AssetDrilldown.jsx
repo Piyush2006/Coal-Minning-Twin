@@ -52,7 +52,21 @@ function Spark({ objId, def }) {
 
 /** Live sparklines over the asset's first few parameters (ring-buffered). */
 export function AssetSparklines({ obj, defs }) {
-  const shown = useMemo(() => (defs ?? []).filter(d => d.freq !== 'manual').slice(0, 4), [defs])
+  const shown = useMemo(() => {
+    const pool = (defs ?? []).filter(d => d.freq !== 'manual')
+    // params with a currently-firing alert rule lead the list — the drill-down
+    // opens showing exactly the signal that raised the alarm
+    const hot = new Set()
+    for (const r of obj.config?.alertRules ?? []) {
+      const v = Number(obj.parameters?.[r.param])
+      if (!Number.isFinite(v)) continue
+      const t = r.threshold
+      const fires = r.op === '>' ? v > Number(t) : r.op === '<' ? v < Number(t)
+        : Array.isArray(t) && v >= Number(t[0]) && v <= Number(t[1])
+      if (fires) hot.add(r.param)
+    }
+    return [...pool].sort((a, b) => (hot.has(b.key) ? 1 : 0) - (hot.has(a.key) ? 1 : 0)).slice(0, 4)
+  }, [defs, obj])
   // Subscribing to this asset's params re-renders at the sim tick while the
   // panel is open — each tick appends to the ring buffers.
   const params = useSceneStore(s => s.objects[obj.id]?.parameters)

@@ -34,6 +34,7 @@ import { AssetSparklines, AssetAlertHistory } from './components/AssetDrilldown'
 import { DayNightDriver, SiteLights } from './components/DayNight'
 import { BlastLayer, useBlastStore } from './components/effects/BlastFX'
 import { useDayNight } from './lib/dayNight'
+import { useViewTab } from './lib/viewTab'
 import { CommandPalette }     from './components/CommandPalette'
 import { confirmDialog, alertDialog } from './components/dialogs'
 import { FlowPane }           from './components/flow/FlowPane'
@@ -294,8 +295,9 @@ function AssetDetail({ obj, onClose }) {
 
 /* ── View mode: right panel — tabbed Overview (line dashboard) / Asset ── */
 function ViewRightPanel({ objects, selectedObj, onClose }) {
-  const [tab, setTab] = useState('overview')
-  useEffect(() => { setTab(selectedObj ? 'asset' : 'overview') }, [selectedObj?.id])
+  const tab = useViewTab(s => s.tab)
+  const setTab = useViewTab(s => s.setTab)
+  useEffect(() => { setTab(selectedObj ? 'asset' : 'overview') }, [selectedObj?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div style={COL_R}>
       <TabBar tabs={['overview', 'asset']} value={tab} onChange={setTab} />
@@ -1559,8 +1561,8 @@ export default function App() {
 
         </div>{/* ── end base layer ── */}
 
-        {/* ── FLOATING top bar ── */}
-        <div style={{ position:'absolute', top:12, left:12, right:12, zIndex:30 }}>
+        {/* ── FLOATING top bar (hidden while the tour records) ── */}
+        {!tourActive && <div style={{ position:'absolute', top:12, left:12, right:12, zIndex:30 }}>
           <TopBar
             editMode={editMode} setEditMode={setEditMode}
             paneMode={paneMode} setPaneMode={setPaneMode}
@@ -1576,7 +1578,7 @@ export default function App() {
             onSave={handleSave}
             dirty={dirty}
           />
-        </div>
+        </div>}
 
         {/* ── FLOATING left nav (UNS namespace tree) ── */}
         <FloatingPanel side="left">

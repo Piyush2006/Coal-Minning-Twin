@@ -31,7 +31,8 @@ import { moundGeo } from '../terrain/TerrainMound'
 export const useBlastStore = create((set) => ({
   firing: false,
   mucked: false,                       // a blast has happened this session
-  trigger: () => set(s => (s.firing ? {} : { firing: true })),
+  beaconSec: 5,                        // warning lead-in for this firing
+  trigger: (opts) => set(s => (s.firing ? {} : { firing: true, beaconSec: Math.max(1, Number(opts?.beaconSec) || 5) })),
   _finish: () => set({ firing: false, mucked: true }),
 }))
 
@@ -48,11 +49,12 @@ const CLOUD = {
 
 // timeline boundaries that change WHAT is mounted (coarse React state; the
 // per-particle motion itself is all GPU shader time)
-const BEACON_END = 5.0, COL_STEP = 0.12, COL_DUR = 3.2
+const COL_STEP = 0.12, COL_DUR = 3.2
 const CLOUD_START = 6.5, CLOUD_FADE = 12.5, MUCK_AT = 8.0, DONE = 15.0
 
 function BlastSequence({ cfg }) {
   const firing = useBlastStore(s => s.firing)
+  const BEACON_END = useBlastStore(s => s.beaconSec)
   const mucked = useBlastStore(s => s.mucked)
   const start = useRef(null)
   const [now, setNow] = useState(0)                 // coarse elapsed, boundary-stepped
