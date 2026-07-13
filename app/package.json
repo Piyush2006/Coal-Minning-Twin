@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "model:optimize": "sh scripts/optimize-model.sh"
   },
   "dependencies": {
     "@faclon-labs/design-sdk": "^0.6.7",

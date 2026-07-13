@@ -11,6 +11,7 @@ import { useSceneStore } from '../store/sceneStore'
 import { useDayNight, NIGHT_DEFAULTS } from '../lib/dayNight'
 import { Primitive } from './Primitive'
 import { GLBModel } from './assets/GLBModel'
+import { ModelSwap } from './assets/ModelSwap'
 import { StatusBeacon } from './StatusBeacon'
 import { ParticleEmitter } from './effects/ParticleEmitter'
 import { MACHINE_COMPONENTS } from '../lib/machineLibrary'
@@ -388,14 +389,47 @@ function renderPartTree(parts, idSet, parentId, config, status, depth, highlight
     })
 }
 
+// Horizontal footprint of the procedural parts — the default `fit` a swapped
+// GLB is normalized to, so a realistic model lands at the same site scale.
+function proceduralFootprint(parts) {
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity
+  for (const p of parts) {
+    const d = p.dims
+    if (!d) continue
+    const [x, , z] = p.position ?? [0, 0, 0]
+    const ex = (d.width ?? (d.radius ? d.radius * 2 : 1)) / 2
+    const ez = (d.depth ?? (d.radius ? d.radius * 2 : 1)) / 2
+    minX = Math.min(minX, x - ex); maxX = Math.max(maxX, x + ex)
+    minZ = Math.min(minZ, z - ez); maxZ = Math.max(maxZ, z + ez)
+  }
+  const span = Math.max(maxX - minX, maxZ - minZ)
+  return Number.isFinite(span) && span > 0 ? span : 10
+}
+
 export function CompositeAsset({ config = {}, status = 'running', typeDef, _depth = 0, highlightId = null, alertSev = null, objId = null }) {
   if (!typeDef?.parts?.length) return <Primitive config={config} typeDef={typeDef} />
   const beaconPos = typeDef.beacon === null ? null : (typeDef.beacon?.offset ?? [0, autoBeaconY(typeDef.parts), 0])
   const idSet = new Set(typeDef.parts.map(p => p.id))
-  return (
+  const procedural = (
     <group>
       {renderPartTree(typeDef.parts, idSet, null, config, status, _depth, highlightId, alertSev, objId)}
       {beaconPos && <StatusBeacon status={status} position={beaconPos} />}
+    </group>
+  )
+  // Realistic-model swap: config.model renders a GLB instead of the parts,
+  // falling back to the procedural render while loading or on ANY failure.
+  // keepParts re-attaches selected procedural parts (emitters, water planes…)
+  // alongside the GLB, with optional per-part position/rotation overrides.
+  const model = config.model
+  if (!model?.file) return procedural
+  const keep = new Set(model.keepParts ?? [])
+  const kept = typeDef.parts
+    .filter(p => keep.has(p.id))
+    .map(p => (model.overrides?.[p.id] ? { ...p, ...model.overrides[p.id] } : p))
+  return (
+    <group>
+      <ModelSwap model={model} fallback={procedural} fitDefault={proceduralFootprint(typeDef.parts)} />
+      {kept.length > 0 && renderPartTree(kept, new Set(kept.map(p => p.id)), null, config, status, _depth, highlightId, alertSev, objId)}
     </group>
   )
 }

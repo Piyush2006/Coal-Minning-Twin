@@ -1968,6 +1968,16 @@
         "speed": 4,
         "tractiveEffort": 410,
         "fuelLevel": 69
+      },
+      "config": {
+        "model": {
+          "file": "/models/diesel_locomotive_tgm3.glb",
+          "fit": 16,
+          "rotationYDeg": 0,
+          "hide": [
+            "rail30"
+          ]
+        }
       }
     },
     "wagon-1": {
@@ -2164,7 +2174,28 @@
             "flowing": true
           }
         }
-      ]
+      ],
+      "config": {
+        "model": {
+          "file": "/models/bulk_carrier_tfcc.glb",
+          "fit": 48,
+          "rotationYDeg": 90,
+          "yOffset": 0,
+          "keepParts": [
+            "berthWater",
+            "funnelSmokeEmitter"
+          ],
+          "overrides": {
+            "funnelSmokeEmitter": {
+              "position": [
+                18.5,
+                13.2,
+                0
+              ]
+            }
+          }
+        }
+      }
     },
     "power-1": {
       "type": "power_station",
@@ -3578,7 +3609,7 @@
       },
       {
         "title": "Port \u2014 Shiploading",
-        "subtitle": "Ship holds rise as the shiploader works the berth",
+        "subtitle": "The shiploader works the berthed bulk carrier \u2014 live berth telemetry",
         "position": [
           68,
           34,

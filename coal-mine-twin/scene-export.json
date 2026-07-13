@@ -1968,6 +1968,16 @@
         "speed": 4,
         "tractiveEffort": 410,
         "fuelLevel": 69
+      },
+      "config": {
+        "model": {
+          "file": "/models/diesel_locomotive_tgm3.glb",
+          "fit": 16,
+          "rotationYDeg": 0,
+          "hide": [
+            "rail30"
+          ]
+        }
       }
     },
     "wagon-1": {
@@ -2164,7 +2174,28 @@
             "flowing": true
           }
         }
-      ]
+      ],
+      "config": {
+        "model": {
+          "file": "/models/bulk_carrier_tfcc.glb",
+          "fit": 48,
+          "rotationYDeg": 90,
+          "yOffset": 0,
+          "keepParts": [
+            "berthWater",
+            "funnelSmokeEmitter"
+          ],
+          "overrides": {
+            "funnelSmokeEmitter": {
+              "position": [
+                18.5,
+                13.2,
+                0
+              ]
+            }
+          }
+        }
+      }
     },
     "power-1": {
       "type": "power_station",
@@ -3578,7 +3609,7 @@
       },
       {
         "title": "Port \u2014 Shiploading",
-        "subtitle": "Ship holds rise as the shiploader works the berth",
+        "subtitle": "The shiploader works the berthed bulk carrier \u2014 live berth telemetry",
         "position": [
           68,
           34,
@@ -6230,54 +6261,721 @@
       "parts": [
         {
           "id": "underframe",
-          "label": "Underframe",
-          "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 12.0,
-            "height": 0.4,
-            "depth": 2.6
+            "width": 11.8,
+            "height": 0.35,
+            "depth": 2.5
           },
           "position": [
             0,
+            1.15,
+            0
+          ],
+          "material": {
+            "color": "#17191c",
+            "roughness": 0.9,
+            "weather": {
+              "kind": "rust",
+              "amount": 0.4
+            }
+          }
+        },
+        {
+          "id": "headstockA",
+          "geometry": "box",
+          "dims": {
+            "width": 0.3,
+            "height": 0.5,
+            "depth": 2.6
+          },
+          "position": [
+            5.85,
             1.2,
             0
           ],
           "material": {
-            "color": "@rubberDark",
-            "metalness": 0.4,
-            "roughness": 0.6,
-            "weather": {
-              "kind": "rust",
-              "amount": 0.35
-            },
-            "vary": 0.4
+            "color": "#1c1e22",
+            "roughness": 0.9
           }
         },
         {
-          "id": "hopperBody",
-          "label": "Hopper Body",
-          "parentId": null,
+          "id": "headstockB",
           "geometry": "box",
           "dims": {
-            "width": 11.0,
-            "height": 2.2,
-            "depth": 2.8
+            "width": 0.3,
+            "height": 0.5,
+            "depth": 2.6
           },
           "position": [
-            0,
-            2.5,
+            -5.85,
+            1.2,
             0
           ],
           "material": {
-            "color": "#444a52",
-            "metalness": 0.55,
-            "roughness": 0.45,
-            "vary": 0.22,
+            "color": "#1c1e22",
+            "roughness": 0.9
+          }
+        },
+        {
+          "id": "body",
+          "geometry": "box",
+          "dims": {
+            "width": 11.4,
+            "height": 2.3,
+            "depth": 2.7
+          },
+          "position": [
+            0,
+            2.45,
+            0
+          ],
+          "material": {
+            "color": "#8f4a33",
+            "roughness": 0.85,
+            "vary": 0.2,
+            "weather": {
+              "kind": "rust",
+              "amount": 0.28
+            }
+          }
+        },
+        {
+          "id": "coping",
+          "geometry": "box",
+          "dims": {
+            "width": 11.5,
+            "height": 0.12,
+            "depth": 2.78
+          },
+          "position": [
+            0,
+            3.62,
+            0
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.8
+          }
+        },
+        {
+          "id": "dataPatch",
+          "geometry": "box",
+          "dims": {
+            "width": 1.0,
+            "height": 0.5,
+            "depth": 0.04
+          },
+          "position": [
+            -4.4,
+            3.1,
+            1.4
+          ],
+          "material": {
+            "color": "#dfe3e6",
+            "roughness": 0.6
+          }
+        },
+        {
+          "id": "rib0P",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            -4.8,
+            2.45,
+            1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib0S",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            -4.8,
+            2.45,
+            -1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib1P",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            -3.2,
+            2.45,
+            1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib1S",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            -3.2,
+            2.45,
+            -1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib2P",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            -1.6,
+            2.45,
+            1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib2S",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            -1.6,
+            2.45,
+            -1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib3P",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            0,
+            2.45,
+            1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib3S",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            0,
+            2.45,
+            -1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib4P",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            1.6,
+            2.45,
+            1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib4S",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            1.6,
+            2.45,
+            -1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib5P",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            3.2,
+            2.45,
+            1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib5S",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            3.2,
+            2.45,
+            -1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib6P",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            4.8,
+            2.45,
+            1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "rib6S",
+          "geometry": "box",
+          "dims": {
+            "width": 0.14,
+            "height": 2.3,
+            "depth": 0.1
+          },
+          "position": [
+            4.8,
+            2.45,
+            -1.42
+          ],
+          "material": {
+            "color": "#7c3c2a",
+            "roughness": 0.85
+          }
+        },
+        {
+          "id": "doorLP",
+          "geometry": "box",
+          "dims": {
+            "width": 1.8,
+            "height": 1.9,
+            "depth": 0.05
+          },
+          "position": [
+            -2.4,
+            2.35,
+            1.37
+          ],
+          "material": {
+            "color": "#6b3424",
+            "roughness": 0.9,
+            "weather": {
+              "kind": "rust",
+              "amount": 0.38
+            }
+          }
+        },
+        {
+          "id": "doorLS",
+          "geometry": "box",
+          "dims": {
+            "width": 1.8,
+            "height": 1.9,
+            "depth": 0.05
+          },
+          "position": [
+            -2.4,
+            2.35,
+            -1.37
+          ],
+          "material": {
+            "color": "#6b3424",
+            "roughness": 0.9,
+            "weather": {
+              "kind": "rust",
+              "amount": 0.38
+            }
+          }
+        },
+        {
+          "id": "doorRP",
+          "geometry": "box",
+          "dims": {
+            "width": 1.8,
+            "height": 1.9,
+            "depth": 0.05
+          },
+          "position": [
+            2.4,
+            2.35,
+            1.37
+          ],
+          "material": {
+            "color": "#6b3424",
+            "roughness": 0.9,
+            "weather": {
+              "kind": "rust",
+              "amount": 0.38
+            }
+          }
+        },
+        {
+          "id": "doorRS",
+          "geometry": "box",
+          "dims": {
+            "width": 1.8,
+            "height": 1.9,
+            "depth": 0.05
+          },
+          "position": [
+            2.4,
+            2.35,
+            -1.37
+          ],
+          "material": {
+            "color": "#6b3424",
+            "roughness": 0.9,
+            "weather": {
+              "kind": "rust",
+              "amount": 0.38
+            }
+          }
+        },
+        {
+          "id": "bufAL",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.16,
+            "height": 0.4
+          },
+          "position": [
+            6.05,
+            1.2,
+            0.85
+          ],
+          "rotation": [
+            0,
+            0,
+            1.5708
+          ],
+          "material": {
+            "color": "#26282c",
+            "metalness": 0.5,
+            "roughness": 0.6
+          }
+        },
+        {
+          "id": "bufAR",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.16,
+            "height": 0.4
+          },
+          "position": [
+            6.05,
+            1.2,
+            -0.85
+          ],
+          "rotation": [
+            0,
+            0,
+            1.5708
+          ],
+          "material": {
+            "color": "#26282c",
+            "metalness": 0.5,
+            "roughness": 0.6
+          }
+        },
+        {
+          "id": "bufBL",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.16,
+            "height": 0.4
+          },
+          "position": [
+            -6.05,
+            1.2,
+            0.85
+          ],
+          "rotation": [
+            0,
+            0,
+            1.5708
+          ],
+          "material": {
+            "color": "#26282c",
+            "metalness": 0.5,
+            "roughness": 0.6
+          }
+        },
+        {
+          "id": "bufBR",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.16,
+            "height": 0.4
+          },
+          "position": [
+            -6.05,
+            1.2,
+            -0.85
+          ],
+          "rotation": [
+            0,
+            0,
+            1.5708
+          ],
+          "material": {
+            "color": "#26282c",
+            "metalness": 0.5,
+            "roughness": 0.6
+          }
+        },
+        {
+          "id": "bogieGrpA",
+          "kind": "group",
+          "position": [
+            3.8,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "bogieFrameA",
+          "parentId": "bogieGrpA",
+          "geometry": "box",
+          "dims": {
+            "width": 2.1,
+            "height": 0.45,
+            "depth": 2.3
+          },
+          "position": [
+            0,
+            0.62,
+            0
+          ],
+          "material": {
+            "color": "#202226",
+            "roughness": 0.9,
             "weather": {
               "kind": "dust",
               "amount": 0.4
             }
+          }
+        },
+        {
+          "id": "wheelA1",
+          "parentId": "bogieGrpA",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.45,
+            "height": 2.3
+          },
+          "position": [
+            -0.65,
+            0.45,
+            0
+          ],
+          "material": {
+            "color": "#2a2d31",
+            "metalness": 0.6,
+            "roughness": 0.5
+          },
+          "animate": {
+            "kind": "spinY"
+          }
+        },
+        {
+          "id": "wheelA2",
+          "parentId": "bogieGrpA",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.45,
+            "height": 2.3
+          },
+          "position": [
+            0.65,
+            0.45,
+            0
+          ],
+          "material": {
+            "color": "#2a2d31",
+            "metalness": 0.6,
+            "roughness": 0.5
+          },
+          "animate": {
+            "kind": "spinY"
+          }
+        },
+        {
+          "id": "bogieGrpB",
+          "kind": "group",
+          "position": [
+            -3.8,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "bogieFrameB",
+          "parentId": "bogieGrpB",
+          "geometry": "box",
+          "dims": {
+            "width": 2.1,
+            "height": 0.45,
+            "depth": 2.3
+          },
+          "position": [
+            0,
+            0.62,
+            0
+          ],
+          "material": {
+            "color": "#202226",
+            "roughness": 0.9,
+            "weather": {
+              "kind": "dust",
+              "amount": 0.4
+            }
+          }
+        },
+        {
+          "id": "wheelB1",
+          "parentId": "bogieGrpB",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.45,
+            "height": 2.3
+          },
+          "position": [
+            -0.65,
+            0.45,
+            0
+          ],
+          "material": {
+            "color": "#2a2d31",
+            "metalness": 0.6,
+            "roughness": 0.5
+          },
+          "animate": {
+            "kind": "spinY"
+          }
+        },
+        {
+          "id": "wheelB2",
+          "parentId": "bogieGrpB",
+          "geometry": "cylinder",
+          "dims": {
+            "radius": 0.45,
+            "height": 2.3
+          },
+          "position": [
+            0.65,
+            0.45,
+            0
+          ],
+          "material": {
+            "color": "#2a2d31",
+            "metalness": 0.6,
+            "roughness": 0.5
+          },
+          "animate": {
+            "kind": "spinY"
+          }
+        },
+        {
+          "id": "brakeWheel",
+          "geometry": "torus",
+          "dims": {
+            "radius": 0.28,
+            "tube": 0.05
+          },
+          "position": [
+            -5.95,
+            2.3,
+            0.8
+          ],
+          "material": {
+            "color": "#3a3d42",
+            "metalness": 0.6,
+            "roughness": 0.5
           }
         },
         {
@@ -6307,225 +7005,6 @@
             "from": 0.06,
             "to": 1,
             "speedKey": "speed"
-          }
-        },
-        {
-          "id": "bogieGrpA",
-          "label": "Bogie A",
-          "parentId": null,
-          "kind": "group",
-          "position": [
-            3.8,
-            0,
-            0
-          ]
-        },
-        {
-          "id": "bogieFrameA",
-          "label": "Bogie Frame A",
-          "parentId": "bogieGrpA",
-          "geometry": "box",
-          "dims": {
-            "width": 2.2,
-            "height": 0.5,
-            "depth": 2.2
-          },
-          "position": [
-            0,
-            0.65,
-            0
-          ],
-          "material": {
-            "color": "@rubberDark",
-            "metalness": 0.4,
-            "roughness": 0.6,
-            "weather": {
-              "kind": "rust",
-              "amount": 0.35
-            },
-            "vary": 0.4
-          }
-        },
-        {
-          "id": "wheelA1",
-          "label": "Wheelset A1",
-          "parentId": "bogieGrpA",
-          "geometry": "cylinder",
-          "dims": {
-            "radius": 0.45,
-            "height": 2.3
-          },
-          "position": [
-            -0.7,
-            0.45,
-            0
-          ],
-          "rotation": [
-            1.5708,
-            0,
-            0
-          ],
-          "material": {
-            "color": "@darkSteel",
-            "metalness": 0.6,
-            "roughness": 0.5,
-            "vary": 0.4
-          },
-          "animate": {
-            "kind": "spinY",
-            "speedKey": "speed"
-          }
-        },
-        {
-          "id": "wheelA2",
-          "label": "Wheelset A2",
-          "parentId": "bogieGrpA",
-          "geometry": "cylinder",
-          "dims": {
-            "radius": 0.45,
-            "height": 2.3
-          },
-          "position": [
-            0.7,
-            0.45,
-            0
-          ],
-          "rotation": [
-            1.5708,
-            0,
-            0
-          ],
-          "material": {
-            "color": "@darkSteel",
-            "metalness": 0.6,
-            "roughness": 0.5,
-            "vary": 0.4
-          },
-          "animate": {
-            "kind": "spinY",
-            "speedKey": "speed"
-          }
-        },
-        {
-          "id": "bogieGrpB",
-          "label": "Bogie B",
-          "parentId": null,
-          "kind": "group",
-          "position": [
-            -3.8,
-            0,
-            0
-          ]
-        },
-        {
-          "id": "bogieFrameB",
-          "label": "Bogie Frame B",
-          "parentId": "bogieGrpB",
-          "geometry": "box",
-          "dims": {
-            "width": 2.2,
-            "height": 0.5,
-            "depth": 2.2
-          },
-          "position": [
-            0,
-            0.65,
-            0
-          ],
-          "material": {
-            "color": "@rubberDark",
-            "metalness": 0.4,
-            "roughness": 0.6,
-            "weather": {
-              "kind": "rust",
-              "amount": 0.35
-            },
-            "vary": 0.4
-          }
-        },
-        {
-          "id": "wheelB1",
-          "label": "Wheelset B1",
-          "parentId": "bogieGrpB",
-          "geometry": "cylinder",
-          "dims": {
-            "radius": 0.45,
-            "height": 2.3
-          },
-          "position": [
-            -0.7,
-            0.45,
-            0
-          ],
-          "rotation": [
-            1.5708,
-            0,
-            0
-          ],
-          "material": {
-            "color": "@darkSteel",
-            "metalness": 0.6,
-            "roughness": 0.5,
-            "vary": 0.4
-          },
-          "animate": {
-            "kind": "spinY",
-            "speedKey": "speed"
-          }
-        },
-        {
-          "id": "wheelB2",
-          "label": "Wheelset B2",
-          "parentId": "bogieGrpB",
-          "geometry": "cylinder",
-          "dims": {
-            "radius": 0.45,
-            "height": 2.3
-          },
-          "position": [
-            0.7,
-            0.45,
-            0
-          ],
-          "rotation": [
-            1.5708,
-            0,
-            0
-          ],
-          "material": {
-            "color": "@darkSteel",
-            "metalness": 0.6,
-            "roughness": 0.5,
-            "vary": 0.4
-          },
-          "animate": {
-            "kind": "spinY",
-            "speedKey": "speed"
-          }
-        },
-        {
-          "id": "brakeWheel",
-          "label": "Brake Wheel",
-          "parentId": null,
-          "geometry": "torus",
-          "dims": {
-            "radius": 0.3,
-            "tube": 0.05
-          },
-          "position": [
-            -5.9,
-            2.4,
-            0.8
-          ],
-          "rotation": [
-            0,
-            1.5708,
-            0
-          ],
-          "material": {
-            "color": "#b0c4d0",
-            "metalness": 0.85,
-            "roughness": 0.12
           }
         }
       ],
