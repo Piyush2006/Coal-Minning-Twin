@@ -19,6 +19,27 @@ import { TEMPLATES } from '../lib/templates'
 
 const GREETING = { role: 'assistant', text: 'Describe what to build or change and I’ll do it — e.g. “add a third line of 4 reduction pots”.' }
 const blankScene = () => ({ objects: {}, groups: {}, customAssetTypes: {}, flowLayout: {}, environment: {}, tour: {} })
+
+// Saved projects carry their tour config from the day they were created —
+// but the tour is app-authored presentation (no in-app editor), so a stale
+// copy silently drops newer beats/actions. Template-derived scenes therefore
+// refresh `tour` from the CURRENT template on every open.
+export function freshTour(scene) {
+  try {
+    if (!scene?.objects) return scene
+    for (const t of TEMPLATES) {
+      const built = t.build?.()
+      if (!built?.tour?.beats?.length) continue
+      // same template family ⇔ the scene contains the template's anchor assets
+      const ids = Object.keys(built.objects ?? {})
+      if (!ids.length) continue
+      const anchors = ids.slice(0, 6)
+      const matches = anchors.filter(id => scene.objects[id]).length
+      if (matches >= Math.min(4, anchors.length)) return { ...scene, tour: built.tour }
+    }
+  } catch { /* never block opening a project */ }
+  return scene
+}
 const now = () => Date.now()
 
 // Every new scene starts with a Floor — a real, selectable/editable object (size,
@@ -141,7 +162,7 @@ export const useProjectStore = create(
       openProject: (id) => {
         const p = get().projects[id]
         if (!p) return
-        hydrate(p.scene)
+        hydrate(freshTour(p.scene))
         set({ activeId: id, view: 'editor', dirty: false, _dirtyOverride: false, _savedSig: editSig() })
       },
 

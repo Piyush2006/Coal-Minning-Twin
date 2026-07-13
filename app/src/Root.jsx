@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useProjectStore } from './store/projectStore'
+import { useProjectStore, freshTour } from './store/projectStore'
 import { useSceneStore } from './store/sceneStore'
 import { useAIStore } from './store/aiStore'
 import { resolveAndCompute } from './lib/unsResolve'
@@ -62,7 +62,7 @@ export default function Root() {
     }
     if (ps.view === 'editor') {
       const p = ps.activeId && ps.projects[ps.activeId]
-      if (p) { useSceneStore.getState().loadScene(p.scene); useProjectStore.getState().markSaved() }
+      if (p) { useSceneStore.getState().loadScene(freshTour(p.scene)); useProjectStore.getState().markSaved() }
       else useProjectStore.setState({ view: 'home' })
     }
   }, [])
