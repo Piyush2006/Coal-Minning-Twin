@@ -13,7 +13,7 @@ import { getAcc, fleetRunning } from '../../lib/accumulators'
 import { getParamHistory } from '../../lib/paramHistory'
 import { Sparkline } from '../AssetDrilldown'
 import { useFeedStore } from '../CameraFeed'
-import { DashboardPreviewCard } from './DashboardPreview'
+import { DashboardPreviewCard, PreviewBackdrop } from './DashboardPreview'
 import { C, R, FONT, SHADOW } from '../../ui/theme'
 
 const Dot = ({ status, size = 9 }) => (
@@ -136,11 +136,12 @@ export function OpsDashboard() {
   const onView = (card) => { dash.openTwin(); setTimeout(() => { if (card.focus && objects[card.focus] && !objects[card.focus].config?.hidden) useSceneStore.getState().flyToObject(card.focus) }, 90) }
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 40, background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 40, background: 'transparent', fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <PreviewBackdrop />
       <style>{`@keyframes dashPulse { 0%,100% { box-shadow: 0 0 0 1px ${STATUS_COLOR.red}33, ${SHADOW.card} } 50% { box-shadow: 0 0 0 3px ${STATUS_COLOR.red}44, ${SHADOW.card} } }`}</style>
 
       {/* header: project + view toggle + actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: `1px solid ${C.line}`, background: C.surface }}>
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', borderBottom: `1px solid ${C.line}`, background: C.surface }}>
         <span style={{ width: 20, height: 20, borderRadius: 6, background: `linear-gradient(135deg, ${C.accent}, #5ac8fa)` }} />
         <span style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{projectName}</span>
         <span style={{ fontSize: 12, color: C.text3 }}>Operations Dashboard</span>
@@ -155,7 +156,7 @@ export function OpsDashboard() {
       </div>
 
       {/* top strip — Mine at a Glance */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 26, padding: '14px 20px', borderBottom: `1px solid ${C.line}`, background: C.surface, flexWrap: 'wrap' }}>
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 26, padding: '14px 20px', borderBottom: `1px solid ${C.line}`, background: C.surface, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase', color: C.text3 }}>Mine at a Glance</span>
           <span style={{ fontSize: 20, fontWeight: 700, color: C.text, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
@@ -176,19 +177,18 @@ export function OpsDashboard() {
         )}
       </div>
 
-      {/* body: card grid + preview  |  alert rail */}
-      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 300px', gap: 16, padding: 16, overflow: 'hidden' }}>
+      {/* body: preview column (non-scrolling) | 10 cards (scroll) | alert rail */}
+      <div style={{ position: 'relative', zIndex: 1, flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '340px minmax(0,1fr) 300px', gap: 16, padding: 16, overflow: 'hidden' }}>
+        {/* preview lives here, out of the scroll flow, so its rect is stable */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0 }}>
+          <div style={{ background: 'transparent', border: `1px solid ${C.line}`, borderRadius: R.lg, padding: 14 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.3, textTransform: 'uppercase', color: C.text3, marginBottom: 8 }}>Site Overview</div>
+            <DashboardPreviewCard onOpen={dash.openTwin} />
+          </div>
+        </div>
         <div style={{ overflowY: 'auto', paddingRight: 4 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14, alignItems: 'start' }}>
-            <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'minmax(320px, 1.4fr) repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
-              <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: R.lg, boxShadow: SHADOW.card, padding: 14 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.3, textTransform: 'uppercase', color: C.text3, marginBottom: 8 }}>Site Overview</div>
-                <DashboardPreviewCard onOpen={dash.openTwin} />
-              </div>
-              <UseCaseCard card={CARDS[0]} objects={objects} alerts={alerts} onView={onView} />
-              <UseCaseCard card={CARDS[1]} objects={objects} alerts={alerts} onView={onView} />
-            </div>
-            {CARDS.slice(2).map(card => <UseCaseCard key={card.id} card={card} objects={objects} alerts={alerts} onView={onView} />)}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 14, alignItems: 'start' }}>
+            {CARDS.map(card => <UseCaseCard key={card.id} card={card} objects={objects} alerts={alerts} onView={onView} />)}
           </div>
         </div>
         <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: R.lg, boxShadow: SHADOW.card, padding: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>

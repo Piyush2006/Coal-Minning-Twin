@@ -1491,8 +1491,8 @@ export default function App() {
         {/* ── BASE LAYER: full-bleed 3D canvas (+ process flow) fills the window ── */}
         <div style={{ position:'absolute', inset:0, zIndex:0 }}>
           {/* Bruce insight card — view mode, beside the floating nav (collapsible) */}
-          {!editMode && !showFlow && <BruceCard title="Shopfloor" recs={shopfloorRecommendations(objects)} offsetLeft={leftEdge} />}
-          {!editMode && !showFlow && <CameraFeedPanel />}
+          {!editMode && !showFlow && !dashOn && <BruceCard title="Shopfloor" recs={shopfloorRecommendations(objects)} offsetLeft={leftEdge} />}
+          {!editMode && !showFlow && !dashOn && <CameraFeedPanel />}
           {!showFlow && <TourOverlay />}
           <div style={{ position:'absolute', inset:0,
             visibility: showFlow ? 'hidden' : 'visible',
@@ -1559,7 +1559,7 @@ export default function App() {
               </Canvas>
 
               {/* viewport controls — zoom / reset view / undo / redo */}
-              <ViewportControls orbitRef={orbitRef} leftEdge={leftEdge} />
+              {!dashOn && <ViewportControls orbitRef={orbitRef} leftEdge={leftEdge} />}
             </div>
 
             {/* Process Flow fully replaces the 3D view when active */}
@@ -1593,10 +1593,10 @@ export default function App() {
           />
         </div>}
 
-        {/* ── FLOATING left nav (UNS namespace tree) ── */}
-        <FloatingPanel side="left">
+        {/* ── FLOATING left nav (UNS namespace tree) — hidden under the dashboard ── */}
+        {!dashOn && <FloatingPanel side="left">
           {editMode ? <BuildLeftPanel /> : <div style={COL_L}><HierarchyPanel editMode={false} /></div>}
-        </FloatingPanel>
+        </FloatingPanel>}
 
         {/* ── FLOATING inspector — build mode, on selection (sits next to the nav) ── */}
         <AnimatePresence>
@@ -1611,13 +1611,13 @@ export default function App() {
         </AnimatePresence>
 
         {/* ── FLOATING right panel — build: AI assistant · view: overview/inspector ── */}
-        <FloatingPanel side="right">
+        {!dashOn && <FloatingPanel side="right">
           {editMode
             ? <ChatPanel surface="scene" />
             : (selectedGroupId
                 ? <GroupInspector groupId={selectedGroupId} />
                 : <ViewRightPanel objects={objects} selectedObj={selectedObj} onClose={clearSelection} />)}
-        </FloatingPanel>
+        </FloatingPanel>}
 
         {/* ── Window-level overlays ── */}
         <AnimatePresence>

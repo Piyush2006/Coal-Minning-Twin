@@ -4,7 +4,7 @@
 // dashboard is visible, at a reduced frame rate; zero cost otherwise. The card
 // itself is a transparent hole punched through the dashboard overlay, so the
 // scissor render shows through exactly where the card sits.
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { create } from 'zustand'
@@ -74,5 +74,38 @@ export function DashboardPreviewCard({ onOpen }) {
       <span style={{ position: 'absolute', bottom: 10, right: 12, fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
         color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.6)', pointerEvents: 'none' }}>Open 3D Twin →</span>
     </button>
+  )
+}
+
+// Opaque backdrop that covers the whole screen EXCEPT the preview card's rect,
+// so the scissor-rendered 3D shows through a genuine hole (the dashboard root
+// is transparent; every other region is covered by these four bands).
+export function PreviewBackdrop() {
+  const [r, setR] = useState(null)
+  useEffect(() => {
+    let raf
+    const loop = () => {
+      const el = usePreviewEl.getState().el
+      if (el) {
+        const b = el.getBoundingClientRect()
+        setR(prev => (!prev || Math.abs(prev.top - b.top) > 1 || Math.abs(prev.left - b.left) > 1 ||
+          Math.abs(prev.width - b.width) > 1 || Math.abs(prev.height - b.height) > 1)
+          ? { top: b.top, left: b.left, width: b.width, height: b.height, bottom: b.bottom, right: b.right } : prev)
+      }
+      raf = requestAnimationFrame(loop)
+    }
+    loop()
+    return () => cancelAnimationFrame(raf)
+  }, [])
+  const bg = C.bg
+  const band = (st, k) => <div key={k} style={{ position: 'fixed', background: bg, zIndex: 0, ...st }} />
+  if (!r) return band({ inset: 0 }, 'all')          // no hole until measured (no canvas flash)
+  return (
+    <>
+      {band({ left: 0, top: 0, width: '100vw', height: Math.max(0, r.top) }, 'top')}
+      {band({ left: 0, top: r.bottom, width: '100vw', bottom: 0 }, 'bot')}
+      {band({ left: 0, top: r.top, width: Math.max(0, r.left), height: r.height }, 'left')}
+      {band({ left: r.right, top: r.top, right: 0, height: r.height }, 'right')}
+    </>
   )
 }
