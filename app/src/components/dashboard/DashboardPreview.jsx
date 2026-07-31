@@ -86,12 +86,12 @@ export function PreviewBackdrop() {
     let raf
     const loop = () => {
       const el = usePreviewEl.getState().el
-      if (el) {
+      if (el && el.isConnected) {
         const b = el.getBoundingClientRect()
         setR(prev => (!prev || Math.abs(prev.top - b.top) > 1 || Math.abs(prev.left - b.left) > 1 ||
           Math.abs(prev.width - b.width) > 1 || Math.abs(prev.height - b.height) > 1)
           ? { top: b.top, left: b.left, width: b.width, height: b.height, bottom: b.bottom, right: b.right } : prev)
-      }
+      } else setR(prev => (prev ? null : prev))    // no preview → fully opaque (no stale hole)
       raf = requestAnimationFrame(loop)
     }
     loop()

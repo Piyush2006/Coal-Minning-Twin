@@ -3,7 +3,7 @@
 // mini-preview, and the live alert feed. Reuses the app's cards / chips /
 // typography and the shared sparkline + severity colours — no second styling
 // system. Cards keep a FIXED order and never reorder; troubled cards glow.
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useSceneStore } from '../../store/sceneStore'
 import { useDashboard } from '../../lib/dashboardStore'
 import { evaluateAlerts, ALERT_SEVERITY_COLOR } from '../../lib/alertsEngine'
@@ -14,6 +14,7 @@ import { getParamHistory } from '../../lib/paramHistory'
 import { Sparkline } from '../AssetDrilldown'
 import { useFeedStore } from '../CameraFeed'
 import { DashboardPreviewCard, PreviewBackdrop } from './DashboardPreview'
+import { ZoneAnalytics } from './ZoneAnalytics'
 import { C, R, FONT, SHADOW } from '../../ui/theme'
 
 const Dot = ({ status, size = 9 }) => (
@@ -133,11 +134,12 @@ export function OpsDashboard() {
   const crusher = Math.round(Number(objects['crusher-1']?.parameters?.throughput) || 0)
 
   const dash = useDashboard()
+  const [subTab, setSubTab] = useState('overview')
   const onView = (card) => { dash.openTwin(); setTimeout(() => { if (card.focus && objects[card.focus] && !objects[card.focus].config?.hidden) useSceneStore.getState().flyToObject(card.focus) }, 90) }
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 40, background: 'transparent', fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <PreviewBackdrop />
+    <div style={{ position: 'absolute', inset: 0, zIndex: 40, background: subTab === 'overview' ? 'transparent' : C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {subTab === 'overview' && <PreviewBackdrop />}
       <style>{`@keyframes dashPulse { 0%,100% { box-shadow: 0 0 0 1px ${STATUS_COLOR.red}33, ${SHADOW.card} } 50% { box-shadow: 0 0 0 3px ${STATUS_COLOR.red}44, ${SHADOW.card} } }`}</style>
 
       {/* header: project + view toggle + actions */}
@@ -147,6 +149,12 @@ export function OpsDashboard() {
         <span style={{ fontSize: 12, color: C.text3 }}>Operations Dashboard</span>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ display: 'inline-flex', border: `1px solid ${C.line}`, borderRadius: R.pill, overflow: 'hidden' }}>
+            {['overview', 'zones'].map(tk => (
+              <button key={tk} onClick={() => setSubTab(tk)} style={{ padding: '6px 14px', fontSize: 12.5, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                background: subTab === tk ? C.accent : 'transparent', color: subTab === tk ? '#fff' : C.text2 }}>{tk === 'overview' ? 'Overview' : 'Zone Analytics'}</button>
+            ))}
+          </div>
+          <div style={{ display: 'inline-flex', border: `1px solid ${C.line}`, borderRadius: R.pill, overflow: 'hidden' }}>
             <span style={{ padding: '6px 14px', fontSize: 12.5, fontWeight: 600, background: C.accent, color: '#fff' }}>Dashboard</span>
             <button onClick={dash.openTwin} style={{ padding: '6px 14px', fontSize: 12.5, fontWeight: 600, background: 'transparent', color: C.text2, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>3D Twin</button>
           </div>
@@ -155,6 +163,7 @@ export function OpsDashboard() {
         </div>
       </div>
 
+      {subTab === 'zones' ? <ZoneAnalytics /> : (<>
       {/* top strip — Mine at a Glance */}
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 26, padding: '14px 20px', borderBottom: `1px solid ${C.line}`, background: C.surface, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -195,6 +204,7 @@ export function OpsDashboard() {
           <AlertRail objects={objects} />
         </div>
       </div>
+      </>)}
     </div>
   )
 }
