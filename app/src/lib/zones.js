@@ -2,8 +2,9 @@
 // existing namespace groups. Fixed order pit → power. Zone health, throughputs
 // and membership all derive from the SAME live objects + alert rules the
 // health wall and 3D rings use — no second source of truth.
-import { paramStatus, bandStatus, worst } from './kpiStatus'
-import { fleetRunning as _fleetRunning } from './accumulators'
+import { paramStatus, worst } from './kpiStatus'
+import { isMachine } from './accumulators'
+import { getModel } from './mineModel'
 
 // each zone: member group ids (assets under them) + extra attached asset ids,
 // a fly-to focus, the headline metric, and its energy flavour.
@@ -29,7 +30,7 @@ export function zoneAssetIds(objects, zone) {
   return [...set]
 }
 export function zoneAssets(objects, zone) {
-  return zoneAssetIds(objects, zone).map(id => objects[id]).filter(Boolean)
+  return zoneAssetIds(objects, zone).map(id => objects[id]).filter(o => o && isMachine(o))
 }
 
 // ── zone metrics (live) ─────────────────────────────────────────────────────
@@ -37,36 +38,34 @@ const num = (o, k) => Number(o?.parameters?.[k])
 // Flow story: a single site rate cascades pit → power with small per-zone
 // factor + lag so a downstream zone's in-rate tracks the upstream out-rate.
 export function zoneThroughput(objects, zone) {
-  const crusher = num(objects['crusher-1'], 'throughput') || 0
-  const feed    = num(objects['chpp-1'], 'feedRate') || crusher
-  const product = num(objects['blend-1'], 'throughput') || feed * 0.94
+  const r = getModel(objects).rates
   const map = {
-    pit:   { in: crusher * 1.02, out: crusher },
-    proc:  { in: crusher, out: feed },
-    yard:  { in: feed, out: product },
-    rail:  { in: product * 0.6, out: product * 0.6 },
-    port:  { in: product * 0.4, out: num(objects['shiploader-1'], 'throughput') || product * 0.4 },
-    power: { in: (num(objects['power-1'], 'coalBurnRate') || 260), out: (num(objects['power-1'], 'generationMW') || 620) },
+    pit:   { in: r.rom * 1.0, out: r.crusher },
+    proc:  { in: r.crusher, out: r.chppFeed },
+    yard:  { in: r.product, out: r.rail + r.ship },
+    rail:  { in: r.rail, out: r.rail },
+    port:  { in: r.ship, out: r.ship },
+    power: { in: r.power, out: r.power },
   }
   const m = map[zone.id] || { in: 0, out: 0 }
   return { in: Math.max(0, Math.round(m.in)), out: Math.max(0, Math.round(m.out)) }
 }
+const ZONE_UTIL_OFFSET = { pit: 2, proc: -3, yard: 4, rail: -5, port: 1, power: 5 }
 export function zoneUtilization(objects, zone) {
-  const assets = zoneAssets(objects, zone).filter(o => o.status)
-  if (!assets.length) return 100
-  const run = assets.filter(o => o.status === 'running').length
-  return Math.round((run / assets.length) * 100)
+  const assets = zoneAssets(objects, zone)
+  const runFrac = assets.length ? assets.filter(o => o.status === 'running').length / assets.length : 1
+  const base = getModel(objects).fleet.utilPct + (ZONE_UTIL_OFFSET[zone.id] || 0)   // 78–96 drift, never pinned
+  return Math.round(Math.max(40, Math.min(96, base * (0.85 + 0.15 * runFrac))))
 }
+// energy intensity — comparable units: diesel zones L/t, plant zones kWh/t
 export function zoneEnergy(objects, zone) {
+  const m = getModel(objects)
+  const tph = Math.max(1, zoneThroughput(objects, zone).out)
   if (zone.energy === 'diesel') {
-    let l = 0
-    for (const o of zoneAssets(objects, zone)) if (o.status === 'running') l += num(o, 'fuelBurn') || 55
-    return { value: Math.round(l), unit: 'L/h' }
+    const share = zone.id === 'pit' ? m.fleet.fuelLh : m.fleet.fuelLh * 0.12
+    return { value: Math.round((share / tph) * 10) / 10, unit: 'L/t', abs: Math.round(share), absUnit: 'L/h' }
   }
-  const tph = zoneThroughput(objects, zone).out
-  const sec = num(objects['screen-1'], 'kwhPerTonne') || 1.1
-  const kwh = zone.id === 'power' ? (num(objects['power-1'], 'generationMW') || 620) * 1000 : Math.round(tph * sec)
-  return { value: kwh, unit: zone.id === 'power' ? 'kWh out' : 'kWh' }
+  return { value: Math.round(m.energy.sec * 100) / 100, unit: 'kWh/t', abs: Math.round(tph * m.energy.sec), absUnit: 'kWh' }
 }
 export function zoneWorkers(objects, zone) {
   return Math.round(num(objects['safety-1'], WORKER_KEY[zone.id]) || 0)
@@ -91,9 +90,16 @@ export function zoneStatus(objects, zone, alerts) {
   return worst(statuses)
 }
 export function zoneHeadline(objects, zone) {
-  if (zone.id === 'power') return { label: 'Generation', value: Math.round(num(objects['power-1'], 'generationMW') || 620), unit: 'MW' }
-  if (zone.id === 'port') return { label: 'Ship fill', value: Math.min(100, Math.round(num(objects['ship-1'], 'cargoLoaded') || 0)), unit: '%' }
-  return { label: 'Throughput', value: zoneThroughput(objects, zone).out, unit: 't/h' }
+  const m = getModel(objects)
+  switch (zone.id) {
+    case 'pit':   return { label: 'ROM', value: Math.round(m.rates.rom), unit: 't/h' }
+    case 'proc':  return { label: 'Yield', value: Math.round(m.yield), unit: '%', sub: `${Math.round(m.rates.chppFeed)} t/h` }
+    case 'yard':  return { label: 'Stock', value: Math.round(m.stock.total).toLocaleString(), unit: 't', sub: `${m.stock.daysSupply.toFixed(1)} days` }
+    case 'rail':  return { label: 'Load-out', value: Math.round(m.rates.rail), unit: 't/h' }
+    case 'port':  return { label: 'Ship fill', value: Math.min(100, Math.round(num(objects['ship-1'], 'cargoLoaded') || 0)), unit: '%', sub: `${Math.round(m.today.ship).toLocaleString()} t` }
+    case 'power': return { label: 'Generation', value: Math.round(num(objects['power-1'], 'generationMW') || 620), unit: 'MW' }
+    default: return { label: 'Throughput', value: zoneThroughput(objects, zone).out, unit: 't/h' }
+  }
 }
 // worst assets in a zone, ranked by firing severity then vibration/health proxy
 export function topProblemAssets(objects, zone, alerts, n = 3) {
@@ -108,12 +114,16 @@ export function topProblemAssets(objects, zone, alerts, n = 3) {
   }).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, n)
   return scored.map(x => x.o)
 }
+const PARAM_META = {
+  vibration: ['Vibration', 'mm/s'], vibrationRms: ['Vibration', 'mm/s'], engineHealth: ['Health', '/100'],
+  rulHours: ['RUL', 'h'], tyreTemp: ['Tyre', '°C'], pm10: ['PM10', 'µg/m³'], throughput: ['Rate', 't/h'], kwhPerTonne: ['SEC', 'kWh/t'],
+}
 export function assetHeadlineParam(o) {
-  for (const key of ['vibration', 'vibrationRms', 'engineHealth', 'rulHours', 'tyreTemp', 'pm10', 'throughput', 'kwhPerTonne']) {
-    const v = Number(o.parameters?.[key]); if (Number.isFinite(v)) return { key, value: v }
+  for (const key of Object.keys(PARAM_META)) {
+    const v = Number(o.parameters?.[key]); if (Number.isFinite(v)) return { key, value: v, label: PARAM_META[key][0], unit: PARAM_META[key][1] }
   }
   const k = Object.keys(o.parameters || {})[0]
-  return k ? { key: k, value: o.parameters[k] } : null
+  return k ? { key: k, value: o.parameters[k], label: k, unit: '' } : null
 }
 export function assetStatus(o) {
   const st = []

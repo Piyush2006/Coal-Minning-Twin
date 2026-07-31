@@ -36,7 +36,7 @@ import { BlastLayer, useBlastStore } from './components/effects/BlastFX'
 import { OpsDashboard } from './components/dashboard/OpsDashboard'
 import { DashboardPreviewRenderer } from './components/dashboard/DashboardPreview'
 import { useDashboard, syncDashboardForScene } from './lib/dashboardStore'
-import { tickAccumulators } from './lib/accumulators'
+import { tickMineModel } from './lib/mineModel'
 import { tickZoneHistory } from './lib/zoneHistory'
 import { useDayNight } from './lib/dayNight'
 import { useViewTab } from './lib/viewTab'
@@ -1317,7 +1317,7 @@ export default function App() {
   // Live-data simulation — gently moves every asset's parameters so readouts
   // and rule glows feel alive (no undo history).
   useEffect(() => {
-    const tick = () => { useSceneStore.getState().simulateTick(); const o = useSceneStore.getState().objects; tickAccumulators(o); tickZoneHistory(o) }
+    const tick = () => { useSceneStore.getState().simulateTick(); const o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o) }
     const t = setInterval(tick, 1000)
     return () => clearInterval(t)
   }, [])

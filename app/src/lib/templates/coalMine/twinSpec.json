@@ -351,14 +351,6 @@
             "y": 7.2
           },
           {
-            "theta": 208,
-            "r": 38,
-            "radius": 3,
-            "height": 1.7,
-            "coal": false,
-            "y": 7.2
-          },
-          {
             "theta": 216,
             "r": 48,
             "radius": 3,
@@ -4052,46 +4044,6 @@
       "parentId": "grp_pitcivil",
       "config": {}
     },
-    "exc-ob-2": {
-      "type": "mining_excavator",
-      "name": "Excavator EX-03 (Overburden)",
-      "position": [
-        -187.16,
-        -7.2,
-        -13.33
-      ],
-      "rotation": [
-        0,
-        2.4,
-        0
-      ],
-      "parentId": "grp_extraction",
-      "order": 0,
-      "parameters": {
-        "bucketPayload": 38,
-        "engineLoad": 74,
-        "fuelLevel": 68,
-        "hydraulicTemp": 65,
-        "engineHours": 14520,
-        "idleTime": 5,
-        "cycleTime": 36,
-        "engineHealth": 83,
-        "hydraulicHealth": 86,
-        "faultCode": 0,
-        "rulHours": 275
-      },
-      "tooltip": {
-        "enabled": true,
-        "params": [
-          "bucketPayload",
-          "engineLoad",
-          "fuelLevel"
-        ]
-      },
-      "config": {
-        "animPhase": 0.45
-      }
-    },
     "bh-drill-2": {
       "type": "blasthole_drill_rig",
       "name": "Blast-Hole Drill BD-02",
@@ -4720,14 +4672,14 @@
     "landing": true,
     "preview": {
       "position": [
-        120,
-        82,
-        150
+        16,
+        56,
+        138
       ],
       "target": [
-        30,
-        2,
-        2
+        6,
+        1,
+        0
       ]
     }
   }

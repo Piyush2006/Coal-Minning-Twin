@@ -8,6 +8,14 @@ import { useTourStore } from '../components/TourPlayer'
 
 export const useDashboard = create((set) => ({
   mode: 'twin',                       // 'dashboard' | 'twin'
+  subTab: 'overview',                 // 'overview' | 'zones'
+  zone: 'pit',                        // selected zone id (Zone Analytics)
+  setSubTab: (subTab) => set({ subTab }),
+  openZone: (zone) => set({ subTab: 'zones', zone }),
+  setZone: (zone) => set({ zone }),
+  compare: false, cmpMetric: 'alerts',
+  setCompare: (compare) => set({ compare }),
+  setCmpMetric: (cmpMetric) => set({ cmpMetric }),
   enabled: false,                     // scene has a dashboard config
   setEnabled: (enabled, landOnDashboard) => set({ enabled, mode: enabled && landOnDashboard ? 'dashboard' : 'twin' }),
   showDashboard: () => set(s => (s.enabled ? { mode: 'dashboard' } : {})),

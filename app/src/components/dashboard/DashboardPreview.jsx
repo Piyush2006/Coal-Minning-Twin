@@ -57,7 +57,7 @@ export function DashboardPreviewRenderer() {
 }
 
 // The transparent card the preview renders into (mounts in the dashboard DOM).
-export function DashboardPreviewCard({ onOpen }) {
+export function DashboardPreviewCard({ onOpen, label = 'Open 3D Twin' }) {
   const setEl = usePreviewEl(s => s.setEl)
   return (
     <button onClick={onOpen} title="Open the 3D twin"
@@ -72,7 +72,7 @@ export function DashboardPreviewCard({ onOpen }) {
         <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34c759' }} />LIVE
       </span>
       <span style={{ position: 'absolute', bottom: 10, right: 12, fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
-        color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.6)', pointerEvents: 'none' }}>Open 3D Twin →</span>
+        color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.6)', pointerEvents: 'none' }}>{label} →</span>
     </button>
   )
 }
