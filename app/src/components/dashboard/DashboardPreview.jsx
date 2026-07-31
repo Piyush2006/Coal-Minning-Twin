@@ -59,14 +59,14 @@ export function DashboardPreviewRenderer() {
 }
 
 // The transparent card the preview renders into (mounts in the dashboard DOM).
-export function DashboardPreviewCard({ onOpen, label = 'Open 3D Twin' }) {
+export function DashboardPreviewCard({ onOpen, label = 'Open 3D Twin', fill = false }) {
   const setEl = usePreviewEl(s => s.setEl)
   return (
     <button onClick={onOpen} title="Open the 3D twin"
       ref={el => setEl(el)}
-      style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', border: `1px solid ${C.line}`,
-        borderRadius: R.lg, overflow: 'hidden', background: 'transparent', cursor: 'pointer', padding: 0,
-        boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
+      style={fill
+        ? { position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', overflow: 'hidden', background: 'transparent', cursor: 'pointer', padding: 0 }
+        : { position: 'relative', width: '100%', aspectRatio: '16 / 9', border: `1px solid ${C.line}`, borderRadius: R.lg, overflow: 'hidden', background: 'transparent', cursor: 'pointer', padding: 0 }}>
       {/* chrome only — the 3D shows THROUGH the transparent background */}
       <span style={{ position: 'absolute', top: 10, left: 10, display: 'inline-flex', alignItems: 'center', gap: 6,
         fontFamily: 'inherit', fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, color: '#fff',
@@ -99,7 +99,7 @@ export function PreviewBackdrop() {
     loop()
     return () => cancelAnimationFrame(raf)
   }, [])
-  const bg = C.bg
+  const bg = '#F6F7F9'   // spec page background
   const band = (st, k) => <div key={k} style={{ position: 'fixed', background: bg, zIndex: 0, ...st }} />
   if (!r) return band({ inset: 0 }, 'all')          // no hole until measured (no canvas flash)
   return (

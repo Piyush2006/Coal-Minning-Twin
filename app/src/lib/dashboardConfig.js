@@ -24,7 +24,7 @@ function healthCounts(objects) {
 
 // tile: { id, title, tag, focus, value(m,o), unit, status(m,o,alerts), detail(m,o)->rows }
 export const TILES = [
-  { id: 'ops', title: 'Mine Operations', tag: 'Optimization', focus: 'crusher-1',
+  { id: 'ops', spark: 'flow_pit', title: 'Mine Operations', tag: 'Optimization', focus: 'crusher-1',
     value: (m) => (m.bottleneck ? cap(m.bottleneck) : 'On plan'), unit: '',
     status: (m) => (m.bottleneck ? 'amber' : Math.abs(m.plan.deltaPct) > 8 ? 'amber' : 'green'),
     detail: (m) => [
@@ -33,7 +33,7 @@ export const TILES = [
       { label: 'Constraint', value: m.bottleneck ? cap(m.bottleneck) : 'None', unit: '', status: m.bottleneck ? 'amber' : 'green' },
       { label: 'vs plan', value: sgn(m.plan.deltaPct), unit: '%', status: m.plan.deltaPct < -8 ? 'amber' : 'green' },
     ] },
-  { id: 'workers', title: 'Worker Monitoring', tag: 'Worker Safety', focus: 'exc-coal-1', vision: 'ppe',
+  { id: 'workers', spark: 'workers', title: 'Worker Monitoring', tag: 'Worker Safety', focus: 'exc-coal-1', vision: 'ppe',
     value: (m, o) => n0(num(o['safety-1'], 'workersOnSite')), unit: 'on site',
     status: (m, o, al) => (domainAlertCount(o, ['Worker Safety'], al) ? 'amber' : 'green'),
     detail: (m, o) => [
@@ -41,7 +41,7 @@ export const TILES = [
       { label: 'Pit · Plant · Rail · Port', value: `${n0(num(o['safety-1'], 'workersPit'))}·${n0(num(o['safety-1'], 'workersPlant'))}·${n0(num(o['safety-1'], 'workersRail'))}·${n0(num(o['safety-1'], 'workersPort'))}`, unit: '' },
       { label: 'Unauthorized entries', value: n0(num(o['safety-1'], 'unauthorizedEntriesToday')), unit: 'today' },
     ] },
-  { id: 'prox', title: 'Proximity Safety', tag: 'Proximity', focus: 'exc-coal-1', vision: 'lane',
+  { id: 'prox', spark: 'prox', title: 'Proximity Safety', tag: 'Proximity', focus: 'exc-coal-1', vision: 'lane',
     value: (m, o) => n0(num(o['safety-1'], 'minWorkerVehicleDistance')), unit: 'm min',
     status: (m, o) => bandStatus(num(o['safety-1'], 'minWorkerVehicleDistance'), { warn: 15, crit: 8, dir: 'low' }),
     detail: (m, o) => [
@@ -49,7 +49,7 @@ export const TILES = [
       { label: 'Proximity alerts', value: n0(num(o['safety-1'], 'proximityAlertsToday')), unit: 'today' },
       { label: 'Geofence violations', value: n0(num(o['safety-1'], 'geofenceViolationsToday')), unit: 'today' },
     ] },
-  { id: 'fleet', title: 'Fleet & Equipment', tag: 'Haulage', focus: 'truck-1',
+  { id: 'fleet', spark: 'fleetFuel', title: 'Fleet & Equipment', tag: 'Haulage', focus: 'truck-1',
     value: (m) => `${m.fleet.running}/${m.fleet.total}`, unit: 'running',
     status: (m) => (m.fleet.running < m.fleet.total * 0.6 ? 'amber' : 'green'),
     detail: (m) => [
@@ -58,14 +58,14 @@ export const TILES = [
       { label: 'Utilization', value: m.fleet.utilPct, unit: '%', status: m.fleet.utilPct < 80 ? 'amber' : 'green' },
       { label: 'Fuel burn', value: n0(m.fleet.fuelLh), unit: 'L/h' },
     ] },
-  { id: 'pdm', title: 'Predictive Maintenance', tag: 'HEMM PdM', focus: 'exc-ob-1',
+  { id: 'pdm', spark: 'rul', title: 'Predictive Maintenance', tag: 'HEMM PdM', focus: 'exc-ob-1',
     value: (m, o) => { const r = lowestRul(o); return r.h == null ? '—' : n0(r.h) }, unit: 'h RUL',
     status: (m, o) => { const r = lowestRul(o); return r.h == null ? 'green' : r.h < 250 ? 'red' : r.h < 400 ? 'amber' : 'green' },
     detail: (m, o) => { const r = lowestRul(o), h = healthCounts(o); return [
       { label: 'Lowest RUL', value: r.h == null ? '—' : n0(r.h), unit: 'h', sub: r.name, status: r.h != null && r.h < 250 ? 'red' : r.h != null && r.h < 400 ? 'amber' : 'green' },
       { label: 'Fleet health (G·A·R)', value: `${h.g}·${h.a}·${h.r}`, unit: '', status: h.status },
     ] } },
-  { id: 'asset', title: 'Asset Performance', tag: 'Vibration CBM', focus: 'crusher-1', vision: 'coal',
+  { id: 'asset', spark: 'vib', title: 'Asset Performance', tag: 'Vibration CBM', focus: 'crusher-1', vision: 'coal',
     value: (m, o) => n1(worstVibration(o).v), unit: 'mm/s',
     status: (m, o) => bandStatus(worstVibration(o).v, { warn: 6, crit: 10, dir: 'high' }),
     detail: (m, o) => { const w = worstVibration(o); return [
@@ -73,7 +73,7 @@ export const TILES = [
       { label: 'Crusher throughput', value: n0(m.rates.crusher), unit: 't/h' },
       { label: 'CHPP yield', value: n0(m.yield), unit: '%' },
     ] } },
-  { id: 'prod', title: 'Production', tag: 'Optimization', focus: 'stacker-1',
+  { id: 'prod', spark: 'prod', title: 'Production', tag: 'Optimization', focus: 'stacker-1',
     value: (m) => n0(m.today.production), unit: 't today',
     status: (m) => (m.plan.deltaPct < -8 ? 'amber' : 'green'),
     detail: (m) => [
@@ -82,7 +82,7 @@ export const TILES = [
       { label: 'vs plan', value: sgn(m.plan.deltaPct), unit: '%', status: m.plan.deltaPct < -8 ? 'amber' : 'green' },
       { label: 'Saleable product', value: n0(m.today.product), unit: 't' },
     ] },
-  { id: 'energy', title: 'Energy & Sustainability', tag: 'Specific Energy', focus: 'screen-1',
+  { id: 'energy', spark: 'sec', title: 'Energy & Sustainability', tag: 'Specific Energy', focus: 'screen-1',
     value: (m) => n1(m.energy.co2TodayT), unit: 't CO₂',
     status: () => 'green',
     detail: (m) => [
@@ -90,7 +90,7 @@ export const TILES = [
       { label: 'Fleet diesel', value: n0(m.energy.dieselLh), unit: 'L/h' },
       { label: 'CO₂ today', value: n1(m.energy.co2TodayT), unit: 't' },
     ] },
-  { id: 'env', title: 'Environmental', tag: 'Dust & Env', focus: 'pm-1',
+  { id: 'env', spark: 'pm10', title: 'Environmental', tag: 'Dust & Env', focus: 'pm-1',
     value: (m, o) => n0(num(o['pm-1'], 'pm10')), unit: 'µg/m³ PM10',
     status: (m, o) => worst([paramStatus(o['pm-1'], 'pm10'), paramStatus(o['pm-2'], 'pm10')]),
     detail: (m, o) => [
@@ -98,7 +98,7 @@ export const TILES = [
       { label: 'PM10 (stockyard)', value: n0(num(o['pm-2'], 'pm10')), unit: 'µg/m³', status: paramStatus(o['pm-2'], 'pm10') },
       { label: 'Noise', value: n0(num(o['pm-1'], 'noise')), unit: 'dB(A)' },
     ] },
-  { id: 'supply', title: 'Supply Chain', tag: 'Logistics', focus: 'loadout-1',
+  { id: 'supply', spark: 'stock', title: 'Supply Chain', tag: 'Logistics', focus: 'loadout-1',
     value: (m) => n0(m.stock.total), unit: 't stock',
     status: (m) => (m.stock.daysSupply < 1.5 ? 'amber' : 'green'),
     detail: (m, o) => [

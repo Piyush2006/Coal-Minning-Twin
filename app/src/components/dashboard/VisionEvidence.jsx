@@ -6,7 +6,6 @@ import { useEffect } from 'react'
 import { create } from 'zustand'
 import { VISION, VISION_LABEL, visionCoalPSD } from '../../lib/visionConfig'
 import { C, R, FONT } from '../../ui/theme'
-import { STATUS_COLOR } from '../../lib/kpiStatus'
 
 export const useVision = create((set) => ({ open: null, show: (id) => set({ open: id }), close: () => set({ open: null }) }))
 
@@ -43,7 +42,7 @@ export function VisionCard({ id }) {
 }
 
 // coal size analysis widget — image + stats row + PSD bar chart
-export function CoalSizeWidget() {
+export function CoalSizeWidget({ compact = false }) {
   const show = useVision(s => s.show)
   const { stats, classes } = visionCoalPSD
   const peak = Math.max(1, ...classes.map(c => c.value))
@@ -55,7 +54,7 @@ export function CoalSizeWidget() {
         <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Coal Size Analysis — AI Vision</span>
         <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.text3 }}>{VISION_LABEL}</span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 14, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: compact ? '1fr' : '200px 1fr', gap: 14, alignItems: 'start' }}>
         <button onClick={() => show('coal')} style={{ padding: 0, border: `1px solid ${C.line}`, borderRadius: R.md, overflow: 'hidden', cursor: 'pointer', background: '#0d1016' }}>
           <img src={VISION.coal.src} alt="Coal size analysis" loading="lazy" style={{ width: '100%', display: 'block', aspectRatio: '2 / 1', objectFit: 'cover' }} />
         </button>
@@ -103,7 +102,7 @@ export function VisionModal() {
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(8,10,14,0.72)', backdropFilter: 'blur(4px)', display: 'grid', placeItems: 'center', fontFamily: FONT }}>
       <div onClick={e => e.stopPropagation()} style={{ width: 'min(900px, 92vw)', maxHeight: '88vh', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(20,26,32,0.9)', boxShadow: '0 24px 60px rgba(0,0,0,0.5)', background: '#0d1016', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'linear-gradient(rgba(8,10,14,0.9),rgba(8,10,14,0.65))', color: '#e8edf2' }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: STATUS_COLOR.green }} />
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#12B76A' }} />
           <span style={{ fontSize: 13, fontWeight: 700 }}>{item.title}</span>
           <span style={{ fontFamily: mono, fontSize: 9.5, color: '#9fb0c0', marginLeft: 4 }}>{VISION_LABEL}</span>
           <button onClick={close} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#e8edf2', fontSize: 18, cursor: 'pointer', lineHeight: 1 }}>×</button>

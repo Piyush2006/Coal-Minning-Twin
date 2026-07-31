@@ -1,103 +1,83 @@
-// Operations Dashboard — Overview: a calm, information-first health wall driven
-// entirely by the coherent mineModel. Header is exactly a Dashboard|3D Twin
-// switcher + Play Tour, with Overview|Zone Analytics sub-tabs. One accent
-// colour; amber/red only on genuine non-green status.
-import { useMemo, useState } from 'react'
+// Operations Dashboard — presentation rebuilt to the exact design spec.
+// Data comes from mineModel via a 5-second snapshot (no per-second jitter).
+import { useState, useEffect } from 'react'
 import { useSceneStore } from '../../store/sceneStore'
 import { useDashboard } from '../../lib/dashboardStore'
-import { evaluateAlerts, ALERT_SEVERITY_COLOR } from '../../lib/alertsEngine'
-import { STATUS_COLOR, statusLabel } from '../../lib/kpiStatus'
-import { getModel, productionCurve } from '../../lib/mineModel'
-import { TILES, tileStatus, overallStatus, attentionCount } from '../../lib/dashboardConfig'
-import { SCurveChart } from './Charts'
+import { productionCurve } from '../../lib/mineModel'
+import { TILES, tileStatus, overallStatus, attentionCount, domainAlertCount } from '../../lib/dashboardConfig'
+import { getParamHistory } from '../../lib/paramHistory'
+import { ChartCard, SCurve, MiniSpark } from './Charts'
 import { useFeedStore } from '../CameraFeed'
 import { DashboardPreviewCard, PreviewBackdrop } from './DashboardPreview'
 import { ZoneAnalytics } from './ZoneAnalytics'
 import { VisionCard, CoalSizeWidget, VisionModal, VisionChip } from './VisionEvidence'
-import { C, R, FONT, SHADOW } from '../../ui/theme'
+import { T, ty, card, Unit, Delta, fmt, rel, STATUS, STATUS_WORD, SHADOW_MODAL, useDashSnapshot } from './tokens'
 
-const TAB = { fontSize: 12.5, fontWeight: 600, padding: '6px 14px', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }
-const Dot = ({ s, size = 8 }) => (s === 'green' ? null : <span style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, background: STATUS_COLOR[s] }} />)
 const num = (o, k) => Number(o?.parameters?.[k])
-const tnum = { fontVariantNumeric: 'tabular-nums' }
+const Grid = ({ children, style }) => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12,1fr)', gap: 16, ...style }}>{children}</div>
 
-// ── header ──
-function Header({ subTab, setSubTab, dash }) {
+// ── top bar (56) ──
+function TopBar({ dash }) {
   return (
-    <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 14, padding: '12px 18px', borderBottom: `1px solid ${C.line}`, background: C.surface }}>
-      <span style={{ width: 20, height: 20, borderRadius: 6, background: `linear-gradient(135deg, ${C.accent}, #5ac8fa)` }} />
-      <span style={{ fontSize: 15, fontWeight: 700, color: C.text }}>Blackridge Coal Mine</span>
-      <div style={{ display: 'inline-flex', border: `1px solid ${C.line}`, borderRadius: R.pill, overflow: 'hidden', marginLeft: 6 }}>
-        {['overview', 'zones'].map(tk => (
-          <button key={tk} onClick={() => setSubTab(tk)} style={{ ...TAB, background: subTab === tk ? 'rgba(10,132,255,0.10)' : 'transparent', color: subTab === tk ? C.accent : C.text2 }}>{tk === 'overview' ? 'Overview' : 'Zone Analytics'}</button>
-        ))}
-      </div>
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ display: 'inline-flex', border: `1px solid ${C.line}`, borderRadius: R.pill, overflow: 'hidden' }}>
-          <span style={{ ...TAB, background: C.accent, color: '#fff' }}>Dashboard</span>
-          <button onClick={dash.openTwin} style={{ ...TAB, background: 'transparent', color: C.text2 }}>3D Twin</button>
+    <div style={{ height: 56, flexShrink: 0, background: T.surface, borderBottom: `1px solid ${T.line}`, display: 'flex', alignItems: 'center', gap: 10, padding: '0 24px' }}>
+      <span style={{ width: 22, height: 22, borderRadius: 6, background: T.accent }} />
+      <span style={ty.pageTitle}>Blackridge Coal Mine</span>
+      <span style={{ ...ty.label, marginLeft: 2 }}>Operations</span>
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'inline-flex', border: `1px solid ${T.line}`, borderRadius: 8, overflow: 'hidden' }}>
+          <span style={{ ...ty.body, fontWeight: 600, padding: '6px 14px', background: T.accent, color: '#fff' }}>Dashboard</span>
+          <button onClick={dash.openTwin} style={{ ...ty.body, fontWeight: 600, padding: '6px 14px', background: 'transparent', color: T.ink2, border: 'none', cursor: 'pointer' }}>3D Twin</button>
         </div>
-        <button onClick={dash.playTour} style={{ ...TAB, borderRadius: R.sm, background: C.text, color: '#fff', padding: '7px 16px' }}>▶ Play Tour</button>
+        <button onClick={dash.playTour} style={{ ...ty.body, fontWeight: 600, padding: '7px 16px', border: 'none', borderRadius: 8, background: T.accent, color: '#fff', cursor: 'pointer' }}>▶ Play Tour</button>
       </div>
     </div>
   )
 }
 
-// ── top strip ──
-function TopStrip({ m, objects, alerts }) {
-  const overall = overallStatus(m, objects, alerts)
-  const attention = attentionCount(m, objects, alerts)
-  const nCrit = alerts.filter(a => a.severity === 'critical').length
-  const stat = (label, value, unit, extra) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: 0.2, color: C.text3 }}>{label}</span>
-      <span style={{ fontSize: 18, fontWeight: 700, color: C.text, ...tnum }}>{value}{unit ? <span style={{ fontSize: 11, fontWeight: 600, color: C.text3, marginLeft: 3 }}>{unit}</span> : null}{extra}</span>
-    </div>
-  )
-  const delta = m.plan.deltaPct
+// ── glance row (84) — six hairline-separated stat blocks, NOT cards ──
+function GlanceBlock({ label, value, unit, sub, dot, last }) {
   return (
-    <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 30, padding: '12px 20px', borderBottom: `1px solid ${C.line}`, background: C.surface, flexWrap: 'wrap' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: 0.2, color: C.text3 }}>Status</span>
-        <span style={{ fontSize: 18, fontWeight: 700, color: overall === 'green' ? C.text : STATUS_COLOR[overall], display: 'inline-flex', alignItems: 'center', gap: 7 }}><Dot s={overall} size={11} />{statusLabel(overall)}</span>
-      </div>
-      <Divider />
-      {stat('Production today', Math.round(m.today.production).toLocaleString(), 't',
-        <span style={{ fontSize: 11.5, fontWeight: 600, marginLeft: 8, color: delta < -8 ? STATUS_COLOR.amber : STATUS_COLOR.green }}>{delta >= 0 ? '+' : ''}{delta.toFixed(1)}% vs plan</span>)}
-      {stat('Throughput', Math.round(m.rates.crusher).toLocaleString(), 't/h')}
-      {stat('Fleet', `${m.fleet.running}/${m.fleet.total}`, '')}
-      {stat('Active alerts', alerts.length, '', nCrit ? <span style={{ fontSize: 11.5, fontWeight: 600, color: STATUS_COLOR.red, marginLeft: 6 }}>{nCrit} critical</span> : null)}
-      {stat('Workers', Math.round(num(objects['safety-1'], 'workersOnSite')), '')}
-      {attention > 0 && <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: STATUS_COLOR.amber, background: 'rgba(255,159,10,0.10)', borderRadius: R.pill, padding: '5px 12px' }}>{attention} need attention</span>}
+    <div style={{ flex: 1, padding: '0 24px', borderRight: last ? 'none' : `1px solid ${T.line}`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2, minWidth: 0 }}>
+      <span style={ty.label}>{label}</span>
+      <span style={{ ...ty.kpiM, display: 'inline-flex', alignItems: 'center', gap: 7 }}>{dot && <span style={{ width: 10, height: 10, borderRadius: '50%', background: dot }} />}{value}{unit ? <Unit>{unit}</Unit> : null}</span>
+      <span style={{ height: 14 }}>{sub}</span>
     </div>
   )
 }
-const Divider = () => <div style={{ width: 1, height: 30, background: C.line }} />
+function GlanceRow({ m, objects, alerts }) {
+  const overall = overallStatus(m, objects, alerts)
+  const nCrit = alerts.filter(a => a.severity === 'critical').length
+  return (
+    <div style={{ height: 84, flexShrink: 0, background: T.surface, borderBottom: `1px solid ${T.line}`, display: 'flex', alignItems: 'stretch' }}>
+      <GlanceBlock label="Overall status" value={STATUS_WORD[overall]} dot={STATUS[overall]} />
+      <GlanceBlock label="Production today" value={fmt(m.today.production)} unit="t" sub={<Delta pct={m.plan.deltaPct} />} />
+      <GlanceBlock label="Throughput" value={fmt(m.rates.crusher)} unit="t/h" />
+      <GlanceBlock label="Fleet running" value={`${m.fleet.running}/${m.fleet.total}`} />
+      <GlanceBlock label="Active alerts" value={alerts.length} sub={nCrit ? <span style={{ fontSize: 12, fontWeight: 500, color: T.bad }}>{nCrit} critical</span> : null} />
+      <GlanceBlock label="Workers on site" value={Math.round(num(objects['safety-1'], 'workersOnSite'))} last />
+    </div>
+  )
+}
 
-// ── flow strip (centerpiece) ──
+// ── flow strip (128) ──
 function FlowStrip({ m, openZone }) {
   return (
-    <div style={{ border: `1px solid ${C.line}`, borderRadius: R.lg, background: C.surface, padding: '14px 16px' }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: C.text2, marginBottom: 10 }}>Material Flow · pit → port</div>
-      <div style={{ display: 'flex', alignItems: 'stretch', gap: 4 }}>
+    <div style={{ ...card, gridColumn: 'span 12', height: 128, padding: 16, display: 'flex', flexDirection: 'column' }}>
+      <span style={ty.cardTitle}>Material Flow · pit → port</span>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'stretch', gap: 0, marginTop: 8 }}>
         {m.stages.map((st, i) => {
-          const isBn = m.bottleneck === st.id
+          const bn = m.bottleneck === st.id
           const rising = st.trend != null ? st.trend >= 0 : null
+          const spark = getParamHistory('dash', st.id === 'stock' ? 'stockFlow' : 'flow_' + st.id)
           return (
             <div key={st.id} style={{ display: 'flex', alignItems: 'stretch', flex: 1, minWidth: 0 }}>
-              <button onClick={() => openZone(st.zone)} style={{ flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit',
-                border: `1px solid ${isBn ? STATUS_COLOR.amber : C.line}`, background: isBn ? 'rgba(255,159,10,0.06)' : C.bg, borderRadius: R.md, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <span style={{ fontSize: 11.5, fontWeight: 600, color: C.text2, display: 'flex', alignItems: 'center', gap: 5 }}>
-                  {st.label}{isBn && <span style={{ fontSize: 9, fontWeight: 700, color: '#fff', background: STATUS_COLOR.amber, borderRadius: 3, padding: '1px 5px' }}>BOTTLENECK</span>}
-                </span>
-                <span style={{ fontSize: 17, fontWeight: 700, color: isBn ? STATUS_COLOR.amber : C.text, ...tnum }}>
-                  {st.id === 'stock' ? Math.round(st.level).toLocaleString() : Math.round(st.rate).toLocaleString()}
-                  <span style={{ fontSize: 10.5, fontWeight: 600, color: C.text3, marginLeft: 3 }}>{st.id === 'stock' ? 't' : 't/h'}</span>
-                  {st.id === 'stock' && rising != null && <span style={{ marginLeft: 5, color: rising ? STATUS_COLOR.green : STATUS_COLOR.amber }}>{rising ? '↑' : '↓'}</span>}
-                </span>
-                {st.reject != null && <span style={{ fontSize: 10, color: C.text3 }}>rejects {Math.round(st.reject)} t/h</span>}
+              <button onClick={() => openZone(st.zone)} style={{ flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit', background: 'none', border: 'none', borderLeft: bn ? `3px solid ${T.warn}` : 'none', paddingLeft: bn ? 10 : 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3 }}>
+                <span style={{ ...ty.label, display: 'flex', alignItems: 'center', gap: 6 }}>{st.label}{bn && <span style={{ fontSize: 12, fontWeight: 600, color: T.warn }}>Bottleneck</span>}</span>
+                <span style={ty.kpiM}>{st.id === 'stock' ? fmt(st.level) : fmt(st.rate)}<Unit>{st.id === 'stock' ? 't' : 't/h'}</Unit>{st.id === 'stock' && rising != null && <span style={{ ...ty.label, marginLeft: 4 }}>{rising ? '▲' : '▼'}</span>}</span>
+                <MiniSpark data={spark} />
+                {st.reject != null && <span style={ty.label}>rejects {Math.round(st.reject)} t/h</span>}
               </button>
-              {i < m.stages.length - 1 && <span style={{ alignSelf: 'center', color: C.text3, fontSize: 14, padding: '0 2px' }}>›</span>}
+              {i < m.stages.length - 1 && <svg width="28" height="100%" viewBox="0 0 28 40" preserveAspectRatio="none" style={{ flexShrink: 0 }}><line x1="2" y1="20" x2="26" y2="20" stroke={T.line} strokeWidth="2" strokeDasharray="4 4" className="flowdash" /></svg>}
             </div>
           )
         })}
@@ -106,122 +86,136 @@ function FlowStrip({ m, openZone }) {
   )
 }
 
-// ── use-case rail (slim tiles + popover) ──
-function UseCaseRail({ m, objects, alerts }) {
-  const [open, setOpen] = useState(null)
+// ── use-case tile ──
+function UseTile({ tile, m, objects, alerts, onOpen }) {
+  const st = tileStatus(tile, m, objects, alerts)
+  const val = tile.value(m, objects)
+  const n = domainAlertCount(objects, [tile.tag], alerts)
+  const last = alerts.filter(a => a.useCase === tile.tag).map(a => a.since).sort((a, b) => b - a)[0]
+  const sub = n > 0 ? `${n} alert${n > 1 ? 's' : ''}${last ? ` · ${rel(last)}` : ''}` : (tile.detail(m, objects)[0] ? `${tile.detail(m, objects)[0].label} ${tile.detail(m, objects)[0].value}` : '')
   return (
-    <div style={{ border: `1px solid ${C.line}`, borderRadius: R.lg, background: C.surface, overflow: 'hidden' }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: C.text2, padding: '12px 14px 6px' }}>Monitoring use cases</div>
-      {TILES.map((tile, i) => {
-        const st = tileStatus(tile, m, objects, alerts)
-        const val = tile.value(m, objects)
-        return (
-          <div key={tile.id} style={{ position: 'relative' }}>
-            <button onClick={() => setOpen(open === tile.id ? null : tile.id)} style={{ width: '100%', textAlign: 'left', cursor: 'pointer', font: 'inherit',
-              display: 'grid', gridTemplateColumns: '3px 1fr auto', alignItems: 'center', gap: 10, padding: '9px 14px',
-              borderTop: i ? `1px solid ${C.line}` : 'none', background: open === tile.id ? C.bg : 'transparent', border: 'none', borderLeft: `3px solid ${st === 'green' ? 'transparent' : STATUS_COLOR[st]}` }}>
-              <span />
-              <span style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tile.title}</span>
-                {tile.vision && <VisionChip />}
-              </span>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: st === 'green' ? C.text : STATUS_COLOR[st], whiteSpace: 'nowrap', ...tnum }}>{val}<span style={{ fontSize: 9.5, fontWeight: 500, color: C.text3, marginLeft: 3 }}>{tile.unit}</span></span>
-            </button>
-            {open === tile.id && <Popover tile={tile} m={m} objects={objects} onView={() => { setOpen(null); useDashboard.getState().openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(tile.focus), 90) }} />}
-          </div>
-        )
-      })}
-    </div>
+    <button onClick={onOpen} style={{ ...card, height: 96, padding: 16, textAlign: 'left', cursor: 'pointer', font: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflow: 'hidden',
+      borderLeft: st === 'green' ? `1px solid ${T.line}` : `3px solid ${STATUS[st]}`, transition: 'border-color 300ms ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+        <span style={{ ...ty.cardTitle, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tile.title}</span>
+        {tile.vision && <VisionChip />}
+        {st !== 'green' && <span style={{ ...ty.label, marginLeft: 'auto', color: STATUS[st], fontWeight: 600 }}>{STATUS_WORD[st]}</span>}
+      </div>
+      <span style={ty.kpiM}>{val}{tile.unit ? <Unit>{tile.unit}</Unit> : null}</span>
+      <span style={{ ...ty.label, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</span>
+    </button>
   )
 }
-function Popover({ tile, m, objects, onView }) {
+function Popover({ tile, m, objects, onView, onClose }) {
   const rows = tile.detail(m, objects)
+  const spark = tile.spark ? getParamHistory('dash', tile.spark) : []
   return (
-    <div style={{ padding: '4px 14px 12px', background: C.bg, borderTop: `1px solid ${C.line}` }}>
-      {rows.map((r, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 0' }}>
-          <span style={{ fontSize: 11.5, color: C.text2, flex: 1, minWidth: 0 }}>{r.label}{r.sub ? <span style={{ color: C.text3 }}> · {r.sub}</span> : null}</span>
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: r.status && r.status !== 'green' ? STATUS_COLOR[r.status] : C.text, ...tnum }}>{r.value}<span style={{ fontSize: 9.5, fontWeight: 500, color: C.text3, marginLeft: 3 }}>{r.unit}</span></span>
-        </div>
-      ))}
-      {tile.vision === 'coal' ? <div style={{ marginTop: 8 }}><CoalSizeWidget /></div> : tile.vision ? <div style={{ marginTop: 8, maxWidth: 300 }}><VisionCard id={tile.vision} /></div> : null}
-      <button onClick={onView} style={{ marginTop: 8, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, color: C.accent, padding: 0 }}>View in Twin →</button>
-    </div>
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />
+      <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 8, width: 360, zIndex: 50, ...card, boxShadow: SHADOW_MODAL, padding: 16, animation: 'popIn 150ms ease' }}>
+        <div style={{ ...ty.cardTitle, marginBottom: 8 }}>{tile.title}</div>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'baseline', padding: '5px 0', borderTop: i ? `1px solid ${T.line}` : 'none' }}>
+            <span style={{ ...ty.body, color: T.ink2, flex: 1 }}>{r.label}{r.sub ? ` · ${r.sub}` : ''}</span>
+            <span style={{ ...ty.body, fontWeight: 600, color: r.status && r.status !== 'green' ? STATUS[r.status] : T.ink }}>{r.value}{r.unit ? <Unit>{r.unit}</Unit> : null}</span>
+          </div>
+        ))}
+        {spark.length >= 2 && <div style={{ marginTop: 10 }}><MiniSpark data={spark} w={328} h={36} /></div>}
+        {tile.vision === 'coal' ? <div style={{ marginTop: 12 }}><CoalSizeWidget compact /></div> : tile.vision ? <div style={{ marginTop: 12 }}><VisionCard id={tile.vision} /></div> : null}
+        <button onClick={onView} style={{ marginTop: 12, border: 'none', background: 'none', cursor: 'pointer', ...ty.body, fontWeight: 600, color: T.accent, padding: 0 }}>View in Twin →</button>
+      </div>
+    </>
   )
 }
 
-// ── alert feed (grouped critical / warning) ──
+// ── alert feed ──
 function AlertFeed({ objects, alerts }) {
   const crit = alerts.filter(a => a.severity === 'critical'), warn = alerts.filter(a => a.severity === 'warn')
+  const ordered = [...crit, ...warn].slice(0, 8)
   const openTwin = useDashboard(s => s.openTwin)
-  const row = (a) => (
-    <button key={a.key} onClick={() => { openTwin(); useSceneStore.getState().selectObject(a.objId); setTimeout(() => { useSceneStore.getState().flyToObject(a.objId); if (objects[a.objId]?.config?.watch) useFeedStore.getState().openFeed(a.objId) }, 80) }}
-      style={{ textAlign: 'left', cursor: 'pointer', width: '100%', padding: '8px 10px', borderRadius: R.md, background: 'transparent', border: 'none', borderLeft: `3px solid ${ALERT_SEVERITY_COLOR[a.severity]}`, font: 'inherit' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.asset}</span>
-        {a.useCase && <span style={{ marginLeft: 'auto', flexShrink: 0, fontSize: 9.5, fontWeight: 600, color: C.text2, background: 'rgba(120,120,128,0.10)', borderRadius: R.pill, padding: '1px 7px' }}>{a.useCase}</span>}
-      </div>
-      <p style={{ fontSize: 11.5, color: C.text2, marginTop: 3, lineHeight: 1.35 }}>{a.message}</p>
-    </button>
-  )
   return (
-    <div style={{ border: `1px solid ${C.line}`, borderRadius: R.lg, background: C.surface, padding: 12, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>Live Alerts</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: STATUS_COLOR.red }}>{crit.length} critical</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: STATUS_COLOR.amber }}>{warn.length} warning</span>
+    <div style={{ ...card, gridColumn: 'span 3', height: '100%', padding: 16, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
+        <span style={ty.cardTitle}>Live Alerts</span>
+        <span style={{ ...ty.kpiM, fontSize: 16, marginLeft: 'auto' }}>{alerts.length}</span>
       </div>
-      <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {alerts.length === 0 && <p style={{ fontSize: 12, color: C.text3 }}>All systems nominal</p>}
-        {crit.map(row)}{warn.map(row)}
+      {alerts.length === 0 && <div style={{ flex: 1, display: 'grid', placeItems: 'center', ...ty.label }}>All clear</div>}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {ordered.map(a => (
+          <button key={a.key} onClick={() => { openTwin(); useSceneStore.getState().selectObject(a.objId); setTimeout(() => { useSceneStore.getState().flyToObject(a.objId); if (objects[a.objId]?.config?.watch) useFeedStore.getState().openFeed(a.objId) }, 80) }}
+            style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', background: 'none', border: 'none', padding: '8px 0', borderTop: `1px solid ${T.line}`, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: a.severity === 'critical' ? T.bad : T.warn }} />
+            <span style={{ minWidth: 0 }}>
+              <span style={{ ...ty.body, fontWeight: 600, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.asset}</span>
+              <span style={{ ...ty.label, display: 'block', lineHeight: 1.35 }}>{a.message} · {rel(a.since)}</span>
+            </span>
+          </button>
+        ))}
+        {alerts.length > 8 && <button onClick={() => {}} style={{ ...ty.label, color: T.accent, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 0', textAlign: 'left' }}>View all ({alerts.length})</button>}
       </div>
     </div>
   )
 }
 
 export function OpsDashboard() {
-  const objects = useSceneStore(s => s.objects)
   const dash = useDashboard()
   const subTab = useDashboard(s => s.subTab)
-  const alerts = useMemo(() => evaluateAlerts(objects), [objects])
-  const m = getModel(objects)
-  const curve = useMemo(() => productionCurve(objects), [Math.round(m.tH * 20)]) // eslint-disable-line
+  const snap = useDashSnapshot()
+  const { objects, model: m, alerts } = snap
+  const [open, setOpen] = useState(null)
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(null) }
+    window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+  const curve = productionCurve(objects)
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 40, background: subTab === 'overview' ? 'transparent' : C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 40, background: subTab === 'overview' ? 'transparent' : T.bg, fontFamily: T.font, fontVariantNumeric: 'tabular-nums', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <style>{`@keyframes flowdrift{to{stroke-dashoffset:-8}} .flowdash{animation:flowdrift 1.4s linear infinite} @keyframes popIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}`}</style>
       {subTab === 'overview' && <PreviewBackdrop />}
       <VisionModal />
-      <Header subTab={subTab} setSubTab={dash.setSubTab} dash={dash} />
+      <div style={{ position: 'relative', zIndex: 1 }}><TopBar dash={dash} /></div>
       {subTab === 'zones' ? <ZoneAnalytics /> : (
         <>
-          <TopStrip m={m} objects={objects} alerts={alerts} />
-          <div style={{ position: 'relative', zIndex: 1, flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 300px', gap: 16, padding: 16, overflow: 'hidden' }}>
-            <div style={{ overflowY: 'auto', paddingRight: 4, display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(260px, 1fr)', gridAutoRows: 'min-content', gap: 14 }}>
-              {/* hero: production vs plan */}
-              <div style={{ border: `1px solid ${C.line}`, borderRadius: R.lg, background: C.surface, padding: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: C.text2 }}>Production vs Plan</span>
-                  <span style={{ fontSize: 11.5, fontWeight: 700, marginLeft: 'auto', color: m.plan.deltaPct < -8 ? STATUS_COLOR.amber : STATUS_COLOR.green, background: m.plan.deltaPct < -8 ? 'rgba(255,159,10,0.10)' : 'rgba(52,199,89,0.10)', borderRadius: R.pill, padding: '2px 9px' }}>
-                    {m.plan.deltaPct >= 0 ? '+' : ''}{m.plan.deltaPct.toFixed(1)}% vs plan
-                  </span>
+          <div style={{ position: 'relative', zIndex: 1 }}><GlanceRow m={m} objects={objects} alerts={alerts} /></div>
+          <div style={{ position: 'relative', zIndex: 1, flex: 1, minHeight: 0, overflowY: 'auto', padding: 24 }}>
+            <div style={{ maxWidth: 1600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* ROW A */}
+              <Grid>
+                <div style={{ ...card, gridColumn: 'span 8', height: 340, padding: 16, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                    <span style={ty.cardTitle}>Production vs Plan</span>
+                    <Delta pct={m.plan.deltaPct} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 20, margin: '10px 0 14px' }}>
+                    <span style={ty.kpiXL}>{fmt(m.today.production)}<Unit>t today</Unit></span>
+                    <span style={{ ...ty.kpiM, color: T.ink2 }}>{fmt(m.plan.toNow)}<Unit>t plan</Unit></span>
+                  </div>
+                  <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}><SCurve actual={curve.actual} plan={curve.plan} /></div>
                 </div>
-                <div style={{ display: 'flex', gap: 24, marginBottom: 10 }}>
-                  <div><div style={{ fontSize: 22, fontWeight: 700, color: C.text, ...tnum }}>{Math.round(m.today.production).toLocaleString()}<span style={{ fontSize: 12, color: C.text3, marginLeft: 3 }}>t today</span></div></div>
-                  <div><div style={{ fontSize: 22, fontWeight: 700, color: C.text3, ...tnum }}>{Math.round(m.plan.toNow).toLocaleString()}<span style={{ fontSize: 12, color: C.text3, marginLeft: 3 }}>t plan</span></div></div>
+                <div style={{ gridColumn: 'span 4', height: 340 }}>
+                  <div style={{ ...card, height: '100%', background: 'transparent', overflow: 'hidden', position: 'relative' }}>
+                    <DashboardPreviewCard onOpen={dash.openTwin} label="Enter Twin" fill />
+                  </div>
                 </div>
-                <SCurveChart actual={curve.actual} plan={curve.plan} unit="t" />
-              </div>
-              {/* preview */}
-              <div style={{ border: `1px solid ${C.line}`, borderRadius: R.lg, background: 'transparent', padding: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: C.text2, marginBottom: 8 }}>Site Overview</div>
-                <DashboardPreviewCard onOpen={dash.openTwin} label="Enter Twin" />
-              </div>
-              {/* flow strip full-width */}
-              <div style={{ gridColumn: '1 / -1' }}><FlowStrip m={m} openZone={dash.openZone} /></div>
-              {/* use-case rail full-width */}
-              <div style={{ gridColumn: '1 / -1' }}><UseCaseRail m={m} objects={objects} alerts={alerts} /></div>
+              </Grid>
+              {/* ROW B */}
+              <Grid><FlowStrip m={m} openZone={dash.openZone} /></Grid>
+              {/* ROW C */}
+              <Grid style={{ height: 208 }}>
+                <div style={{ gridColumn: 'span 9', height: '100%', display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gridAutoRows: 96, gap: 16 }}>
+                  {TILES.map(tile => (
+                    <div key={tile.id} style={{ position: 'relative' }}>
+                      <UseTile tile={tile} m={m} objects={objects} alerts={alerts} onOpen={() => setOpen(open === tile.id ? null : tile.id)} />
+                      {open === tile.id && <Popover tile={tile} m={m} objects={objects} onClose={() => setOpen(null)}
+                        onView={() => { setOpen(null); dash.openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(tile.focus), 90) }} />}
+                    </div>
+                  ))}
+                </div>
+                <AlertFeed objects={objects} alerts={alerts} />
+              </Grid>
             </div>
-            <AlertFeed objects={objects} alerts={alerts} />
           </div>
         </>
       )}

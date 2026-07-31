@@ -6,7 +6,8 @@
 // Ticked once per second off the existing sim interval. getModel() returns a
 // cheap computed snapshot; the integrators (today, stock, downtime) live in
 // module state seeded as if the shift started SHIFT_START_H hours ago.
-import { fleetRunning } from './accumulators'
+import { fleetRunning, lowestRul, worstVibration } from './accumulators'
+import { recordParam } from './paramHistory'
 
 // ── config: nominal rates (t/h) + plan + factors ──
 export const SHIP_CAPACITY = 82000   // t — used for ship fill %
@@ -89,6 +90,24 @@ export function tickMineModel(objects) {
   S.stock.B = clamp(S.stock.B + (r.product * 0.45 - r.rail * 0.5 - r.ship * 0.5) * dtH)
   const total = S.stock.A + S.stock.B
   S.trend = total - S.prevStockTotal; S.prevStockTotal = total
+  recordDashSeries(objects, r)
+}
+
+// sparkline histories the Overview reads (flow nodes + use-case tiles)
+function recordDashSeries(objects, r) {
+  recordParam('dash', 'flow_pit', r.rom); recordParam('dash', 'flow_crush', r.crusher)
+  recordParam('dash', 'flow_chpp', r.chppFeed); recordParam('dash', 'flow_stock', S.stock.A + S.stock.B)
+  recordParam('dash', 'flow_rail', r.rail); recordParam('dash', 'flow_port', r.ship)
+  recordParam('dash', 'stockFlow', S.stock.A + S.stock.B)
+  recordParam('dash', 'prod', S.today.rom)
+  recordParam('dash', 'workers', Number(objects['safety-1']?.parameters?.workersOnSite) || 0)
+  recordParam('dash', 'prox', Number(objects['safety-1']?.parameters?.minWorkerVehicleDistance) || 0)
+  recordParam('dash', 'fleetFuel', fleetRunning(objects).run)
+  recordParam('dash', 'rul', lowestRul(objects).h ?? 0)
+  recordParam('dash', 'vib', worstVibration(objects).v)
+  recordParam('dash', 'pm10', Number(objects['pm-1']?.parameters?.pm10) || 0)
+  recordParam('dash', 'sec', Number(objects['screen-1']?.parameters?.kwhPerTonne) || 0)
+  recordParam('dash', 'stock', S.stock.A + S.stock.B)
 }
 const clamp = (v) => Math.min(CFG.stockMax, Math.max(CFG.stockMin, v))
 function elapsedH() { return Math.min(CFG.shiftHours, (Date.now() - S.t0) / (H * 1000)) }
