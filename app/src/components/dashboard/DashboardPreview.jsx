@@ -26,8 +26,10 @@ export function DashboardPreviewRenderer() {
   useFrame(({ gl, scene, size }) => {
     if (useDashboard.getState().mode !== 'dashboard') return       // zero cost in twin view
     const el = usePreviewEl.getState().el
-    if (!el) return
-    if ((frame.current++ % 4) !== 0) return                        // ~15 fps, reduced load
+    if (!el || !el.isConnected) return
+    // Render EVERY frame: the composer redraws the whole canvas each frame, so
+    // the hole must be re-overdrawn with the preview camera every frame or it
+    // flickers between the main scene and the preview (this was the glitch).
     const pr = el.getBoundingClientRect()
     if (pr.width < 8 || pr.height < 8) return
     const cr = gl.domElement.getBoundingClientRect()
