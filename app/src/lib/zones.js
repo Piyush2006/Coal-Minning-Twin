@@ -4,7 +4,7 @@
 // health wall and 3D rings use — no second source of truth.
 import { paramStatus, worst } from './kpiStatus'
 import { isMachine } from './accumulators'
-import { getModel } from './mineModel'
+import { getModel, shipFillPct } from './mineModel'
 
 // each zone: member group ids (assets under them) + extra attached asset ids,
 // a fly-to focus, the headline metric, and its energy flavour.
@@ -96,7 +96,7 @@ export function zoneHeadline(objects, zone) {
     case 'proc':  return { label: 'Yield', value: Math.round(m.yield), unit: '%', sub: `${Math.round(m.rates.chppFeed)} t/h` }
     case 'yard':  return { label: 'Stock', value: Math.round(m.stock.total).toLocaleString(), unit: 't', sub: `${m.stock.daysSupply.toFixed(1)} days` }
     case 'rail':  return { label: 'Load-out', value: Math.round(m.rates.rail), unit: 't/h' }
-    case 'port':  return { label: 'Ship fill', value: Math.min(100, Math.round(num(objects['ship-1'], 'cargoLoaded') || 0)), unit: '%', sub: `${Math.round(m.today.ship).toLocaleString()} t` }
+    case 'port':  return { label: 'Ship fill', value: shipFillPct(objects), unit: '%', sub: `${Math.round(num(objects['ship-1'], 'cargoLoaded') || 0).toLocaleString()} t loaded` }
     case 'power': return { label: 'Generation', value: Math.round(num(objects['power-1'], 'generationMW') || 620), unit: 'MW' }
     default: return { label: 'Throughput', value: zoneThroughput(objects, zone).out, unit: 't/h' }
   }

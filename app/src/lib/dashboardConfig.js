@@ -2,7 +2,7 @@
 // each, a status from the shared severity source, and a compact detail set for
 // the click-popover. All values read the coherent mineModel + live objects.
 import { paramStatus, bandStatus, worst } from './kpiStatus'
-import { getModel } from './mineModel'
+import { getModel, shipFillPct } from './mineModel'
 import { fleetRunning, lowestRul, worstVibration, isMachine } from './accumulators'
 
 const num = (o, k) => Number(o?.parameters?.[k])
@@ -105,7 +105,7 @@ export const TILES = [
       { label: 'Stock on ground', value: n0(m.stock.total), unit: 't' },
       { label: 'Days of supply', value: m.stock.daysSupply.toFixed(1), unit: 'days', status: m.stock.daysSupply < 1.5 ? 'amber' : 'green' },
       { label: 'Rail load-out', value: n0(m.rates.rail), unit: 't/h' },
-      { label: 'Ship fill', value: n0(num(o['ship-1'], 'cargoLoaded')), unit: '%' },
+      { label: 'Ship fill', value: shipFillPct(o), unit: '%' },
     ] },
 ]
 

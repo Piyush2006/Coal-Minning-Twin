@@ -483,7 +483,9 @@
         "holeDepth": 10.5,
         "pulldown": 255,
         "rotarySpeed": 85,
-        "holesToday": 17
+        "holesToday": 17,
+        "engineHealth": 84,
+        "rulHours": 705
       }
     },
     "exc-ob-1": {
@@ -504,15 +506,15 @@
       "parameters": {
         "bucketPayload": 38,
         "engineLoad": 74,
-        "fuelLevel": 68,
+        "fuelLevel": 61,
         "hydraulicTemp": 65,
         "engineHours": 14520,
-        "idleTime": 5,
+        "idleTime": 8,
         "cycleTime": 36,
-        "engineHealth": 83,
-        "hydraulicHealth": 86,
-        "faultCode": 0,
-        "rulHours": 275
+        "engineHealth": 36,
+        "hydraulicHealth": 54,
+        "faultCode": 1,
+        "rulHours": 268
       },
       "tooltip": {
         "enabled": true,
@@ -576,10 +578,9 @@
         "demoTrends": [
           {
             "param": "engineHealth",
-            "min": 30,
-            "max": 82,
-            "period": 200,
-            "offset": 100
+            "min": 33,
+            "max": 43,
+            "period": 140
           }
         ],
         "animPhase": 0.45
@@ -601,17 +602,17 @@
       "parentId": "grp_extraction",
       "order": 1,
       "parameters": {
-        "bucketPayload": 30,
-        "engineLoad": 62,
-        "fuelLevel": 81,
+        "bucketPayload": 31,
+        "engineLoad": 64,
+        "fuelLevel": 77,
         "hydraulicTemp": 58,
         "engineHours": 9860,
-        "idleTime": 7,
+        "idleTime": 6,
         "cycleTime": 32,
-        "engineHealth": 90,
-        "hydraulicHealth": 91,
+        "engineHealth": 89,
+        "hydraulicHealth": 84,
         "faultCode": 0,
-        "rulHours": 388
+        "rulHours": 612
       },
       "tooltip": {
         "enabled": true,
@@ -714,7 +715,9 @@
       "parameters": {
         "payload": 11,
         "hydraulicPressure": 205,
-        "fuelLevel": 52
+        "fuelLevel": 58,
+        "engineHealth": 86,
+        "rulHours": 880
       }
     },
     "truck-1": {
@@ -733,18 +736,18 @@
       "parentId": "grp_haulage",
       "order": 1,
       "parameters": {
-        "payload": 192,
+        "payload": 196,
         "speed": 6,
-        "fuelLevel": 66,
-        "tyreTemp": 51,
+        "fuelLevel": 64,
+        "tyreTemp": 63,
         "engineTemp": 90,
-        "idleTime": 9,
+        "idleTime": 23,
         "cycleTime": 24,
         "fuelBurn": 172,
-        "engineHealth": 88,
+        "engineHealth": 82,
         "hydraulicHealth": 90,
         "faultCode": 0,
-        "rulHours": 355,
+        "rulHours": 720,
         "tyrePressure": 8.6,
         "tkph": 328
       },
@@ -1107,10 +1110,9 @@
         "demoTrends": [
           {
             "param": "idleTime",
-            "min": 4,
-            "max": 34,
-            "period": 150,
-            "offset": 0
+            "min": 18,
+            "max": 30,
+            "period": 110
           }
         ]
       }
@@ -1131,19 +1133,19 @@
       "parentId": "grp_haulage",
       "order": 2,
       "parameters": {
-        "payload": 178,
+        "payload": 184,
         "speed": 31,
-        "fuelLevel": 43,
-        "tyreTemp": 55,
+        "fuelLevel": 52,
+        "tyreTemp": 58,
         "engineTemp": 92,
         "idleTime": 6,
         "cycleTime": 27,
         "fuelBurn": 196,
-        "engineHealth": 82,
+        "engineHealth": 80,
         "hydraulicHealth": 85,
         "faultCode": 0,
-        "rulHours": 300,
-        "tyrePressure": 8.3,
+        "rulHours": 560,
+        "tyrePressure": 8.7,
         "tkph": 352
       },
       "rules": [
@@ -1515,17 +1517,17 @@
       "parameters": {
         "payload": 0,
         "speed": 38,
-        "fuelLevel": 12,
-        "tyreTemp": 47,
+        "fuelLevel": 48,
+        "tyreTemp": 89,
         "engineTemp": 86,
-        "idleTime": 12,
+        "idleTime": 11,
         "cycleTime": 30,
         "fuelBurn": 188,
-        "engineHealth": 79,
+        "engineHealth": 71,
         "hydraulicHealth": 83,
         "faultCode": 0,
-        "rulHours": 262,
-        "tyrePressure": 8.8,
+        "rulHours": 430,
+        "tyrePressure": 8.4,
         "tkph": 366
       },
       "rules": [
@@ -1768,10 +1770,9 @@
         "demoTrends": [
           {
             "param": "tyreTemp",
-            "min": 58,
-            "max": 96,
-            "period": 180,
-            "offset": 60
+            "min": 84,
+            "max": 94,
+            "period": 120
           }
         ]
       },
@@ -1801,10 +1802,11 @@
       "parameters": {
         "throughput": 1480,
         "css": 165,
-        "motorCurrent": 335,
-        "bearingTemp": 71,
-        "vibration": 3.6,
-        "kwhPerTonne": 1.15
+        "motorCurrent": 338,
+        "bearingTemp": 74,
+        "vibration": 7.4,
+        "kwhPerTonne": 1.14,
+        "rulHours": 545
       },
       "rules": [
         {
@@ -1882,10 +1884,9 @@
         "demoTrends": [
           {
             "param": "vibration",
-            "min": 2.5,
-            "max": 12.5,
-            "period": 170,
-            "offset": 20
+            "min": 6.3,
+            "max": 9.2,
+            "period": 150
           }
         ],
         "chunkDrops": [
@@ -1973,9 +1974,10 @@
         "feedRate": 980,
         "deckLoad": 66,
         "oversizeRate": 7.2,
-        "bearingTemp": 57,
-        "vibrationRms": 4.8,
-        "kwhPerTonne": 0.58
+        "bearingTemp": 59,
+        "vibrationRms": 5.1,
+        "kwhPerTonne": 1.12,
+        "rulHours": 615
       },
       "connections": [
         {
@@ -2024,10 +2026,9 @@
         "demoTrends": [
           {
             "param": "kwhPerTonne",
-            "min": 0.45,
-            "max": 1.35,
-            "period": 160,
-            "offset": 80
+            "min": 1.03,
+            "max": 1.27,
+            "period": 170
           }
         ]
       }
@@ -2043,15 +2044,16 @@
       "parentId": "grp_washing",
       "order": 0,
       "parameters": {
-        "feedRate": 925,
-        "yield": 76.5,
-        "productAsh": 9.6,
+        "feedRate": 1345,
+        "yield": 76.2,
+        "productAsh": 9.4,
         "mediaRD": 1.46,
         "cyclonePressure": 115,
         "magnetiteLoss": 340,
         "vibrationRms": 4.1,
         "bearingTemp": 56,
-        "kwhPerTonne": 2.3
+        "kwhPerTonne": 2.3,
+        "availability": 96.4
       },
       "rules": [
         {
@@ -2744,9 +2746,9 @@
       "parentId": "grp_port",
       "order": 1,
       "parameters": {
-        "cargoLoaded": 41000,
-        "draft": 11.6,
-        "ballast": 18
+        "cargoLoaded": 44200,
+        "draft": 11.8,
+        "ballast": 16
       },
       "connections": [
         {
@@ -2793,8 +2795,8 @@
       "parentId": "grp_enduse",
       "order": 0,
       "parameters": {
-        "generationMW": 640,
-        "coalBurnRate": 270,
+        "generationMW": 642,
+        "coalBurnRate": 268,
         "stockDays": 14
       },
       "config": {
@@ -2901,10 +2903,10 @@
       "parentId": "grp_yard",
       "order": 3,
       "parameters": {
-        "blendRatio": 62,
+        "blendRatio": 61,
         "throughput": 3850,
         "binALevel": 64,
-        "binBLevel": 47
+        "binBLevel": 48
       },
       "tooltip": {
         "enabled": true,
@@ -2974,9 +2976,9 @@
       "parentId": "grp_enviro",
       "order": 0,
       "parameters": {
-        "pm10": 72,
-        "pm25": 34,
-        "noise": 71,
+        "pm10": 206,
+        "pm25": 41,
+        "noise": 73,
         "suppressionActive": 1
       },
       "tooltip": {
@@ -3029,10 +3031,9 @@
         "demoTrends": [
           {
             "param": "pm10",
-            "min": 60,
-            "max": 320,
-            "period": 190,
-            "offset": 40
+            "min": 168,
+            "max": 244,
+            "period": 160
           }
         ]
       }
@@ -3048,8 +3049,8 @@
       "parentId": "grp_enviro",
       "order": 1,
       "parameters": {
-        "pm10": 58,
-        "pm25": 27,
+        "pm10": 61,
+        "pm25": 28,
         "noise": 66,
         "suppressionActive": 0
       },
@@ -3167,8 +3168,8 @@
       "parentId": "grp_cvvision",
       "order": 1,
       "parameters": {
-        "tearConf": 22,
-        "hotspotConf": 16,
+        "tearConf": 24,
+        "hotspotConf": 85,
         "eventPos": 76
       },
       "tooltip": {
@@ -3206,10 +3207,9 @@
         "demoTrends": [
           {
             "param": "hotspotConf",
-            "min": 15,
-            "max": 93,
-            "period": 200,
-            "offset": 90
+            "min": 76,
+            "max": 92,
+            "period": 130
           }
         ]
       },
@@ -4063,7 +4063,9 @@
         "holeDepth": 10.5,
         "pulldown": 255,
         "rotarySpeed": 85,
-        "holesToday": 17
+        "holesToday": 12,
+        "engineHealth": 78,
+        "rulHours": 648
       },
       "config": {}
     },
@@ -4086,7 +4088,9 @@
         "holeDepth": 10.5,
         "pulldown": 255,
         "rotarySpeed": 85,
-        "holesToday": 17
+        "holesToday": 9,
+        "engineHealth": 81,
+        "rulHours": 592
       },
       "config": {}
     },
@@ -4112,15 +4116,15 @@
       "status": "running",
       "parentId": "grp_services",
       "parameters": {
-        "workersOnSite": 11,
+        "workersOnSite": 12,
         "workersPit": 4,
         "workersPlant": 3,
         "workersRail": 2,
         "workersPort": 2,
-        "minWorkerVehicleDistance": 42,
-        "proximityAlertsToday": 0,
+        "minWorkerVehicleDistance": 34,
+        "proximityAlertsToday": 2,
         "geofenceViolationsToday": 0,
-        "unauthorizedEntriesToday": 0,
+        "unauthorizedEntriesToday": 1,
         "proximityEvent": 0,
         "unauthorizedEvent": 0,
         "geofenceEvent": 0

@@ -9,6 +9,11 @@
 import { fleetRunning } from './accumulators'
 
 // ── config: nominal rates (t/h) + plan + factors ──
+export const SHIP_CAPACITY = 82000   // t — used for ship fill %
+export function shipFillPct(objects) {
+  const c = Number(objects?.['ship-1']?.parameters?.cargoLoaded) || 0
+  return Math.min(100, Math.max(0, Math.round((c / SHIP_CAPACITY) * 100)))
+}
 export const NOM = {
   romExPit: 1400, crusherOut: 1380, chppFeed: 1350, product: 1010, rejects: 340,
   railOut: 1000, shipLoad: 2500, powerBurn: 320, yield: 0.75,
