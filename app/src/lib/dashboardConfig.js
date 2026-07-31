@@ -33,7 +33,7 @@ export const TILES = [
       { label: 'Constraint', value: m.bottleneck ? cap(m.bottleneck) : 'None', unit: '', status: m.bottleneck ? 'amber' : 'green' },
       { label: 'vs plan', value: sgn(m.plan.deltaPct), unit: '%', status: m.plan.deltaPct < -8 ? 'amber' : 'green' },
     ] },
-  { id: 'workers', title: 'Worker Monitoring', tag: 'Worker Safety', focus: 'exc-coal-1',
+  { id: 'workers', title: 'Worker Monitoring', tag: 'Worker Safety', focus: 'exc-coal-1', vision: 'ppe',
     value: (m, o) => n0(num(o['safety-1'], 'workersOnSite')), unit: 'on site',
     status: (m, o, al) => (domainAlertCount(o, ['Worker Safety'], al) ? 'amber' : 'green'),
     detail: (m, o) => [
@@ -41,7 +41,7 @@ export const TILES = [
       { label: 'Pit · Plant · Rail · Port', value: `${n0(num(o['safety-1'], 'workersPit'))}·${n0(num(o['safety-1'], 'workersPlant'))}·${n0(num(o['safety-1'], 'workersRail'))}·${n0(num(o['safety-1'], 'workersPort'))}`, unit: '' },
       { label: 'Unauthorized entries', value: n0(num(o['safety-1'], 'unauthorizedEntriesToday')), unit: 'today' },
     ] },
-  { id: 'prox', title: 'Proximity Safety', tag: 'Proximity', focus: 'exc-coal-1',
+  { id: 'prox', title: 'Proximity Safety', tag: 'Proximity', focus: 'exc-coal-1', vision: 'lane',
     value: (m, o) => n0(num(o['safety-1'], 'minWorkerVehicleDistance')), unit: 'm min',
     status: (m, o) => bandStatus(num(o['safety-1'], 'minWorkerVehicleDistance'), { warn: 15, crit: 8, dir: 'low' }),
     detail: (m, o) => [
@@ -65,7 +65,7 @@ export const TILES = [
       { label: 'Lowest RUL', value: r.h == null ? '—' : n0(r.h), unit: 'h', sub: r.name, status: r.h != null && r.h < 250 ? 'red' : r.h != null && r.h < 400 ? 'amber' : 'green' },
       { label: 'Fleet health (G·A·R)', value: `${h.g}·${h.a}·${h.r}`, unit: '', status: h.status },
     ] } },
-  { id: 'asset', title: 'Asset Performance', tag: 'Vibration CBM', focus: 'crusher-1',
+  { id: 'asset', title: 'Asset Performance', tag: 'Vibration CBM', focus: 'crusher-1', vision: 'coal',
     value: (m, o) => n1(worstVibration(o).v), unit: 'mm/s',
     status: (m, o) => bandStatus(worstVibration(o).v, { warn: 6, crit: 10, dir: 'high' }),
     detail: (m, o) => { const w = worstVibration(o); return [

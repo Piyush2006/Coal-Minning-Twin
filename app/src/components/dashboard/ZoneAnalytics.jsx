@@ -14,6 +14,7 @@ import {
 } from '../../lib/zones'
 import { zoneSeries, zoneAlertEvents, zoneDowntimeMin } from '../../lib/zoneHistory'
 import { LineChart, AlertsChart, CompareBars } from './Charts'
+import { CoalSizeWidget } from './VisionEvidence'
 import { C, R } from '../../ui/theme'
 
 const tnum = { fontVariantNumeric: 'tabular-nums' }
@@ -120,6 +121,7 @@ export function ZoneAnalytics() {
               <AlertsChart label="Alerts — 60 min" events={zoneAlertEvents(zone.id)} />
               <LineChart label={`Utilization — 60 min (%)`} data={zoneSeries(zone.id, 'util')} unit="%" band={[82, 96]} accent="#7d5ce6" />
             </div>
+            {zone.id === 'proc' && <CoalSizeWidget />}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden' }}>

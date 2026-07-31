@@ -13,6 +13,7 @@ import { SCurveChart } from './Charts'
 import { useFeedStore } from '../CameraFeed'
 import { DashboardPreviewCard, PreviewBackdrop } from './DashboardPreview'
 import { ZoneAnalytics } from './ZoneAnalytics'
+import { VisionCard, CoalSizeWidget, VisionModal, VisionChip } from './VisionEvidence'
 import { C, R, FONT, SHADOW } from '../../ui/theme'
 
 const TAB = { fontSize: 12.5, fontWeight: 600, padding: '6px 14px', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }
@@ -120,7 +121,10 @@ function UseCaseRail({ m, objects, alerts }) {
               display: 'grid', gridTemplateColumns: '3px 1fr auto', alignItems: 'center', gap: 10, padding: '9px 14px',
               borderTop: i ? `1px solid ${C.line}` : 'none', background: open === tile.id ? C.bg : 'transparent', border: 'none', borderLeft: `3px solid ${st === 'green' ? 'transparent' : STATUS_COLOR[st]}` }}>
               <span />
-              <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tile.title}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tile.title}</span>
+                {tile.vision && <VisionChip />}
+              </span>
               <span style={{ fontSize: 12.5, fontWeight: 700, color: st === 'green' ? C.text : STATUS_COLOR[st], whiteSpace: 'nowrap', ...tnum }}>{val}<span style={{ fontSize: 9.5, fontWeight: 500, color: C.text3, marginLeft: 3 }}>{tile.unit}</span></span>
             </button>
             {open === tile.id && <Popover tile={tile} m={m} objects={objects} onView={() => { setOpen(null); useDashboard.getState().openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(tile.focus), 90) }} />}
@@ -140,7 +144,8 @@ function Popover({ tile, m, objects, onView }) {
           <span style={{ fontSize: 12.5, fontWeight: 700, color: r.status && r.status !== 'green' ? STATUS_COLOR[r.status] : C.text, ...tnum }}>{r.value}<span style={{ fontSize: 9.5, fontWeight: 500, color: C.text3, marginLeft: 3 }}>{r.unit}</span></span>
         </div>
       ))}
-      <button onClick={onView} style={{ marginTop: 4, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, color: C.accent, padding: 0 }}>View in Twin →</button>
+      {tile.vision === 'coal' ? <div style={{ marginTop: 8 }}><CoalSizeWidget /></div> : tile.vision ? <div style={{ marginTop: 8, maxWidth: 300 }}><VisionCard id={tile.vision} /></div> : null}
+      <button onClick={onView} style={{ marginTop: 8, border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, color: C.accent, padding: 0 }}>View in Twin →</button>
     </div>
   )
 }
@@ -185,6 +190,7 @@ export function OpsDashboard() {
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 40, background: subTab === 'overview' ? 'transparent' : C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {subTab === 'overview' && <PreviewBackdrop />}
+      <VisionModal />
       <Header subTab={subTab} setSubTab={dash.setSubTab} dash={dash} />
       {subTab === 'zones' ? <ZoneAnalytics /> : (
         <>
