@@ -4,9 +4,9 @@
 export const VISION_LABEL = 'Field deployment output — Vision AI'
 
 export const VISION = {
-  ppe:  { kind: 'video', src: '/vision/ppe_compliance.mp4',    title: 'AI PPE Compliance Detection', caption: 'AI PPE Compliance Detection' },
-  lane: { kind: 'video', src: '/vision/lane_monitoring.mp4',   title: 'AI Vehicle Lane Monitoring',  caption: 'AI Vehicle Lane Monitoring' },
-  coal: { kind: 'image', src: '/vision/coal_size_analysis.png', title: 'Coal Size Analysis — AI Vision', caption: 'Coal Size Analysis — AI Vision' },
+  ppe:  { kind: 'image', src: '/vision/ppe_compliance.webp',    title: 'AI PPE Compliance Detection', caption: 'AI PPE Compliance Detection' },
+  lane: { kind: 'image', src: '/vision/lane_monitoring.webp',   title: 'AI Vehicle Lane Monitoring',  caption: 'AI Vehicle Lane Monitoring' },
+  coal: { kind: 'image', src: '/vision/coal_size_analysis.webp', title: 'Coal Size Analysis — AI Vision', caption: 'Coal Size Analysis — AI Vision' },
 }
 
 // Coal particle-size analysis — stats + size-distribution (drop real numbers here).
