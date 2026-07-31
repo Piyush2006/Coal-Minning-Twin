@@ -4137,6 +4137,84 @@
         "holesToday": 17
       },
       "config": {}
+    },
+    "safety-1": {
+      "id": "safety-1",
+      "type": "site_safety",
+      "name": "Site Safety Monitor",
+      "position": [
+        0,
+        -50,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "status": "running",
+      "parentId": "grp_services",
+      "parameters": {
+        "workersOnSite": 11,
+        "workersPit": 4,
+        "workersPlant": 3,
+        "workersRail": 2,
+        "workersPort": 2,
+        "minWorkerVehicleDistance": 42,
+        "proximityAlertsToday": 0,
+        "geofenceViolationsToday": 0,
+        "unauthorizedEntriesToday": 0,
+        "proximityEvent": 0,
+        "unauthorizedEvent": 0,
+        "geofenceEvent": 0
+      },
+      "config": {
+        "hidden": true,
+        "safetySignals": true,
+        "alertRules": [
+          {
+            "id": "prox-crit",
+            "param": "proximityEvent",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "critical",
+            "useCase": "Proximity",
+            "message": "Proximity incident \u2014 worker within {minWorkerVehicleDistance} m of a vehicle"
+          },
+          {
+            "id": "prox-near",
+            "param": "minWorkerVehicleDistance",
+            "op": "<",
+            "threshold": 15,
+            "severity": "warn",
+            "useCase": "Proximity",
+            "message": "Reduced worker\u2013vehicle clearance: {minWorkerVehicleDistance} m"
+          },
+          {
+            "id": "geofence",
+            "param": "geofenceEvent",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "Worker Safety",
+            "message": "Geofence violation logged ({geofenceViolationsToday} today)"
+          },
+          {
+            "id": "unauth",
+            "param": "unauthorizedEvent",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "Worker Safety",
+            "message": "Unauthorized zone entry ({unauthorizedEntriesToday} today)"
+          }
+        ]
+      }
     }
   },
   "environment": {
@@ -4637,5 +4715,20 @@
         "hold": 9
       }
     ]
+  },
+  "dashboard": {
+    "landing": true,
+    "preview": {
+      "position": [
+        66,
+        78,
+        150
+      ],
+      "target": [
+        8,
+        2,
+        4
+      ]
+    }
   }
 }

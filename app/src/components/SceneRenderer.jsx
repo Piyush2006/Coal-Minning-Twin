@@ -304,6 +304,7 @@ function SceneObject({ obj, orbitRef, glowColor, allowLight, inGroup, pointRef, 
     g.scale.set(obj.scale[0] * k, obj.scale[1] * k, obj.scale[2] * k)
   })
 
+  if (obj.config?.hidden) return null            // data-only object (KPIs/alerts, no 3D)
   if (!obj.visible || !layer?.visible) return null
 
   // Built-in component, or a user-defined custom type → generic Primitive.

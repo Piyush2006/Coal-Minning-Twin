@@ -18,7 +18,7 @@ import { TEMPLATES } from '../lib/templates'
 // ─────────────────────────────────────────────────────────────────────────────
 
 const GREETING = { role: 'assistant', text: 'Describe what to build or change and I’ll do it — e.g. “add a third line of 4 reduction pots”.' }
-const blankScene = () => ({ objects: {}, groups: {}, customAssetTypes: {}, flowLayout: {}, environment: {}, tour: {} })
+const blankScene = () => ({ objects: {}, groups: {}, customAssetTypes: {}, flowLayout: {}, environment: {}, tour: {}, dashboard: {} })
 
 // Saved projects carry their tour config from the day they were created —
 // but the tour is app-authored presentation (no in-app editor), so a stale
@@ -35,7 +35,7 @@ export function freshTour(scene) {
       if (!ids.length) continue
       const anchors = ids.slice(0, 6)
       const matches = anchors.filter(id => scene.objects[id]).length
-      if (matches >= Math.min(4, anchors.length)) return { ...scene, tour: built.tour }
+      if (matches >= Math.min(4, anchors.length)) return { ...scene, tour: built.tour, dashboard: built.dashboard ?? scene.dashboard }
     }
   } catch { /* never block opening a project */ }
   return scene
@@ -140,7 +140,7 @@ export const useProjectStore = create(
         const p = makeProject(name || t.name, {
           objects: { ...baseObjects, ...(built.objects ?? built) },
           groups: built.groups ?? {}, customAssetTypes: built.customAssetTypes ?? {},
-          flowLayout: built.flowLayout ?? {}, environment: built.environment ?? {}, tour: built.tour ?? {},
+          flowLayout: built.flowLayout ?? {}, environment: built.environment ?? {}, tour: built.tour ?? {}, dashboard: built.dashboard ?? {},
         })
         set(s => ({ projects: { ...s.projects, [p.id]: p } }))
         get().openProject(p.id)

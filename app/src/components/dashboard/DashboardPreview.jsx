@@ -1,0 +1,78 @@
+// Live 3D mini-preview for the operations dashboard. Same single-render-target
+// scissor technique as the CCTV feed: a second pass renders a fixed site-wide
+// 3/4 vantage into the preview CARD's on-screen rectangle. Runs ONLY while the
+// dashboard is visible, at a reduced frame rate; zero cost otherwise. The card
+// itself is a transparent hole punched through the dashboard overlay, so the
+// scissor render shows through exactly where the card sits.
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import * as THREE from 'three'
+import { create } from 'zustand'
+import { useSceneStore } from '../../store/sceneStore'
+import { useDashboard } from '../../lib/dashboardStore'
+import { C, R } from '../../ui/theme'
+
+// the preview card registers its DOM node here (single source of truth for the rect)
+export const usePreviewEl = create((set) => ({ el: null, setEl: (el) => set({ el }) }))
+
+const _eye = new THREE.Vector3(), _tgt = new THREE.Vector3()
+const DEFAULT_POS = [66, 78, 150], DEFAULT_TGT = [8, 2, 4]
+
+export function DashboardPreviewRenderer() {
+  const camRef = useRef()
+  if (!camRef.current) camRef.current = new THREE.PerspectiveCamera(46, 16 / 9, 1, 2400)
+  const frame = useRef(0)
+
+  useFrame(({ gl, scene, size }) => {
+    if (useDashboard.getState().mode !== 'dashboard') return       // zero cost in twin view
+    const el = usePreviewEl.getState().el
+    if (!el) return
+    if ((frame.current++ % 4) !== 0) return                        // ~15 fps, reduced load
+    const pr = el.getBoundingClientRect()
+    if (pr.width < 8 || pr.height < 8) return
+    const cr = gl.domElement.getBoundingClientRect()
+    const x = pr.left - cr.left, y = cr.height - (pr.bottom - cr.top), w = pr.width, h = pr.height
+
+    const dash = useSceneStore.getState().dashboard?.preview || {}
+    const pos = dash.position || DEFAULT_POS, tgt = dash.target || DEFAULT_TGT
+    const fc = camRef.current
+    _eye.set(pos[0], pos[1], pos[2]); _tgt.set(tgt[0], tgt[1], tgt[2])
+    fc.position.copy(_eye); fc.lookAt(_tgt)
+    if (fc.aspect !== w / h) { fc.aspect = w / h }
+    fc.updateProjectionMatrix()
+
+    const prevAutoClear = gl.autoClear
+    gl.autoClear = false
+    gl.setScissorTest(true)
+    gl.setScissor(x, y, w, h)
+    gl.setViewport(x, y, w, h)
+    gl.clear(true, true, false)
+    gl.render(scene, fc)
+    gl.setScissorTest(false)
+    gl.setViewport(0, 0, size.width, size.height)
+    gl.autoClear = prevAutoClear
+  }, 101)                                                          // after PostFX + CCTV pass
+
+  return null
+}
+
+// The transparent card the preview renders into (mounts in the dashboard DOM).
+export function DashboardPreviewCard({ onOpen }) {
+  const setEl = usePreviewEl(s => s.setEl)
+  return (
+    <button onClick={onOpen} title="Open the 3D twin"
+      ref={el => setEl(el)}
+      style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', border: `1px solid ${C.line}`,
+        borderRadius: R.lg, overflow: 'hidden', background: 'transparent', cursor: 'pointer', padding: 0,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
+      {/* chrome only — the 3D shows THROUGH the transparent background */}
+      <span style={{ position: 'absolute', top: 10, left: 10, display: 'inline-flex', alignItems: 'center', gap: 6,
+        fontFamily: 'inherit', fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, color: '#fff',
+        background: 'rgba(10,12,16,0.55)', borderRadius: R.pill, padding: '3px 9px', pointerEvents: 'none' }}>
+        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34c759' }} />LIVE
+      </span>
+      <span style={{ position: 'absolute', bottom: 10, right: 12, fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
+        color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.6)', pointerEvents: 'none' }}>Open 3D Twin →</span>
+    </button>
+  )
+}

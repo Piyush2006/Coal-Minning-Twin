@@ -4137,6 +4137,84 @@
         "holesToday": 17
       },
       "config": {}
+    },
+    "safety-1": {
+      "id": "safety-1",
+      "type": "site_safety",
+      "name": "Site Safety Monitor",
+      "position": [
+        0,
+        -50,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "status": "running",
+      "parentId": "grp_services",
+      "parameters": {
+        "workersOnSite": 11,
+        "workersPit": 4,
+        "workersPlant": 3,
+        "workersRail": 2,
+        "workersPort": 2,
+        "minWorkerVehicleDistance": 42,
+        "proximityAlertsToday": 0,
+        "geofenceViolationsToday": 0,
+        "unauthorizedEntriesToday": 0,
+        "proximityEvent": 0,
+        "unauthorizedEvent": 0,
+        "geofenceEvent": 0
+      },
+      "config": {
+        "hidden": true,
+        "safetySignals": true,
+        "alertRules": [
+          {
+            "id": "prox-crit",
+            "param": "proximityEvent",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "critical",
+            "useCase": "Proximity",
+            "message": "Proximity incident \u2014 worker within {minWorkerVehicleDistance} m of a vehicle"
+          },
+          {
+            "id": "prox-near",
+            "param": "minWorkerVehicleDistance",
+            "op": "<",
+            "threshold": 15,
+            "severity": "warn",
+            "useCase": "Proximity",
+            "message": "Reduced worker\u2013vehicle clearance: {minWorkerVehicleDistance} m"
+          },
+          {
+            "id": "geofence",
+            "param": "geofenceEvent",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "Worker Safety",
+            "message": "Geofence violation logged ({geofenceViolationsToday} today)"
+          },
+          {
+            "id": "unauth",
+            "param": "unauthorizedEvent",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "Worker Safety",
+            "message": "Unauthorized zone entry ({unauthorizedEntriesToday} today)"
+          }
+        ]
+      }
     }
   },
   "environment": {
@@ -4637,6 +4715,21 @@
         "hold": 9
       }
     ]
+  },
+  "dashboard": {
+    "landing": true,
+    "preview": {
+      "position": [
+        66,
+        78,
+        150
+      ],
+      "target": [
+        8,
+        2,
+        4
+      ]
+    }
   },
   "customAssetTypes": {
     "blasthole_drill_rig": {
@@ -13275,6 +13368,140 @@
           "label": "E-Stop",
           "color": "#ff3b30",
           "severity": "down"
+        }
+      ]
+    },
+    "site_safety": {
+      "id": "site_safety",
+      "name": "Site Safety Monitor",
+      "category": "Monitoring",
+      "parts": [
+        {
+          "id": "node",
+          "geometry": "box",
+          "dims": {
+            "width": 0.2,
+            "height": 0.2,
+            "depth": 0.2
+          },
+          "position": [
+            0,
+            0.1,
+            0
+          ],
+          "material": {
+            "color": "#3a3d42"
+          }
+        }
+      ],
+      "parameters": [
+        {
+          "key": "workersOnSite",
+          "label": "Workers On Site",
+          "unit": "",
+          "default": 11,
+          "min": 0,
+          "max": 30,
+          "freq": "1m"
+        },
+        {
+          "key": "workersPit",
+          "label": "Workers \u2014 Pit",
+          "unit": "",
+          "default": 4,
+          "min": 0,
+          "max": 20,
+          "freq": "1m"
+        },
+        {
+          "key": "workersPlant",
+          "label": "Workers \u2014 Plant",
+          "unit": "",
+          "default": 3,
+          "min": 0,
+          "max": 20,
+          "freq": "1m"
+        },
+        {
+          "key": "workersRail",
+          "label": "Workers \u2014 Rail",
+          "unit": "",
+          "default": 2,
+          "min": 0,
+          "max": 20,
+          "freq": "1m"
+        },
+        {
+          "key": "workersPort",
+          "label": "Workers \u2014 Port",
+          "unit": "",
+          "default": 2,
+          "min": 0,
+          "max": 20,
+          "freq": "1m"
+        },
+        {
+          "key": "minWorkerVehicleDistance",
+          "label": "Closest Worker\u2013Vehicle",
+          "unit": "m",
+          "default": 42,
+          "min": 0,
+          "max": 60,
+          "freq": "5s"
+        },
+        {
+          "key": "proximityAlertsToday",
+          "label": "Proximity Alerts Today",
+          "unit": "",
+          "default": 0,
+          "min": 0,
+          "max": 99,
+          "freq": "5s"
+        },
+        {
+          "key": "geofenceViolationsToday",
+          "label": "Geofence Violations Today",
+          "unit": "",
+          "default": 0,
+          "min": 0,
+          "max": 99,
+          "freq": "1m"
+        },
+        {
+          "key": "unauthorizedEntriesToday",
+          "label": "Unauthorized Entries Today",
+          "unit": "",
+          "default": 0,
+          "min": 0,
+          "max": 99,
+          "freq": "1m"
+        },
+        {
+          "key": "proximityEvent",
+          "label": "Proximity Event",
+          "unit": "",
+          "default": 0,
+          "min": 0,
+          "max": 1,
+          "freq": "5s"
+        },
+        {
+          "key": "unauthorizedEvent",
+          "label": "Unauthorized Event",
+          "unit": "",
+          "default": 0,
+          "min": 0,
+          "max": 1,
+          "freq": "5s"
+        },
+        {
+          "key": "geofenceEvent",
+          "label": "Geofence Event",
+          "unit": "",
+          "default": 0,
+          "min": 0,
+          "max": 1,
+          "freq": "5s"
         }
       ]
     },

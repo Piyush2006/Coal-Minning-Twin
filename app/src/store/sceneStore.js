@@ -85,6 +85,7 @@ const store = (set, get) => ({
   flowLayout:       {},        // { [objId]: { x, y } } — 2D node positions, independent of 3D position
   environment:      {},        // scene-level env config: { sky, ground, grid, postfx } — set by loadScene
   tour:             {},        // scene-level guided-tour config: { beats: [...] } — set by loadScene
+  dashboard:        {},        // scene-level ops-dashboard config: { landing, preview } — set by loadScene
 
   setPaneMode:        (mode) => set({ paneMode: mode }),
   toggleAssetLibrary: ()     => set(s => ({ assetLibraryOpen: !s.assetLibraryOpen })),
@@ -946,6 +947,7 @@ const store = (set, get) => ({
       flowLayout: scene?.flowLayout ?? {},
       environment: scene?.environment ?? {},
       tour: scene?.tour ?? {},
+      dashboard: scene?.dashboard ?? {},
       _history:      [{ objects: clone(objects), groups: clone(groups) }],
       _historyIndex: 0,
     })
@@ -962,11 +964,11 @@ const store = (set, get) => ({
   // them here — keep only project-local custom types to avoid baking + staling
   // the shared library into every project.
   getSceneSnapshot: () => {
-    const { objects, groups, customAssetTypes, flowLayout, environment, tour } = get()
+    const { objects, groups, customAssetTypes, flowLayout, environment, tour, dashboard } = get()
     const lib = getLibraryComponents()
     const localTypes = {}
     for (const id in customAssetTypes) if (!lib[id]) localTypes[id] = customAssetTypes[id]
-    return clone({ objects, groups, customAssetTypes: localTypes, flowLayout, environment, tour })
+    return clone({ objects, groups, customAssetTypes: localTypes, flowLayout, environment, tour, dashboard })
   },
 })
 

@@ -16,16 +16,24 @@ const SectionLabel = ({ children }) => (
   </div>
 )
 
+// Reusable SVG sparkline (drill-down + operations dashboard). `stroke` lets a
+// caller tint the line to a traffic-light colour; defaults to the app accent.
+export function Sparkline({ data = [], height = 40, stroke = C.accent, fill = 'rgba(10,132,255,0.10)' }) {
+  const W = 236, H = height
+  if (data.length < 2) return <div style={{ height: H, display: 'grid', placeItems: 'center', fontSize: 11, color: C.text3 }}>collecting…</div>
+  const lo = Math.min(...data), hi = Math.max(...data), span = hi - lo || 1
+  const path = data.map((v, i) => `${((i / (data.length - 1)) * W).toFixed(1)},${(H - 4 - ((v - lo) / span) * (H - 8)).toFixed(1)}`).join(' ')
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }} preserveAspectRatio="none">
+      <polyline points={`0,${H} ${path} ${W},${H}`} fill={fill} stroke="none" />
+      <polyline points={path} fill="none" stroke={stroke} strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 function Spark({ objId, def }) {
   const data = getParamHistory(objId, def.key)
-  const W = 236, H = 40
-  let path = null, lo = 0, hi = 0
-  if (data.length >= 2) {
-    lo = Math.min(...data); hi = Math.max(...data)
-    const span = hi - lo || 1
-    path = data.map((v, i) =>
-      `${((i / (data.length - 1)) * W).toFixed(1)},${(H - 4 - ((v - lo) / span) * (H - 8)).toFixed(1)}`).join(' ')
-  }
+  const lo = data.length >= 2 ? Math.min(...data) : 0, hi = data.length >= 2 ? Math.max(...data) : 0
   const last = data.length ? data[data.length - 1] : null
   return (
     <div style={{ padding: '8px 10px', borderRadius: 10, background: C.surface, border: `1px solid ${C.line}`, marginBottom: 8 }}>
@@ -35,14 +43,7 @@ function Spark({ objId, def }) {
           {last != null ? +last.toFixed(2) : '—'}<span style={{ fontSize: 10, fontWeight: 500, color: C.text3, marginLeft: 3 }}>{def.unit ?? ''}</span>
         </span>
       </div>
-      {path ? (
-        <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }} preserveAspectRatio="none">
-          <polyline points={`0,${H} ${path} ${W},${H}`} fill="rgba(10,132,255,0.10)" stroke="none" />
-          <polyline points={path} fill="none" stroke={C.accent} strokeWidth="1.6" strokeLinejoin="round" />
-        </svg>
-      ) : (
-        <div style={{ height: H, display: 'grid', placeItems: 'center', fontSize: 11, color: C.text3 }}>collecting…</div>
-      )}
+      <Sparkline data={data} />
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9.5, color: C.text3, marginTop: 2 }}>
         <span>{data.length >= 2 ? +lo.toFixed(1) : ''}</span><span>{data.length >= 2 ? +hi.toFixed(1) : ''}</span>
       </div>

@@ -1,0 +1,133 @@
+{
+  "name": "Site Safety Monitor",
+  "category": "Monitoring",
+  "parts": [
+    {
+      "id": "node",
+      "geometry": "box",
+      "dims": {
+        "width": 0.2,
+        "height": 0.2,
+        "depth": 0.2
+      },
+      "position": [
+        0,
+        0.1,
+        0
+      ],
+      "material": {
+        "color": "#3a3d42"
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "key": "workersOnSite",
+      "label": "Workers On Site",
+      "unit": "",
+      "default": 11,
+      "min": 0,
+      "max": 30,
+      "freq": "1m"
+    },
+    {
+      "key": "workersPit",
+      "label": "Workers \u2014 Pit",
+      "unit": "",
+      "default": 4,
+      "min": 0,
+      "max": 20,
+      "freq": "1m"
+    },
+    {
+      "key": "workersPlant",
+      "label": "Workers \u2014 Plant",
+      "unit": "",
+      "default": 3,
+      "min": 0,
+      "max": 20,
+      "freq": "1m"
+    },
+    {
+      "key": "workersRail",
+      "label": "Workers \u2014 Rail",
+      "unit": "",
+      "default": 2,
+      "min": 0,
+      "max": 20,
+      "freq": "1m"
+    },
+    {
+      "key": "workersPort",
+      "label": "Workers \u2014 Port",
+      "unit": "",
+      "default": 2,
+      "min": 0,
+      "max": 20,
+      "freq": "1m"
+    },
+    {
+      "key": "minWorkerVehicleDistance",
+      "label": "Closest Worker\u2013Vehicle",
+      "unit": "m",
+      "default": 42,
+      "min": 0,
+      "max": 60,
+      "freq": "5s"
+    },
+    {
+      "key": "proximityAlertsToday",
+      "label": "Proximity Alerts Today",
+      "unit": "",
+      "default": 0,
+      "min": 0,
+      "max": 99,
+      "freq": "5s"
+    },
+    {
+      "key": "geofenceViolationsToday",
+      "label": "Geofence Violations Today",
+      "unit": "",
+      "default": 0,
+      "min": 0,
+      "max": 99,
+      "freq": "1m"
+    },
+    {
+      "key": "unauthorizedEntriesToday",
+      "label": "Unauthorized Entries Today",
+      "unit": "",
+      "default": 0,
+      "min": 0,
+      "max": 99,
+      "freq": "1m"
+    },
+    {
+      "key": "proximityEvent",
+      "label": "Proximity Event",
+      "unit": "",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "freq": "5s"
+    },
+    {
+      "key": "unauthorizedEvent",
+      "label": "Unauthorized Event",
+      "unit": "",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "freq": "5s"
+    },
+    {
+      "key": "geofenceEvent",
+      "label": "Geofence Event",
+      "unit": "",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "freq": "5s"
+    }
+  ]
+}

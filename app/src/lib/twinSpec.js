@@ -95,13 +95,14 @@ export function validateSpec(raw) {
   const environment = isObj(raw.environment) ? raw.environment : {}
   // Guided-tour config ({ beats: [...] }) — carried verbatim; TourPlayer reads defensively.
   const tour = isObj(raw.tour) ? raw.tour : {}
+  const dashboard = isObj(raw.dashboard) ? raw.dashboard : {}
   const stats = { assets: Object.keys(objects).length, groups: Object.keys(groups).length, dropped }
 
   return {
     ok: errors.length === 0,
     errors,
     warnings,
-    scene: { objects, groups, customAssetTypes, flowLayout, environment, tour },
+    scene: { objects, groups, customAssetTypes, flowLayout, environment, tour, dashboard },
     meta: isObj(raw.meta) ? raw.meta : null,
     stats,
   }
@@ -117,6 +118,7 @@ export function exportSpec(snapshot, meta = {}) {
     flowLayout: snapshot.flowLayout ?? {},
     ...(snapshot.environment && Object.keys(snapshot.environment).length ? { environment: snapshot.environment } : {}),
     ...(snapshot.tour && Object.keys(snapshot.tour).length ? { tour: snapshot.tour } : {}),
+    ...(snapshot.dashboard && Object.keys(snapshot.dashboard).length ? { dashboard: snapshot.dashboard } : {}),
   }
 }
 
