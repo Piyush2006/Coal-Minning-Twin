@@ -113,5 +113,32 @@ const cap = (s) => ({ pit: 'Pit', crush: 'Crusher', chpp: 'CHPP', stock: 'Stockp
 const sgn = (v) => (v >= 0 ? '+' : '') + (Math.round(v * 10) / 10)
 
 export function tileStatus(tile, m, objects, alerts) { return tile.status(m, objects, alerts) }
-export function overallStatus(m, objects, alerts) { return worst(TILES.map(t => tileStatus(t, m, objects, alerts))) }
-export function attentionCount(m, objects, alerts) { return TILES.filter(t => tileStatus(t, m, objects, alerts) !== 'green').length }
+// ONE overall-status selector: derived from the live alerts array ONLY.
+// any critical → red · any warn → amber · none → green. Every consumer
+// (header dot, glance) reads this — no parallel derivations.
+export function overallStatus(alerts) {
+  return alerts.some(a => a.severity === 'critical') ? 'red' : alerts.length ? 'amber' : 'green'
+}
+
+// FIX 4 — every alert tag maps to exactly ONE ledger row (no orphans).
+export const ALERT_ROW_MAP = {
+  'HEMM PdM': 'pdm',
+  'Vibration CBM': 'asset', 'Conveyor Vision': 'asset',
+  'Haulage': 'fleet', 'TPMS': 'fleet',
+  'CHP SEC': 'energy',
+  'Dust & Env': 'env',
+  'Worker Safety': 'workers',
+  'Proximity': 'prox',
+  'Logistics': 'supply', 'Rail': 'supply', 'Shiploading': 'supply',
+  'Optimization': 'ops', 'Production': 'prod',
+}
+const _warned = new Set()
+export function rowAlertsFor(tileId, alerts) {
+  const out = []
+  for (const a of alerts) {
+    const row = ALERT_ROW_MAP[a.useCase]
+    if (row === undefined && !_warned.has(a.useCase)) { _warned.add(a.useCase); console.warn(`[dashboard] active alert tag "${a.useCase}" has no ledger-row mapping`) }
+    if (row === tileId) out.push(a)
+  }
+  return out
+}

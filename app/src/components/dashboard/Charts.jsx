@@ -69,18 +69,22 @@ export function SCurve({ actual = [], plan = [] }) {
       s0 = i
     }
   }
-  const gl = [0.25, 0.5, 0.75]
+  const rawStep = hi / 4
+  const pow = 10 ** Math.floor(Math.log10(rawStep))
+  const stepV = [1, 2, 2.5, 5, 10].map(c => c * pow).find(c => hi / c <= 4) || 10 * pow
+  const ticks = []
+  for (let v = stepV; v < hi * 0.98; v += stepV) ticks.push(v)
   return (
     <>
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: 'block' }}>
-          {gl.map((f, i) => <line key={i} x1="0" y1={H * f} x2={W} y2={H * f} stroke={T.grid} strokeWidth="1" />)}
-          {bands.map((b, i) => <polygon key={i} points={b.d} fill={b.good ? 'rgba(18,183,106,0.08)' : 'rgba(240,68,56,0.08)'} stroke="none" />)}
+          {ticks.map((v, i) => <line key={i} x1="0" y1={y(v)} x2={W} y2={y(v)} stroke={T.grid} strokeWidth="1" />)}
+          {bands.map((b, i) => <polygon key={i} points={b.d} fill={b.good ? 'rgba(18,183,106,0.10)' : 'rgba(240,68,56,0.10)'} stroke="none" />)}
           <polyline points={P(pPts)} fill="none" stroke={T.ink2} strokeWidth="1.5" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />
           <polyline points={P(aPts)} fill="none" stroke={T.accent} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
         </svg>
-        {gl.map((f, i) => (
-          <span key={i} style={{ position: 'absolute', left: 0, top: `${f * 100}%`, transform: 'translateY(-115%)', ...ty.label }}>{fmt(hi * (1 - f))} t</span>
+        {ticks.map((v, i) => (
+          <span key={i} style={{ position: 'absolute', left: 0, top: `${(y(v) / H) * 100}%`, transform: 'translateY(-115%)', ...ty.label }}>{fmt(v)} t</span>
         ))}
       </div>
       <Axis labels={['start', 'shift', 'now']} legend />
@@ -109,12 +113,16 @@ export function AlertTimeline({ events = [], cap = 720 }) {
 }
 
 // tiny inline sparkline (flow-strip nodes, tiles) — accent, no axis
-export function MiniSpark({ data = [], w = 40, h = 16 }) {
+export function MiniSpark({ data = [], w = 40, h = 16, step = false }) {
   if (!data || data.length < 2) return <span style={{ display: 'inline-block', width: w, height: h }} />
   const lo = Math.min(...data), hi = Math.max(...data), span = hi - lo || 1
   const stride = Math.max(1, Math.ceil(data.length / 48))
   const src = data.filter((_, i) => i % stride === 0 || i === data.length - 1)
-  const pts = src.map((v, i) => `${(i / (src.length - 1)) * w},${(h - ((v - lo) / span) * h).toFixed(1)}`).join(' ')
+  const X = (i) => (i / (src.length - 1)) * w
+  const Y = (v) => (h - 1 - ((v - lo) / span) * (h - 2))
+  const pts = step
+    ? src.map((v, i) => (i === 0 ? `${X(0)},${Y(v).toFixed(1)}` : `${X(i).toFixed(1)},${Y(src[i - 1]).toFixed(1)} ${X(i).toFixed(1)},${Y(v).toFixed(1)}`)).join(' ')
+    : src.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')
   return <svg width={w} height={h} style={{ display: 'block' }}><polyline points={pts} fill="none" stroke={T.accent} strokeWidth="1.3" strokeLinejoin="round" /></svg>
 }
 

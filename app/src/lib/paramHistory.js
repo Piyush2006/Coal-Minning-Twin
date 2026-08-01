@@ -7,12 +7,12 @@ const CAP = 64                        // ~last minute at the 1 Hz sim tick
 
 const BUF = new Map()                 // `${objId}:${param}` → number[]
 
-export function recordParam(objId, key, v) {
+export function recordParam(objId, key, v, allowRepeat = false) {
   if (!Number.isFinite(v)) return
   const k = objId + ':' + key
   let a = BUF.get(k)
   if (!a) { a = []; BUF.set(k, a) }
-  if (a.length && a[a.length - 1] === v) return   // sim not ticked yet — skip dupes
+  if (!allowRepeat && a.length && a[a.length - 1] === v) return   // skip dupes (sim not ticked)
   a.push(v)
   if (a.length > CAP) a.shift()
 }

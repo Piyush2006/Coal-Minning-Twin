@@ -45,8 +45,44 @@ export function drift(nominal, seed, tH, amp = 0.06) {
 }
 
 // live rates at elapsed hours tH, mass-balanced (downstream ≤ upstream).
+// ── 24 h plan profile: 30,000 t/day; shift changeovers 05:30–06:30 and
+// 17:30–18:30 at 35% of base; blast window 14:00–14:30 at 0; 30-min ramps
+// back to base. planCumulative() is the normalized integral (t from midnight).
+export const DAY_PLAN_T = 30000
+export function dayRate(h) {
+  const ramp = (a, b, from, to) => from + ((h - a) / (b - a)) * (to - from)
+  if (h >= 5.5 && h < 6.5) return 0.35
+  if (h >= 6.5 && h < 7) return ramp(6.5, 7, 0.35, 1)
+  if (h >= 14 && h < 14.5) return 0
+  if (h >= 14.5 && h < 15) return ramp(14.5, 15, 0, 1)
+  if (h >= 17.5 && h < 18.5) return 0.35
+  if (h >= 18.5 && h < 19) return ramp(18.5, 19, 0.35, 1)
+  return 1
+}
+function dayIntegralRaw(h) {
+  const step = 0.05
+  let a = 0
+  for (let t = 0; t < h; t += step) a += dayRate(t + step / 2) * Math.min(step, h - t)
+  return a
+}
+let _dayTotal = null
+export function planCumulative(hClock) {
+  if (_dayTotal == null) _dayTotal = dayIntegralRaw(24)
+  return DAY_PLAN_T * dayIntegralRaw(Math.min(24, Math.max(0, hClock))) / _dayTotal
+}
+// deterministic smoothed-walk noise for the ACTUAL series, clamped 0.90–1.08 —
+// the same multiplier drives live rates, today-counters and the hero chart,
+// so the chart delta and the glance delta are one number by construction.
+function hashN(i, seed) { const x = Math.sin(i * 127.1 + seed * 311.7) * 43758.5453; return x - Math.floor(x) }
+function vnoise(t, seed) { const i = Math.floor(t), f = t - i, u = f * f * (3 - 2 * f); return hashN(i, seed) * (1 - u) + hashN(i + 1, seed) * u }
+export function actualNoise(tH) {
+  const n = 0.6 * vnoise(tH * 0.9, 7) + 0.4 * vnoise(tH * 3.1, 13)
+  return Math.max(0.90, Math.min(1.08, 0.90 + n * 0.18))
+}
+
 export function ratesAt(tH, objects) {
-  const rom = Math.max(0, drift(NOM.romExPit, 1, tH))
+  const profile = dayRate(CFG.shiftStartH + tH) * actualNoise(tH)
+  const rom = Math.max(0, drift(NOM.romExPit, 1, tH) * profile)
   const crusher = Math.min(NOM.crusherOut, rom * 0.986 + drift(0, 2, tH, 8))
   const chppFeed = Math.min(NOM.chppFeed, crusher * 0.98)
   const product = chppFeed * NOM.yield
@@ -70,8 +106,8 @@ export function initMineModel(objects) {
     const r = ratesAt(tH, objects)
     today.rom += r.rom * stepH; today.product += r.product * stepH
     today.rail += r.rail * stepH; today.ship += r.ship * stepH; today.rejects += r.rejects * stepH
-    stock.A += (r.product * 0.55 - r.rail * 0.5 - r.ship * 0.5) * stepH
-    stock.B += (r.product * 0.45 - r.rail * 0.5 - r.ship * 0.5) * stepH
+    stock.A += (r.product * 0.55 - r.rail * 0.55) * stepH
+    stock.B += (r.product * 0.45 - r.rail * 0.45) * stepH
     stock.A = Math.min(CFG.stockMax, Math.max(CFG.stockMin, stock.A))
     stock.B = Math.min(CFG.stockMax, Math.max(CFG.stockMin, stock.B))
   }
@@ -86,8 +122,8 @@ export function tickMineModel(objects) {
   S.today.rom += r.rom * dtH; S.today.product += r.product * dtH
   S.today.rail += r.rail * dtH; S.today.ship += r.ship * dtH; S.today.rejects += r.rejects * dtH
   // stockpile integrates (in from product, out to rail + ship reclaim)
-  S.stock.A = clamp(S.stock.A + (r.product * 0.55 - r.rail * 0.5 - r.ship * 0.5) * dtH)
-  S.stock.B = clamp(S.stock.B + (r.product * 0.45 - r.rail * 0.5 - r.ship * 0.5) * dtH)
+  S.stock.A = clamp(S.stock.A + (r.product * 0.55 - r.rail * 0.55) * dtH)
+  S.stock.B = clamp(S.stock.B + (r.product * 0.45 - r.rail * 0.45) * dtH)
   const total = S.stock.A + S.stock.B
   S.trend = total - S.prevStockTotal; S.prevStockTotal = total
   recordDashSeries(objects, r)
@@ -100,9 +136,9 @@ function recordDashSeries(objects, r) {
   recordParam('dash', 'flow_rail', r.rail); recordParam('dash', 'flow_port', r.ship)
   recordParam('dash', 'stockFlow', S.stock.A + S.stock.B)
   recordParam('dash', 'prod', S.today.rom)
-  recordParam('dash', 'workers', Number(objects['safety-1']?.parameters?.workersOnSite) || 0)
+  recordParam('dash', 'workers', Number(objects['safety-1']?.parameters?.workersOnSite) || 0, true)
   recordParam('dash', 'prox', Number(objects['safety-1']?.parameters?.minWorkerVehicleDistance) || 0)
-  recordParam('dash', 'fleetFuel', 78 + (r.rom / NOM.romExPit) * 14)
+  recordParam('dash', 'fleetFuel', fleetRunning(objects).run, true)
   recordParam('dash', 'rul', lowestRul(objects).h ?? 0)
   recordParam('dash', 'vib', worstVibration(objects).v)
   recordParam('dash', 'pm10', Number(objects['pm-1']?.parameters?.pm10) || 0)
@@ -125,7 +161,7 @@ export function getModel(objects) {
   const utilPct = Math.round(Math.min(96, Math.max(78, drift(CFG.utilNom, 3, tH, 0.06))))
   const fuelLh = Math.round(runTrucks * drift(CFG.truckFuelLh, 4, tH, 0.05))
   const elapsedFrac = tH / CFG.shiftHours
-  const planToNow = CFG.dailyPlan * planFrac(tH)
+  const planToNow = planCumulative(CFG.shiftStartH + tH) - planCumulative(CFG.shiftStartH)
   const productionToday = S.today.rom
   const deltaPct = planToNow > 0 ? ((productionToday - planToNow) / planToNow) * 100 : 0
   const stockTotal = S.stock.A + S.stock.B
@@ -139,8 +175,8 @@ export function getModel(objects) {
   const stages = [
     { id: 'pit',   zone: 'pit',   label: 'Pit',       rate: r.rom,      nominal: NOM.romExPit },
     { id: 'crush', zone: 'proc',  label: 'Crusher',   rate: r.crusher,  nominal: NOM.crusherOut },
-    { id: 'chpp',  zone: 'proc',  label: 'CHPP',      rate: r.chppFeed, nominal: NOM.chppFeed, reject: r.rejects },
-    { id: 'stock', zone: 'yard',  label: 'Stockpile', rate: r.product,  nominal: NOM.product, level: stockTotal, trend: S.trend },
+    { id: 'chpp',  zone: 'proc',  label: 'CHPP',      rate: r.product,  nominal: NOM.product, feed: r.chppFeed, reject: r.rejects },
+    { id: 'stock', zone: 'yard',  label: 'Stockpile', rate: r.product,  nominal: NOM.product, level: stockTotal, trend: r.product - r.rail },
     { id: 'rail',  zone: 'rail',  label: 'Rail',      rate: r.rail,     nominal: NOM.railOut },
     { id: 'port',  zone: 'port',  label: 'Port',      rate: r.ship,     nominal: NOM.shipLoad },
   ]
@@ -152,6 +188,7 @@ export function getModel(objects) {
     if (ratio < worstRatio) { worstRatio = ratio; bottleneck = st.id }
   }
 
+  if (import.meta.env.DEV) console.assert(Math.sign(stages[3].trend) === Math.sign(r.product - r.rail), '[mineModel] stock arrow decoupled')
   return {
     tH, elapsedFrac, rates: r, stages, bottleneck,
     plan: { daily: CFG.dailyPlan, toNow: planToNow, deltaPct },
@@ -169,70 +206,62 @@ function dieselTodayL(objects) {
   return run * CFG.truckFuelLh * (S ? elapsedH() : CFG.shiftStartH)
 }
 
-// planned rate multiplier across the shift: startup ramp, mid-shift crib dip,
-// recovery — gives the plan line its S-curve shape. planFrac() is the
-// normalized cumulative integral so plan-to-now and the hero share one truth.
-function planProfile(h) {
-  if (h < 0.75) return 0.55 + (h / 0.75) * 0.45
-  if (h < 3.5) return 1.04
-  if (h < 4.25) return 0.72
-  if (h < 5) return 0.72 + ((h - 4.25) / 0.75) * 0.31
-  return 1.03
-}
-function planIntegral(h) {
-  const step = 0.05
-  let a = 0
-  for (let t = 0; t < h; t += step) a += planProfile(t + step / 2) * Math.min(step, h - t)
-  return a
-}
-let _planTotal = null
-export function planFrac(h) {
-  if (_planTotal == null) _planTotal = planIntegral(CFG.shiftHours)
-  return Math.max(0, Math.min(1, planIntegral(Math.min(h, CFG.shiftHours)) / _planTotal))
-}
-
-// cumulative production S-curve (actual drift-integrated vs S-curve plan) for the hero
+// cumulative production S-curve for the hero: plan = 24h-profile integral over
+// the shift window; actual = the live rate model integrated, pinned to the
+// today-counter so the chart delta EQUALS the glance delta.
 export function productionCurve(objects, points = 48) {
   if (!S) initMineModel(objects)
   const tH = elapsedH()
   const actual = [], plan = []
   const stepH = tH / points
+  const plan0 = planCumulative(CFG.shiftStartH)
   let cum = 0
   for (let i = 0; i <= points; i++) {
     const a = i * stepH
-    // integrate rom over [a-step, a]
     if (i > 0) { const mid = a - stepH / 2; cum += ratesAt(mid, objects).rom * stepH }
     actual.push(cum)
-    plan.push(CFG.dailyPlan * planFrac(a))
+    plan.push(planCumulative(CFG.shiftStartH + a) - plan0)
   }
-  return { actual, plan, target: CFG.dailyPlan * planFrac(tH) }
+  const k = actual[points] > 0 ? S.today.rom / actual[points] : 1
+  for (let i = 0; i <= points; i++) actual[i] *= k
+  if (import.meta.env.DEV && plan[points] > 0) {
+    const chartDelta = ((actual[points] - plan[points]) / plan[points]) * 100
+    const modelDelta = ((S.today.rom - plan[points]) / plan[points]) * 100
+    if (Math.abs(chartDelta - modelDelta) >= 0.05) console.warn('[mineModel] hero delta mismatch', chartDelta, modelDelta)
+  }
+  return { actual, plan, target: plan[points] }
 }
 
 function backfillDash(objects) {
   if (getParamHistory('dash', 'flow_pit').length > 8) return
   const tH = elapsedH()
-  const wob = (i, k, m) => Math.sin(i * 0.37 + k) * m + Math.sin(i * 1.31 + k * 2.7) * m * 0.35
+  const mkWalk = (seed) => { let st = seed >>> 0, v = 0; const rnd = () => { st = (st * 1664525 + 1013904223) >>> 0; return st / 4294967296 }; return () => { v = Math.max(-1, Math.min(1, v + (rnd() - 0.5) * 0.55)); return v } }
+  const walks = Array.from({ length: 14 }, (_, k) => mkWalk(97 + k * 31))
   const anchor = (id, key, dflt) => { const v = Number(objects[id]?.parameters?.[key]); return Number.isFinite(v) ? v : dflt }
   const rul0 = lowestRul(objects).h
+  let wInt = 11, fInt = 9, prox = anchor('safety-1', 'minWorkerVehicleDistance', 34)
   for (let i = 0; i < 63; i++) {
     const f = i / 62
     const h = Math.max(0.05, tH - (1 - f) * 1.0)
     const r = ratesAt(h, objects)
-    recordParam('dash', 'flow_pit', r.rom + wob(i, 1, 6))
-    recordParam('dash', 'flow_crush', r.crusher + wob(i, 2, 5))
-    recordParam('dash', 'flow_chpp', r.chppFeed + wob(i, 3, 5))
-    recordParam('dash', 'flow_rail', r.rail + wob(i, 4, 8))
-    recordParam('dash', 'flow_port', r.ship + wob(i, 5, 9))
-    const lvl = (S.stock.A + S.stock.B) - (1 - f) * 260 + wob(i, 6, 40)
+    recordParam('dash', 'flow_pit', r.rom + walks[0]() * 6)
+    recordParam('dash', 'flow_crush', r.crusher + walks[1]() * 5)
+    recordParam('dash', 'flow_chpp', r.product + walks[2]() * 4)
+    recordParam('dash', 'flow_rail', r.rail + walks[3]() * 8)
+    recordParam('dash', 'flow_port', r.ship + walks[4]() * 9)
+    const lvl = (S.stock.A + S.stock.B) - (1 - f) * (r.product - r.rail) + walks[5]() * 30
     recordParam('dash', 'flow_stock', lvl); recordParam('dash', 'stockFlow', lvl); recordParam('dash', 'stock', lvl)
-    recordParam('dash', 'prod', Math.max(0, S.today.rom - (1 - f) * r.rom) + wob(i, 7, 12))
-    recordParam('dash', 'workers', 11 + Math.round(Math.sin(i * 0.5) * 1.2))
-    recordParam('dash', 'prox', anchor('safety-1', 'minWorkerVehicleDistance', 34) + wob(i, 8, 6))
-    recordParam('dash', 'fleetFuel', 78 + (r.rom / NOM.romExPit) * 14 + wob(i, 9, 1.5))
-    if (rul0 != null) recordParam('dash', 'rul', rul0 + (1 - f) * 1.4 + wob(i, 10, 0.4))
-    recordParam('dash', 'vib', anchor('crusher-1', 'vibration', 7.4) + wob(i, 11, 0.8))
-    recordParam('dash', 'pm10', anchor('pm-1', 'pm10', 205) + wob(i, 12, 16))
-    recordParam('dash', 'sec', anchor('screen-1', 'kwhPerTonne', 1.12) + wob(i, 13, 0.05))
+    recordParam('dash', 'prod', Math.max(0, S.today.rom - (1 - f) * r.rom) + walks[6]() * 10)
+    if (i % 5 === 0) { wInt = Math.max(9, Math.min(13, wInt + Math.round((walks[7]() * 1.6)))) }
+    recordParam('dash', 'workers', wInt, true)
+    if (i % 9 === 0) { fInt = Math.max(8, Math.min(9, fInt + Math.round(walks[8]() * 1.2))) }
+    recordParam('dash', 'fleetFuel', fInt, true)
+    prox = Math.max(20, Math.min(48, prox + walks[9]() * 3))
+    recordParam('dash', 'prox', prox)
+    if (rul0 != null) recordParam('dash', 'rul', rul0 + (1 - f) * 1.4 + walks[10]() * 0.4)
+    recordParam('dash', 'vib', anchor('crusher-1', 'vibration', 7.4) + walks[11]() * 0.8)
+    recordParam('dash', 'pm10', anchor('pm-1', 'pm10', 205) + walks[12]() * 16)
+    recordParam('dash', 'sec', anchor('screen-1', 'kwhPerTonne', 1.12) + walks[13]() * 0.05)
   }
 }
 

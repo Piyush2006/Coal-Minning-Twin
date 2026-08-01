@@ -13,7 +13,7 @@ const mono = "'SF Mono', ui-monospace, Menlo, monospace"
 
 // small discoverability chip for tiles with evidence
 export function VisionChip() {
-  return <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.3, color: '#1D4ED8', background: '#1D4ED814', border: '1px solid #1D4ED826', borderRadius: R.pill, padding: '1px 7px' }}>Vision AI</span>
+  return <span style={{ fontSize: 11, fontWeight: 500, color: '#1D4ED8', background: '#EFF4FF', borderRadius: 6, padding: '1px 8px' }}>Vision AI</span>
 }
 
 // compact 16:9 media card

@@ -214,6 +214,11 @@ function stepSafety(o, rec) {
   p.proximityEvent = q.pxTimer > 0 ? 1 : 0
   p.unauthorizedEvent = q.uaTimer > 0 ? 1 : 0
   p.geofenceEvent = q.gfTimer > 0 ? 1 : 0
+  // counters increment WITH their event; guard so an active event can never
+  // interpolate a pre-increment zero into its alert message
+  if (p.proximityEvent && q.px < 1) q.px = 1
+  if (p.unauthorizedEvent && q.ua < 1) q.ua = 1
+  if (p.geofenceEvent && q.gf < 1) q.gf = 1
   p.proximityAlertsToday = q.px
   p.unauthorizedEntriesToday = q.ua
   p.geofenceViolationsToday = q.gf

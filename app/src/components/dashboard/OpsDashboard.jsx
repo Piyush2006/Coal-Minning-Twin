@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSceneStore } from '../../store/sceneStore'
 import { useDashboard } from '../../lib/dashboardStore'
 import { productionCurve } from '../../lib/mineModel'
-import { TILES, tileStatus, overallStatus, attentionCount, domainAlertCount } from '../../lib/dashboardConfig'
+import { TILES, overallStatus, rowAlertsFor } from '../../lib/dashboardConfig'
 import { getParamHistory } from '../../lib/paramHistory'
 import { ChartCard, SCurve, MiniSpark } from './Charts'
 import { useFeedStore } from '../CameraFeed'
@@ -45,8 +45,9 @@ function GlanceBlock({ label, value, unit, sub, dot, last }) {
   )
 }
 function GlanceRow({ m, objects, alerts }) {
-  const overall = overallStatus(m, objects, alerts)
+  const overall = overallStatus(alerts)
   const nCrit = alerts.filter(a => a.severity === 'critical').length
+  if (import.meta.env.DEV && nCrit > 0 && overall !== 'red') console.warn('[dashboard] overallStatus out of sync with critical alerts')
   return (
     <div style={{ height: 84, flexShrink: 0, background: T.surface, borderBottom: `1px solid ${T.line}`, display: 'flex', alignItems: 'stretch' }}>
       <GlanceBlock label="Overall status" value={STATUS_WORD[overall]} dot={STATUS[overall]} />
@@ -76,7 +77,7 @@ function FlowStrip({ m, openZone }) {
                 <span style={{ ...ty.label, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>{st.label}{bn && <span style={{ fontSize: 12, fontWeight: 600, color: T.warn }}>Bottleneck</span>}</span>
                 <span style={{ ...ty.kpiM, whiteSpace: 'nowrap' }}>{st.id === 'stock' ? Math.round(st.level).toLocaleString() : Math.round(st.rate).toLocaleString()}<Unit>{st.id === 'stock' ? 't' : 't/h'}</Unit>{st.id === 'stock' && rising != null && <span style={{ ...ty.label, marginLeft: 4 }}>{rising ? '▲' : '▼'}</span>}</span>
                 <MiniSpark data={spark} w={64} h={12} />
-                <span style={{ ...ty.label, whiteSpace: 'nowrap' }}>{st.reject != null ? `rejects ${Math.round(st.reject)} t/h` : ''}</span>
+                <span style={{ ...ty.label, whiteSpace: 'nowrap' }}>{st.feed != null ? `feed ${Math.round(st.feed)} · rejects ${Math.round(st.reject)} t/h` : ''}</span>
               </button>
               {i < m.stages.length - 1 && <span aria-hidden style={{ flexShrink: 0, padding: '0 8px', color: '#D0D5DD', fontSize: 16, lineHeight: 1 }}>›</span>}
             </div>
@@ -90,9 +91,9 @@ function FlowStrip({ m, openZone }) {
 // ── use-case LEDGER (table) — no fixed heights, no absolute, no clipping ──
 const LEDGER = {
   ops:     { full: 'Mine Operations Optimization', ctx: 'production vs plan' },
-  workers: { full: 'Real-Time Worker Monitoring',   ctx: 'personnel on site' },
+  workers: { full: 'Real-Time Worker Monitoring',   ctx: 'personnel on site', step: true },
   prox:    { full: 'Collision & Proximity Safety',  ctx: 'closest approach' },
-  fleet:   { full: 'Fleet & Equipment Management',  ctx: 'units running' },
+  fleet:   { full: 'Fleet & Equipment Management',  ctx: 'units running', step: true },
   pdm:     { full: 'Predictive Maintenance',        ctx: 'lowest asset RUL' },
   asset:   { full: 'Asset Performance Management',  ctx: 'worst vibration' },
   prod:    { full: 'Production & Productivity',      ctx: (m) => `${m.plan.deltaPct >= 0 ? '+' : ''}${m.plan.deltaPct.toFixed(1)}% vs plan` },
@@ -120,7 +121,7 @@ function Drawer({ tile, m, objects, spark }) {
 }
 
 function LedgerRow({ tile, m, objects, alerts, expanded, onToggle, onView, first }) {
-  const rowAlerts = alerts.filter(a => a.useCase === tile.tag)
+  const rowAlerts = rowAlertsFor(tile.id, alerts)
   const st = rowAlerts.some(a => a.severity === 'critical') ? 'red' : rowAlerts.length ? 'amber' : 'green'
   const val = tile.value(m, objects)
   const meta = LEDGER[tile.id] || { full: tile.title, ctx: '' }
@@ -142,7 +143,7 @@ function LedgerRow({ tile, m, objects, alerts, expanded, onToggle, onView, first
           <span style={ty.kpiM}>{val}{tile.unit ? <Unit>{tile.unit}</Unit> : null}</span>
           <span style={{ display: 'block', ...ty.label }}>{ctx}</span>
         </span>
-        <span style={{ width: 84, flexShrink: 0, display: 'flex', justifyContent: 'center' }}><MiniSpark data={spark} w={80} h={24} /></span>
+        <span style={{ width: 84, flexShrink: 0, display: 'flex', justifyContent: 'center' }}><MiniSpark data={spark} w={80} h={24} step={meta.step} /></span>
         <span style={{ width: 96, flexShrink: 0, ...ty.label }}>{n > 0 ? `${n} alert${n > 1 ? 's' : ''}${last ? ` · ${rel(last)}` : ''}` : '—'}</span>
         <span style={{ width: 100, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
           <button onClick={(e) => { e.stopPropagation(); onView() }} style={{ ...ty.label, color: T.accent, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>View in Twin →</button>
