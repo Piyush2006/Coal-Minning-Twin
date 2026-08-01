@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/jpeg" href="/faclon-logo.jpeg" />
     <title>Digital Twin Workbench</title>
+    <script>
+      // Self-heal: an old service worker from an earlier build can serve cached
+      // pages straight through hard-reloads. Unregister any SW + drop all caches,
+      // then reload ONCE, so the freshest bundle always wins.
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          if (!regs.length) return;
+          Promise.all(regs.map(function (r) { return r.unregister(); }))
+            .then(function () { return (self.caches && caches.keys) ? caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }) : null; })
+            .then(function () {
+              if (!sessionStorage.getItem('sw-purged')) { sessionStorage.setItem('sw-purged', '1'); location.reload(); }
+            });
+        });
+      })();
+    </script>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { background: #060810; overflow: hidden; font-family: 'Courier New', monospace; }
