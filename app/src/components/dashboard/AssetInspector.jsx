@@ -204,14 +204,14 @@ export function AssetInspector() {
     useSceneStore.getState().selectObject(id)
     setTimeout(() => useSceneStore.getState().flyToObject(id), 90)
   }
-  const activeAlerts = row.alerts.slice(0, 4)
+  const activeAlerts = row.alerts.slice(0, 3)
 
   return (
     <div className="insp-backdrop" role="dialog" aria-modal="true" aria-label={obj.name || id}
       onClick={dash.closeAssetInspector}
       style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(16,24,40,.45)', backdropFilter: 'blur(4px)', display: 'grid', placeItems: 'center', fontFamily: T.font }}>
       <div className="insp-panel" onClick={(e) => e.stopPropagation()}
-        style={{ width: 'min(960px, 92vw)', height: 'min(600px, 88vh)', background: '#FFFFFF', borderRadius: 16, border: `1px solid ${T.line}`,
+        style={{ width: 'min(960px, 92vw)', height: 'min(640px, 88vh)', background: '#FFFFFF', borderRadius: 16, border: `1px solid ${T.line}`,
           boxShadow: '0 24px 48px rgba(16,24,40,.18)', display: 'grid', gridTemplateColumns: '54% 46%', overflow: 'hidden', position: 'relative' }}>
         <button onClick={dash.closeAssetInspector} aria-label="Close"
           style={{ position: 'absolute', top: 14, right: 14, zIndex: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: T.ink2, lineHeight: 1, padding: 4 }}
@@ -257,7 +257,7 @@ export function AssetInspector() {
         </div>
 
         {/* ── info column ── */}
-        <div style={{ minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', padding: 24, gap: 14 }}>
+        <div style={{ minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', padding: 20, gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexShrink: 0, paddingRight: 24 }}>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 18, fontWeight: 600, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{obj.name || id}</div>
@@ -272,15 +272,15 @@ export function AssetInspector() {
               {worstSub && <div style={{ fontSize: 13, fontWeight: 500, color: T.ink }}>Worst: {worstSub.name}</div>}
             </div>
           </div>
-          <div className="dash-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
-              <div style={{ ...ty.cardTitle, marginBottom: 4 }}>Subsystems</div>
+              <div style={{ ...ty.cardTitle, marginBottom: 2 }}>Subsystems</div>
               {subsystems.map((sub) => {
                 const canIsolate = !singleBody && sub.name !== 'Operational'
                 const sel = isolate === sub.name
                 return (
                   <div key={sub.name} onClick={() => canIsolate && setIsolate(sel ? null : sub.name)} className="row-hover"
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 40, padding: '4px 4px', borderTop: '1px solid #F2F4F7', cursor: canIsolate ? 'pointer' : 'default', background: sel ? '#F5F8FF' : undefined, borderRadius: sel ? 6 : 0 }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 30, padding: '2px 4px', borderTop: '1px solid #F2F4F7', cursor: canIsolate ? 'pointer' : 'default', background: sel ? '#F5F8FF' : undefined, borderRadius: sel ? 6 : 0 }}>
                     <span style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: sub.band === 'red' ? T.bad : sub.band === 'amber' ? T.warn : T.good, opacity: sub.band === 'green' ? 0.5 : 1 }} />
                     <span style={{ fontSize: 13, fontWeight: 600, color: T.ink, flexShrink: 0 }}>{sub.name}</span>
                     <span style={{ marginLeft: 'auto', fontSize: 12, color: T.ink2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '55%' }}>{sub.note}</span>
@@ -289,10 +289,10 @@ export function AssetInspector() {
               })}
             </div>
             <div>
-              <div style={{ ...ty.cardTitle, marginBottom: 4 }}>Active Alerts</div>
+              <div style={{ ...ty.cardTitle, marginBottom: 2 }}>Active Alerts</div>
               {activeAlerts.length === 0 && <div style={{ fontSize: 12, color: '#98A2B3', padding: '6px 0' }}>No active alerts</div>}
               {activeAlerts.map((a) => (
-                <div key={a.key} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 0', borderTop: '1px solid #F2F4F7' }}>
+                <div key={a.key} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '4px 0', borderTop: '1px solid #F2F4F7' }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 4, flexShrink: 0, background: a.severity === 'critical' ? T.bad : T.warn }} />
                   <span style={{ minWidth: 0, fontSize: 12, color: T.ink, lineHeight: 1.35 }}>{a.message}{a.cam ? ` (${a.cam})` : ''}<span style={{ color: T.ink2, whiteSpace: 'nowrap' }}> · {rel(a.since)}</span></span>
                 </div>
@@ -300,9 +300,9 @@ export function AssetInspector() {
             </div>
             {hp && (
               <div>
-                <div style={{ ...ty.cardTitle, marginBottom: 4 }}>Trend</div>
-                <div style={{ fontSize: 12, color: T.ink2, marginBottom: 4 }}>{hp.label}{hp.unit ? ` (${hp.unit})` : ''}</div>
-                <MiniSpark data={getParamHistory(id, hp.key)} w={380} h={48} />
+                <div style={{ ...ty.cardTitle, marginBottom: 2 }}>Trend</div>
+                <div style={{ fontSize: 12, color: T.ink2, marginBottom: 2 }}>{hp.label}{hp.unit ? ` (${hp.unit})` : ''}</div>
+                <MiniSpark data={getParamHistory(id, hp.key)} w={380} h={32} />
               </div>
             )}
           </div>
