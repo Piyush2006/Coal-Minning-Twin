@@ -1,9 +1,30 @@
 // Dashboard charts — accent-only, titled, axis-labelled, per the design spec.
 // A ChartCard wraps every chart: CardTitle top-left, current value KPI-M
 // top-right, then the SVG with three #F2F4F7 gridlines and 12px axis labels.
-import { T, ty, fmt, Unit, SHADOW_CARD } from './tokens'
+import { useState, useEffect } from 'react'
+import { T, ty, fmt, Unit, SHADOW_CARD, NumberFlow, REDUCED_MOTION } from './tokens'
 
 const W = 320
+
+// health donut — shared by the asset rail (28px) and the inspector (64px)
+export const BAND_COLOR = { red: T.bad, amber: T.warn, green: T.good }
+export function HealthRing({ health, band, halo, size = 28, fontSize = 9 }) {
+  const sw = size >= 48 ? 5 : 3
+  const R = (size - sw) / 2, C = 2 * Math.PI * R
+  const [on, setOn] = useState(REDUCED_MOTION)
+  useEffect(() => { if (!REDUCED_MOTION) { const id = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(id) } }, [])
+  return (
+    <span className={halo ? 'ring-halo' : undefined} style={{ position: 'relative', width: size, height: size, flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: '50%' }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }} aria-hidden>
+        <circle cx={size / 2} cy={size / 2} r={R} fill="none" stroke="#EAECF0" strokeWidth={sw} />
+        <circle cx={size / 2} cy={size / 2} r={R} fill="none" stroke={BAND_COLOR[band]} strokeWidth={sw} strokeLinecap="round"
+          strokeDasharray={C.toFixed(2)} strokeDashoffset={(C * (1 - (on ? health / 100 : 0))).toFixed(2)}
+          style={{ transition: REDUCED_MOTION ? 'none' : 'stroke-dashoffset 600ms ease-out, stroke 300ms ease' }} />
+      </svg>
+      <span style={{ fontSize, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: T.ink }}><NumberFlow value={health} format={(v) => String(Math.round(v))} /></span>
+    </span>
+  )
+}
 
 export function ChartCard({ title, value, unit, height = '100%', children }) {
   return (

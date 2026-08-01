@@ -370,18 +370,20 @@ function renderPartTree(parts, idSet, parentId, config, status, depth, highlight
     .filter(p => { const pid = p.parentId || null; return parentId === null ? (pid === null || !idSet.has(pid)) : pid === parentId })
     .map(part => {
       const children = renderPartTree(parts, idSet, part.id, config, status, depth, highlightId, alertSev, objId)
-      if (part.kind === 'logical') return <group key={part.id}>{children}</group>
+      if (part.kind === 'logical') return <group key={part.id} name={part.id}>{children}</group>
       if ((part.kind === 'group' || part.kind === 'model') && part.animate) {
         return (
-          <AnimatedGroup key={part.id} part={part} config={config} status={status}>
-            {part.kind === 'model' ? <ModelVisual part={part} /> : null}
-            {children}
-          </AnimatedGroup>
+          <group key={part.id} name={part.id}>
+            <AnimatedGroup part={part} config={config} status={status}>
+              {part.kind === 'model' ? <ModelVisual part={part} /> : null}
+              {children}
+            </AnimatedGroup>
+          </group>
         )
       }
       const visual = part.kind === 'group' ? null : <PartVisual part={part} config={config} status={status} depth={depth} highlighted={!!highlightId && part.id === highlightId} alertSev={alertSev} objId={objId} />
       return (
-        <group key={part.id} position={part.position || [0, 0, 0]} rotation={part.rotation || [0, 0, 0]} scale={part.scale || [1, 1, 1]}>
+        <group key={part.id} name={part.id} position={part.position || [0, 0, 0]} rotation={part.rotation || [0, 0, 0]} scale={part.scale || [1, 1, 1]}>
           {visual}
           {children}
         </group>

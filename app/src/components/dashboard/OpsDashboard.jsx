@@ -9,10 +9,11 @@ import { getParamHistory } from '../../lib/paramHistory'
 import { assetHealthModel } from '../../lib/assetHealth'
 import { assetHeadlineParam } from '../../lib/zones'
 import { motion } from 'framer-motion'
-import { ChartCard, SCurve, MiniSpark } from './Charts'
+import { ChartCard, SCurve, MiniSpark, HealthRing, BAND_COLOR } from './Charts'
 import { useFeedStore } from '../CameraFeed'
 import { DashboardPreviewCard, PreviewBackdrop } from './DashboardPreview'
 import { ZoneAnalytics } from './ZoneAnalytics'
+import { AssetInspector } from './AssetInspector'
 import { VisionCard, CoalSizeWidget, VisionModal, VisionChip, useVision } from './VisionEvidence'
 import { T, ty, card, Unit, PlanDelta, fmt, rel, STATUS, STATUS_WORD, useDashSnapshot, NumberFlow, linkStyle, REDUCED_MOTION } from './tokens'
 
@@ -261,24 +262,6 @@ function AlertFeed({ objects, alerts }) {
 // health seeded per asset and banded by its ACTIVE alerts (same single source
 // as the status rings); camera detections attach to the belt they watch.
 const BAND_RANK = { red: 0, amber: 1, green: 2 }
-const BAND_COLOR = { red: T.bad, amber: T.warn, green: T.good }
-
-function HealthRing({ health, band, halo }) {
-  const R = 12.5, C = 2 * Math.PI * R
-  const [on, setOn] = useState(REDUCED_MOTION)
-  useEffect(() => { if (!REDUCED_MOTION) { const id = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(id) } }, [])
-  return (
-    <span className={halo ? 'ring-halo' : undefined} style={{ position: 'relative', width: 28, height: 28, flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: '50%' }}>
-      <svg width="28" height="28" viewBox="0 0 28 28" style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }} aria-hidden>
-        <circle cx="14" cy="14" r={R} fill="none" stroke="#EAECF0" strokeWidth="3" />
-        <circle cx="14" cy="14" r={R} fill="none" stroke={BAND_COLOR[band]} strokeWidth="3" strokeLinecap="round"
-          strokeDasharray={C.toFixed(2)} strokeDashoffset={(C * (1 - (on ? health / 100 : 0))).toFixed(2)}
-          style={{ transition: REDUCED_MOTION ? 'none' : 'stroke-dashoffset 600ms ease-out, stroke 300ms ease' }} />
-      </svg>
-      <span style={{ fontSize: 9, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: T.ink }}><NumberFlow value={health} format={(v) => String(Math.round(v))} /></span>
-    </span>
-  )
-}
 
 function AssetRow({ row, objects, onOpen }) {
   const prevBand = useRef(row.band)
@@ -417,6 +400,10 @@ export function OpsDashboard() {
           .flow-dot{display:block;animation:laneDot 4s linear infinite}
           @keyframes rejDot{from{transform:translateY(0);opacity:.7}to{transform:translateY(16px);opacity:0}}
           .rej-dot{display:block;animation:rejDot 1.8s linear infinite}
+          @keyframes inspFade{from{opacity:0}to{opacity:1}}
+          .insp-backdrop{animation:inspFade 150ms ease-out}
+          @keyframes inspIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+          .insp-panel{animation:inspIn 200ms ease-out}
           @keyframes portHalo{0%{box-shadow:0 0 0 0 rgba(247,144,9,.18)}50%{box-shadow:0 0 0 6px rgba(247,144,9,.18)}100%{box-shadow:0 0 0 0 rgba(247,144,9,0)}}
           .port-halo{animation:portHalo 2s ease-in-out infinite}
           @keyframes ringHalo{0%,100%{box-shadow:0 0 0 0 rgba(240,68,56,0)}50%{box-shadow:0 0 0 6px rgba(240,68,56,.15)}}
@@ -427,6 +414,7 @@ export function OpsDashboard() {
       `}</style>
       {activeTab === 'overview' && <PreviewBackdrop />}
       <VisionModal />
+      {useDashboard(s2 => s2.inspectorAssetId) ? <AssetInspector /> : null}
       <div style={{ position: 'relative', zIndex: 1 }}><TopBar dash={dash} m={m} /></div>
       <div style={{ position: 'relative', zIndex: 1 }}><GlanceRow m={m} objects={objects} alerts={alerts} /></div>
       <div style={{ position: 'relative', zIndex: 1 }}><TabRow tab={activeTab} setTab={dash.setActiveTab} /></div>

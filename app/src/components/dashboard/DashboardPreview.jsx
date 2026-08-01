@@ -25,6 +25,7 @@ export function DashboardPreviewRenderer() {
 
   useFrame(({ gl, scene, size }) => {
     if (useDashboard.getState().mode !== 'dashboard') return       // zero cost in twin view
+    if (useDashboard.getState().inspectorAssetId) return           // paused while the inspector is open
     const el = usePreviewEl.getState().el
     if (!el || !el.isConnected) return
     // Render EVERY frame: the composer redraws the whole canvas each frame, so
