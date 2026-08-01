@@ -206,7 +206,7 @@ function Ledger({ m, objects, alerts, expanded, setExpanded, dash }) {
   return (
     <div className="panel-in" style={{ ...card, minWidth: 0, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ ...ty.cardTitle, padding: '18px 20px 6px', flexShrink: 0 }}>Monitoring Use Cases</div>
-      <div ref={listRef} className="dash-scroll" style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', overflowAnchor: 'none' }}>
+      <div className="dash-scroll" style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', overflowAnchor: 'none' }}>
         {TILES.map((tile, i) => (
           <LedgerRow key={tile.id} tile={tile} m={m} objects={objects} alerts={alerts} first={i === 0}
             expanded={expanded === tile.id}
