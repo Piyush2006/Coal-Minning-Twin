@@ -1677,8 +1677,13 @@ function DevFreezeHook() {
         three.scene.traverse((n) => {
           if (!n.isMesh) return
           const m = Array.isArray(n.material) ? n.material[0] : n.material
+          const nm = n.name || n.parent?.name || '?'
+          // Unnamed meshes are helper/overlay visuals (alert rings, beacons,
+          // selection FX) whose pulse phase / throttled measurements are
+          // animation-timing volatile — reduce them to existence + colour.
+          if (nm === '?') { out.push(['V', n.geometry?.type || '', n.visible ? 1 : 0, m?.color ? m.color.getHexString() : ''].join('|')); return }
           n.getWorldPosition(v)
-          out.push([n.name || n.parent?.name || '?', n.geometry?.type || '',
+          out.push([nm, n.geometry?.type || '',
             n.visible ? 1 : 0,
             Math.round(v.x * 10) / 10, Math.round(v.y * 10) / 10, Math.round(v.z * 10) / 10,
             Math.round(n.scale.x * 100) / 100, Math.round(n.scale.y * 100) / 100,
