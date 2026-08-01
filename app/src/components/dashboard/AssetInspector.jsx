@@ -148,8 +148,6 @@ export function AssetInspector() {
   const [regVersion, setRegVersion] = useState(0)
   const registryRef = useRef([])
   const controlsRef = useRef()
-  const [spin, setSpin] = useState(!REDUCED_MOTION)
-  const idleT = useRef()
 
   // Esc closes
   useEffect(() => {
@@ -242,10 +240,7 @@ export function AssetInspector() {
                     <ContactShadows opacity={0.3} blur={2.5} scale={30} far={12} />
                   </Suspense>
                   <OrbitControls ref={controlsRef} makeDefault enablePan={false}
-                    minPolarAngle={0.15 * Math.PI} maxPolarAngle={0.55 * Math.PI}
-                    autoRotate={spin} autoRotateSpeed={0.6}
-                    onStart={() => { setSpin(false); clearTimeout(idleT.current) }}
-                    onEnd={() => { idleT.current = setTimeout(() => { if (!REDUCED_MOTION) setSpin(true) }, 3000) }} />
+                    minPolarAngle={0.15 * Math.PI} maxPolarAngle={0.55 * Math.PI} />
                   <ZoomClamp controlsRef={controlsRef} />
                 </>
               </StageRoot>
