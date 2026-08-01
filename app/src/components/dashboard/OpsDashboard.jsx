@@ -1,6 +1,6 @@
 // Operations Dashboard — presentation rebuilt to the exact design spec.
 // Data comes from mineModel via a 5-second snapshot (no per-second jitter).
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { useSceneStore } from '../../store/sceneStore'
 import { useDashboard } from '../../lib/dashboardStore'
 import { productionCurve } from '../../lib/mineModel'
@@ -68,27 +68,62 @@ function GlanceRow({ m, objects, alerts }) {
   )
 }
 
-// ── flow strip (128) — shared baseline, integer rates, arrow connectors ──
+// ── flow strip — living material-flow spine. Six nodes joined by five lanes
+// with coal-coloured dots whose count and speed derive from the SAME rates
+// the numbers show (read-only on mineModel). Lane configs freeze at mount —
+// restarting CSS animations on ticks would make dots jump; numbers keep
+// live-ticking. Dots/halos are decorative absolute layers inside dedicated
+// lane rows (carve-out) and vanish under prefers-reduced-motion.
 function FlowStrip({ m, openZone }) {
+  const lanesRef = useRef(null)
+  if (!lanesRef.current) {
+    const r = m.rates
+    const mk = (rate) => ({ rate, n: Math.max(3, Math.min(10, Math.round(rate / 150))), dur: rate >= 50 ? 3000 / rate : 6, stalled: rate < 50 })
+    // L1 Pit→Crusher intake · L2 →CHPP feed · L3 →Stockpile product · L4 →Rail · L5 →Port
+    lanesRef.current = [mk(r.crusher), mk(r.chppFeed), mk(r.product), mk(r.rail), mk(r.ship)]
+  }
+  const lanes = lanesRef.current
+  const bnLane = m.stages.findIndex(st => st.id === m.bottleneck) - 1     // lane INTO the bottleneck node
+  const port = (side, halo) => <span className={halo ? 'port-halo' : undefined} style={{ position: 'absolute', [side]: 0, top: 5, width: 6, height: 6, borderRadius: '50%', background: '#FFFFFF', border: '1.5px solid #D0D5DD', boxSizing: 'border-box', zIndex: 1 }} />
   return (
     <div style={{ ...card, minWidth: 0, padding: 20, display: 'flex', flexDirection: 'column' }}>
       <span style={ty.cardTitle}>Material Flow · pit → port</span>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', marginTop: 6 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto 1fr auto 1fr auto 1fr auto 1fr auto', alignItems: 'center', marginTop: 6 }}>
         {m.stages.map((st, i) => {
           const bn = m.bottleneck === st.id
           const rising = st.trend != null ? st.trend >= 0 : null
           const spark = getParamHistory('dash', st.id === 'stock' ? 'stockFlow' : 'flow_' + st.id)
           return (
-            <div key={st.id} style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
-              <button onClick={() => openZone(st.zone)} style={{ flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit', background: 'none', border: 'none',
-                borderLeft: bn ? `3px solid ${T.warn}` : '3px solid transparent', paddingLeft: 8, display: 'grid', gridTemplateRows: '14px 28px 14px 12px', alignItems: 'center' }}>
-                <span style={{ ...ty.label, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>{st.label}{bn && <span style={{ fontSize: 12, fontWeight: 600, color: T.warn }}>Bottleneck</span>}</span>
+            <Fragment key={st.id}>
+              <button className="flow-node" onClick={() => openZone(st.zone)} style={{ minWidth: 0, textAlign: 'left', font: 'inherit', background: 'none', position: 'relative',
+                border: '1px solid transparent', borderLeft: bn ? '3px solid ' + T.warn : '1px solid transparent', borderRadius: 8, padding: '2px 10px',
+                display: 'grid', gridTemplateRows: '14px 28px 13px 13px', alignItems: 'center' }}>
+                <span style={{ ...ty.label, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>{st.label}{bn && <span style={{ fontSize: 12, fontWeight: 600, color: T.warn }}>Bottleneck</span>}<span className="node-arrow" style={{ color: T.accent }}>→</span></span>
                 <span style={{ ...ty.kpiM, whiteSpace: 'nowrap' }}>{st.id === 'stock' ? Math.round(st.level).toLocaleString() : Math.round(st.rate).toLocaleString()}<Unit>{st.id === 'stock' ? 't' : 't/h'}</Unit>{st.id === 'stock' && rising != null && <span style={{ ...ty.label, marginLeft: 4 }}>{rising ? '▲' : '▼'}</span>}</span>
                 <MiniSpark data={spark} w={64} h={12} />
                 <span style={{ ...ty.label, whiteSpace: 'nowrap' }}>{st.feed != null ? `feed ${Math.round(st.feed)} · rejects ${Math.round(st.reject)} t/h` : ''}</span>
+                {st.feed != null && (
+                  <span aria-hidden style={{ position: 'absolute', left: 14, bottom: -18, width: 2, height: 20, background: '#EAECF0' }}>
+                    {[0, 1, 2].map(j => <span key={j} className="rej-dot" style={{ animationDelay: `${-j * 0.6}s` }} />)}
+                  </span>
+                )}
               </button>
-              {i < m.stages.length - 1 && <span aria-hidden style={{ flexShrink: 0, padding: '0 8px', color: '#D0D5DD', fontSize: 16, lineHeight: 1 }}>›</span>}
-            </div>
+              {i < m.stages.length - 1 && (
+                <div style={{ position: 'relative', height: 16, minWidth: 0, margin: '0 2px', containerType: 'inline-size' }}>
+                  <span style={{ position: 'absolute', left: 2, right: 2, top: 7, height: 2, background: '#EAECF0' }} />
+                  {port('left', false)}
+                  {port('right', i === bnLane)}
+                  {Array.from({ length: lanes[i].n }, (_, j) => (
+                    <span key={j} className="flow-dot" style={{
+                      animationDuration: `${lanes[i].dur}s`,
+                      animationDelay: `${(-(j / lanes[i].n) * lanes[i].dur).toFixed(2)}s`,
+                      animationTimingFunction: i === bnLane ? 'cubic-bezier(0.15, 0.75, 0.4, 1)' : 'linear',
+                      animationPlayState: lanes[i].stalled ? 'paused' : 'running',
+                      opacity: lanes[i].stalled ? 0.3 : undefined }} />
+                  ))}
+                </div>
+              )}
+            </Fragment>
           )
         })}
       </div>
@@ -302,6 +337,12 @@ export function OpsDashboard() {
         .link-twin:hover{text-decoration:underline}
         .row-hover{transition:background 150ms ease} .row-hover:hover{background:#F7F8FA}
         .card-hover{transition:border-color 150ms ease, box-shadow 150ms ease} .card-hover:hover{border-color:#DDE1E8;box-shadow:0 4px 12px rgba(16,24,40,.08),0 2px 4px rgba(16,24,40,.04)}
+        .flow-node{cursor:pointer;transition:border-color 150ms ease, box-shadow 150ms ease}
+        .flow-node:hover{border-color:#DDE1E8 !important;box-shadow:0 4px 12px rgba(16,24,40,.08),0 2px 4px rgba(16,24,40,.04)}
+        .node-arrow{opacity:0;transition:opacity 150ms ease}
+        .flow-node:hover .node-arrow{opacity:1}
+        .flow-dot{display:none;position:absolute;left:2px;top:5.5px;width:5px;height:5px;border-radius:50%;background:rgba(52,64,84,.85)}
+        .rej-dot{display:none;position:absolute;left:-1px;top:0;width:4px;height:4px;border-radius:50%;background:#98A2B3}
         @media (prefers-reduced-motion: no-preference){
           @keyframes popIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
           @keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -317,6 +358,12 @@ export function OpsDashboard() {
           .alert-new-warn{animation:alertIn 250ms ease-out backwards, pulseWarn 675ms ease-in-out 250ms 2;border-radius:8px}
           @keyframes breathe{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.12);opacity:1}}
           .breathe{animation:breathe 2s ease-in-out infinite}
+          @keyframes laneDot{from{transform:translateX(0)}to{transform:translateX(calc(100cqw - 9px))}}
+          .flow-dot{display:block;animation:laneDot 4s linear infinite}
+          @keyframes rejDot{from{transform:translateY(0);opacity:.7}to{transform:translateY(16px);opacity:0}}
+          .rej-dot{display:block;animation:rejDot 1.8s linear infinite}
+          @keyframes portHalo{0%{box-shadow:0 0 0 0 rgba(247,144,9,.18)}50%{box-shadow:0 0 0 6px rgba(247,144,9,.18)}100%{box-shadow:0 0 0 0 rgba(247,144,9,0)}}
+          .port-halo{animation:portHalo 2s ease-in-out infinite}
         }
       `}</style>
       {activeTab === 'overview' && <PreviewBackdrop />}
