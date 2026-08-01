@@ -206,7 +206,7 @@ function Ledger({ m, objects, alerts, expanded, setExpanded, dash }) {
   return (
     <div className="panel-in" style={{ ...card, minWidth: 0, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ ...ty.cardTitle, padding: '18px 20px 6px', flexShrink: 0 }}>Monitoring Use Cases</div>
-      <div className="dash-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <div ref={listRef} className="dash-scroll" style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', overflowAnchor: 'none' }}>
         {TILES.map((tile, i) => (
           <LedgerRow key={tile.id} tile={tile} m={m} objects={objects} alerts={alerts} first={i === 0}
             expanded={expanded === tile.id}
@@ -284,7 +284,7 @@ function AssetRow({ row, objects, onOpen }) {
   }
   return (
     <div onClick={onOpen} className={`row-hover asset-row${pulse ? ` row-pulse-${pulse}` : ''}`}
-      style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 48, padding: '12px 4px', borderTop: '1px solid #F2F4F7', cursor: 'pointer' }}>
+      style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 44, padding: '9px 4px', borderTop: '1px solid #F2F4F7', cursor: 'pointer' }}>
       <HealthRing health={row.health} band={row.band} halo={row.band === 'red'} />
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: T.ink, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</span>
@@ -296,6 +296,8 @@ function AssetRow({ row, objects, onOpen }) {
 }
 
 function AssetHealthRail({ objects, alerts, dash }) {
+  const listRef = useRef(null)
+  useEffect(() => { if (listRef.current) listRef.current.scrollTop = 0 }, [])
   const { rows, counts } = assetHealthModel(objects, alerts)
   const total = rows.length
   const firstGreen = rows.findIndex(r2 => r2.band === 'green')
@@ -303,8 +305,8 @@ function AssetHealthRail({ objects, alerts, dash }) {
   const wrapProps = REDUCED_MOTION ? {} : { layout: true, transition: { duration: 0.25, ease: 'easeOut' } }
   const seg = (n, color, dim) => (n > 0 ? <span style={{ flex: n, minWidth: 8, background: color, opacity: dim ? 0.45 : 1 }} /> : null)
   return (
-    <div className="panel-in" style={{ ...card, minWidth: 0, minHeight: 0, flex: 1, padding: '14px 20px', display: 'flex', flexDirection: 'column', animationDelay: '120ms' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10, flexShrink: 0 }}>
+    <div className="panel-in" style={{ ...card, minWidth: 0, minHeight: 0, height: '100%', padding: '12px 16px', display: 'flex', flexDirection: 'column', animationDelay: '120ms' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, flexShrink: 0 }}>
         <span style={ty.cardTitle}>Asset Health</span>
         <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 500, color: T.ink2 }}>{total} assets</span>
       </div>
@@ -312,9 +314,9 @@ function AssetHealthRail({ objects, alerts, dash }) {
         <div style={{ display: 'flex', gap: 2, height: 6, borderRadius: 3, overflow: 'hidden' }}>
           {seg(counts.red, T.bad)}{seg(counts.amber, T.warn)}{seg(counts.green, T.good, true)}
         </div>
-        <div style={{ fontSize: 12, color: T.ink2, margin: '6px 0 4px' }}>{counts.red} critical · {counts.amber} attention · {counts.green} healthy</div>
+        <div style={{ fontSize: 12, color: T.ink2, margin: '4px 0 2px' }}>{counts.red} critical · {counts.amber} attention · {counts.green} healthy</div>
       </div>
-      <div className="dash-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <div ref={listRef} className="dash-scroll" style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', overflowAnchor: 'none' }}>
         {rows.map((row, i) => (
           <Fragment key={row.id}>
             {i === firstGreen && firstGreen > 0 && (
@@ -420,7 +422,7 @@ export function OpsDashboard() {
       <div style={{ position: 'relative', zIndex: 1 }}><TabRow tab={activeTab} setTab={dash.setActiveTab} /></div>
       <div key={activeTab} className="tab-fade" style={{ position: 'relative', zIndex: 1, minHeight: 0 }}>
         {activeTab === 'overview' && (
-          <div style={{ height: '100%', minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 600px', gridTemplateRows: 'minmax(0,1fr) auto', gap: 24, padding: 24 }}>
+          <div style={{ height: '100%', minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 600px', gridTemplateRows: 'minmax(0,1fr) auto', gap: 'clamp(14px, 2.2vh, 24px)', padding: 'clamp(12px, 2.2vh, 24px)' }}>
             <div className="panel-in" style={{ ...card, minWidth: 0, minHeight: 0, padding: 20, display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexShrink: 0 }}>
                 <span style={ty.cardTitle}>Production vs Plan</span>
@@ -432,8 +434,8 @@ export function OpsDashboard() {
               </div>
               <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}><SCurve actual={curve.actual} plan={curve.plan} /></div>
             </div>
-            <div style={{ minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
-              <div className="panel-in" style={{ flexShrink: 0, height: 'clamp(160px, 48%, 338px)', position: 'relative', borderRadius: 12, border: `1px solid ${T.line}`, boxShadow: '0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)', overflow: 'hidden', animationDelay: '60ms' }}>
+            <div style={{ minWidth: 0, minHeight: 0, display: 'grid', gridTemplateRows: 'minmax(160px, 38%) minmax(0, 1fr)', gap: 24 }}>
+              <div className="panel-in" style={{ minHeight: 0, position: 'relative', borderRadius: 12, border: `1px solid ${T.line}`, boxShadow: '0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)', overflow: 'hidden', animationDelay: '60ms' }}>
                 <DashboardPreviewCard onOpen={dash.openTwin} label="Enter Twin" fill />
               </div>
               <AssetHealthRail objects={objects} alerts={alerts} dash={dash} />
