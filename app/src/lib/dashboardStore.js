@@ -8,10 +8,10 @@ import { useTourStore } from '../components/TourPlayer'
 
 export const useDashboard = create((set) => ({
   mode: 'twin',                       // 'dashboard' | 'twin'
-  subTab: 'overview',                 // 'overview' | 'zones'
+  activeTab: 'overview',              // 'overview' | 'monitoring' | 'zones'
   zone: 'pit',                        // selected zone id (Zone Analytics)
-  setSubTab: (subTab) => set({ subTab }),
-  openZone: (zone) => set({ subTab: 'zones', zone }),
+  setActiveTab: (activeTab) => set({ activeTab }),
+  openZone: (zone) => set({ activeTab: 'zones', zone }),
   setZone: (zone) => set({ zone }),
   compare: false, cmpMetric: 'alerts',
   setCompare: (compare) => set({ compare }),

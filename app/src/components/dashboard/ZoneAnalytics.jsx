@@ -66,80 +66,76 @@ export function ZoneAnalytics() {
   const cmpRows = ZONES.map(z => ({ id: z.id, name: z.name, status: zoneStatus(objects, z, alerts), value: cmp.get(objects, z, alerts), onClick: () => { dash.setCompare(false); dash.setZone(z.id) } }))
 
   return (
-    <>
-      {/* zone strip */}
-      <div style={{ position: 'relative', zIndex: 1, height: 84, flexShrink: 0, background: T.surface, borderBottom: `1px solid ${T.line}`, display: 'flex', alignItems: 'stretch' }}>
+    <div style={{ height: '100%', minHeight: 0, display: 'grid', gridTemplateRows: 'auto auto minmax(0,1fr)', gap: 12, padding: 16 }}>
+      {/* zone strip — card row, natural height */}
+      <div style={{ ...card, display: 'flex', alignItems: 'stretch' }}>
         {ZONES.map((z, i) => <ZoneStripBlock key={z.id} zone={z} objects={objects} alerts={alerts} active={!compare && z.id === zoneId} onSelect={() => { dash.setCompare(false); dash.setZone(z.id) }} last={i === ZONES.length - 1} />)}
       </div>
-      <div style={{ position: 'relative', zIndex: 1, flex: 1, minHeight: 0, overflowY: 'auto', padding: 24 }}>
-        <div style={{ maxWidth: 1600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* mode + metric selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button onClick={() => dash.setSubTab('overview')} style={{ ...ty.body, fontWeight: 600, color: T.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>← Overview</button>
-            <div style={{ display: 'inline-flex', border: `1px solid ${T.line}`, borderRadius: 8, overflow: 'hidden' }}>
-              {[['detail', 'Zone detail'], ['compare', 'Compare zones']].map(([k, lbl]) => {
-                const on = (k === 'compare') === !!compare
-                return <button key={k} onClick={() => dash.setCompare(k === 'compare')} style={{ ...ty.body, fontWeight: 600, padding: '6px 14px', border: 'none', cursor: 'pointer', background: on ? T.accent : 'transparent', color: on ? '#fff' : T.ink2 }}>{lbl}</button>
-              })}
-            </div>
-            {compare && <div style={{ display: 'inline-flex', border: `1px solid ${T.line}`, borderRadius: 8, overflow: 'hidden' }}>
-              {COMPARE.map(mt => { const on = cmpMetric === mt.id; return <button key={mt.id} onClick={() => dash.setCmpMetric(mt.id)} style={{ ...ty.body, fontWeight: 600, padding: '6px 12px', border: 'none', cursor: 'pointer', background: on ? T.accent : 'transparent', color: on ? '#fff' : T.ink2 }}>{mt.label}</button> })}
-            </div>}
-          </div>
-
-          {compare ? (
-            <div style={{ ...card, padding: 16 }}>
-              <div style={{ ...ty.cardTitle, marginBottom: 16 }}>{cmp.label} by zone{cmp.unit ? ` (${cmp.unit})` : ''}</div>
-              <CompareBars rows={cmpRows} unit={cmp.unit} />
-            </div>
-          ) : (
-            <>
-              {/* KPI row — 6 stat blocks */}
-              <div style={{ ...card, height: 84, display: 'flex', alignItems: 'stretch' }}>
-                <StatBlock label="Throughput out" value={fmt(t.out)} unit="t/h" sub={<Delta pct={deltaPct(t.out, no)} suffix="vs nom" />} />
-                <StatBlock label="Utilization" value={util} unit="%" sub={<Delta pct={deltaPct(util, 88)} suffix="vs target" />} />
-                <StatBlock label="Active alerts" value={za.list.length} dot={za.crit ? STATUS.red : za.warn ? STATUS.amber : null} />
-                <StatBlock label="Energy intensity" value={e.value} unit={e.unit} />
-                <StatBlock label="Downtime today" value={zoneDowntimeMin(zone.id)} unit="min" />
-                <StatBlock label="Workers" value={zoneWorkers(objects, zone)} last />
-              </div>
-              {/* three chart cards */}
-              <Grid>
-                <div style={{ gridColumn: 'span 4', minWidth: 0 }}><ChartCard title="Throughput · 60 min" value={fmt(t.out)} unit="t/h" height={280}><TrendChart data={zoneSeries(zone.id, 'tout')} band={no ? [no * 0.92, no] : null} /></ChartCard></div>
-                <div style={{ gridColumn: 'span 4', minWidth: 0 }}><ChartCard title="Alerts · 60 min" value={za.list.length} height={280}><AlertTimeline events={zoneAlertEvents(zone.id)} /></ChartCard></div>
-                <div style={{ gridColumn: 'span 4', minWidth: 0 }}><ChartCard title="Utilization · 60 min" value={util} unit="%" height={280}><TrendChart data={zoneSeries(zone.id, 'util')} band={[82, 96]} /></ChartCard></div>
-              </Grid>
-              {/* top issues + assets */}
-              <Grid style={{ alignItems: 'stretch' }}>
-                <div style={{ ...card, gridColumn: 'span 8', minWidth: 0, padding: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}><span style={ty.cardTitle}>Top Issues</span>
-                    <button onClick={() => { dash.openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(zone.focus), 90) }} style={{ marginLeft: 'auto', border: 'none', background: 'none', cursor: 'pointer', ...ty.body, fontWeight: 600, color: T.accent, padding: 0 }}>View in Twin →</button></div>
-                  {problems.length === 0 && <span style={ty.label}>No issues in this zone</span>}
-                  {problems.map((o, i) => { const hp = assetHeadlineParam(o), st = assetStatus(o); return (
-                    <button key={o.id} onClick={() => selectAsset(o.id)} style={{ width: '100%', textAlign: 'left', cursor: 'pointer', font: 'inherit', display: 'flex', alignItems: 'center', gap: 12, padding: '9px 0', border: 'none', borderTop: i ? `1px solid ${T.line}` : 'none', background: 'none' }}>
-                      <span style={{ ...ty.body, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.name}</span>
-                      {hp && <span style={ty.body}>{hp.label} {Math.round(+hp.value * 10) / 10}<Unit>{hp.unit}</Unit></span>}
-                      <span style={{ ...ty.label, width: 72, textAlign: 'right', color: st !== 'green' ? STATUS[st] : T.ink2, fontWeight: 600 }}>{STATUS_WORD[st]}</span>
-                    </button>
-                  ) })}
-                </div>
-                <div style={{ ...card, gridColumn: 'span 4', minWidth: 0, padding: 16, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ ...ty.cardTitle, marginBottom: 8 }}>Machines ({assets.length})</div>
-                  <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-                    {assets.map(o => { const st = assetStatus(o); return (
-                      <button key={o.id} onClick={() => selectAsset(o.id)} style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', border: 'none', background: 'none' }}>
-                        {st !== 'green' && <span style={{ width: 7, height: 7, borderRadius: '50%', background: STATUS[st] }} />}
-                        <span style={{ ...ty.body, color: T.ink2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.name}</span>
-                      </button>
-                    ) })}
-                  </div>
-                </div>
-              </Grid>
-              {zone.id === 'proc' && <CoalSizeWidget />}
-            </>
-          )}
+      {/* mode + metric selector */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'inline-flex', border: `1px solid ${T.line}`, borderRadius: 8, overflow: 'hidden' }}>
+          {[['detail', 'Zone detail'], ['compare', 'Compare zones']].map(([k, lbl]) => {
+            const on = (k === 'compare') === !!compare
+            return <button key={k} onClick={() => dash.setCompare(k === 'compare')} style={{ ...ty.body, fontWeight: 600, padding: '6px 14px', border: 'none', cursor: 'pointer', background: on ? T.accent : 'transparent', color: on ? '#fff' : T.ink2 }}>{lbl}</button>
+          })}
         </div>
+        {compare && <div style={{ display: 'inline-flex', border: `1px solid ${T.line}`, borderRadius: 8, overflow: 'hidden' }}>
+          {COMPARE.map(mt => { const on = cmpMetric === mt.id; return <button key={mt.id} onClick={() => dash.setCmpMetric(mt.id)} style={{ ...ty.body, fontWeight: 600, padding: '6px 12px', border: 'none', cursor: 'pointer', background: on ? T.accent : 'transparent', color: on ? '#fff' : T.ink2 }}>{mt.label}</button> })}
+        </div>}
       </div>
-    </>
+      {compare ? (
+        <div style={{ ...card, minHeight: 0, padding: 16, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ ...ty.cardTitle, marginBottom: 16, flexShrink: 0 }}>{cmp.label} by zone{cmp.unit ? ` (${cmp.unit})` : ''}</div>
+          <div className="dash-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}><CompareBars rows={cmpRows} unit={cmp.unit} /></div>
+        </div>
+      ) : (
+        <div style={{ minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', gap: 16 }}>
+          <div style={{ minHeight: 0, display: 'grid', gridTemplateRows: 'auto minmax(0,1fr)', gap: 16 }}>
+            {/* KPI row — 6 stat blocks, natural height */}
+            <div style={{ ...card, display: 'flex', alignItems: 'stretch', padding: '10px 0' }}>
+              <StatBlock label="Throughput out" value={fmt(t.out)} unit="t/h" sub={<Delta pct={deltaPct(t.out, no)} suffix="vs nom" />} />
+              <StatBlock label="Utilization" value={util} unit="%" sub={<Delta pct={deltaPct(util, 88)} suffix="vs target" />} />
+              <StatBlock label="Active alerts" value={za.list.length} dot={za.crit ? STATUS.red : za.warn ? STATUS.amber : null} />
+              <StatBlock label="Energy intensity" value={e.value} unit={e.unit} />
+              <StatBlock label="Downtime today" value={zoneDowntimeMin(zone.id)} unit="min" />
+              <StatBlock label="Workers" value={zoneWorkers(objects, zone)} last />
+            </div>
+            {/* three chart cards fill the remaining height */}
+            <div style={{ minHeight: 0, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16 }}>
+              <ChartCard title="Throughput · 60 min" value={fmt(t.out)} unit="t/h"><TrendChart data={zoneSeries(zone.id, 'tout')} band={no ? [no * 0.92, no] : null} /></ChartCard>
+              <ChartCard title="Alerts · 60 min" value={za.list.length}><AlertTimeline events={zoneAlertEvents(zone.id)} /></ChartCard>
+              <ChartCard title="Utilization · 60 min" value={util} unit="%"><TrendChart data={zoneSeries(zone.id, 'util')} band={[82, 96]} /></ChartCard>
+            </div>
+          </div>
+          {/* right column: issues + evidence + machines (machines absorbs overflow) */}
+          <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ ...card, padding: 16, flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}><span style={ty.cardTitle}>Top Issues</span>
+                <button onClick={() => { dash.openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(zone.focus), 90) }} style={{ marginLeft: 'auto', border: 'none', background: 'none', cursor: 'pointer', ...ty.body, fontWeight: 600, color: T.accent, padding: 0 }}>View in Twin →</button></div>
+              {problems.length === 0 && <span style={ty.label}>No issues in this zone</span>}
+              {problems.map((o, i) => { const hp = assetHeadlineParam(o), st = assetStatus(o); return (
+                <button key={o.id} onClick={() => selectAsset(o.id)} style={{ width: '100%', textAlign: 'left', cursor: 'pointer', font: 'inherit', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', border: 'none', borderTop: i ? `1px solid ${T.line}` : 'none', background: 'none' }}>
+                  <span style={{ ...ty.body, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.name}</span>
+                  {hp && <span style={{ ...ty.label, whiteSpace: 'nowrap' }}>{hp.label} {Math.round(+hp.value * 10) / 10}{hp.unit}</span>}
+                  <span style={{ ...ty.label, width: 58, textAlign: 'right', color: st !== 'green' ? STATUS[st] : T.ink2, fontWeight: 600 }}>{STATUS_WORD[st]}</span>
+                </button>
+              ) })}
+            </div>
+            {zone.id === 'proc' && <div style={{ flexShrink: 0 }}><CoalSizeWidget compact /></div>}
+            <div style={{ ...card, padding: 16, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ ...ty.cardTitle, marginBottom: 8, flexShrink: 0 }}>Machines ({assets.length})</div>
+              <div className="dash-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                {assets.map(o => { const st = assetStatus(o); return (
+                  <button key={o.id} onClick={() => selectAsset(o.id)} style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', border: 'none', background: 'none' }}>
+                    {st !== 'green' && <span style={{ width: 7, height: 7, borderRadius: '50%', background: STATUS[st] }} />}
+                    <span style={{ ...ty.body, color: T.ink2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.name}</span>
+                  </button>
+                ) })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

@@ -5,9 +5,9 @@ import { T, ty, fmt, Unit } from './tokens'
 
 const W = 320
 
-export function ChartCard({ title, value, unit, height = 280, children }) {
+export function ChartCard({ title, value, unit, height = '100%', children }) {
   return (
-    <div style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: T.radius, padding: 16, height, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+    <div style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: T.radius, padding: 16, height, minHeight: 0, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 12 }}>
         <span style={ty.cardTitle}>{title}</span>
         {value != null && <span style={{ ...ty.kpiM, marginLeft: 'auto' }}>{value}{unit ? <Unit>{unit}</Unit> : null}</span>}
