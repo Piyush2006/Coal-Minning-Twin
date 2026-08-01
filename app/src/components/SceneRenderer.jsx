@@ -368,6 +368,7 @@ function SceneObject({ obj, orbitRef, glowColor, allowLight, inGroup, pointRef, 
     <>
       <group
         ref={groupRef}
+        name={obj.id}
         position={obj.position}
         rotation={obj.rotation}
         scale={obj.scale}
