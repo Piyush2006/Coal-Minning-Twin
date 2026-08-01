@@ -36,7 +36,7 @@ function subsystemForMesh(node, type, singleBody) {
 }
 
 // inside-canvas layer: incremental material cloning + registry, emissive pulse
-function StageAsset({ obj, typeDef, bandBySub, mode, isolate, singleBody, registryRef, onRegistry }) {
+function StageAsset({ obj, typeDef, bandBySub, isolate, singleBody, registryRef, onRegistry }) {
   const groupRef = useRef()
   const Comp = MACHINE_COMPONENTS[obj.type] ?? (typeDef ? CompositeAsset : null)
   useFrame(({ clock }) => {
@@ -144,7 +144,6 @@ export function AssetInspector() {
   const { row, subsystems, singleBody, worstSub } = model
   const bandBySub = useMemo(() => new Map(subsystems.map((s) => [s.name, s.band])), [subsystems])
 
-  const [mode, setMode] = useState('health')          // 'health' | 'realistic'
   const [isolate, setIsolate] = useState(null)        // subsystem name | null
   const [regVersion, setRegVersion] = useState(0)
   const registryRef = useRef([])
@@ -159,23 +158,24 @@ export function AssetInspector() {
     return () => window.removeEventListener('keydown', onKey)
   }, [dash])
 
-  // apply tint + isolation to the CLONED materials whenever inputs change
+  // natural materials everywhere; ONLY warn/critical subsystem parts are
+  // tinted toward their band colour (plus the emissive pulse) — healthy parts
+  // keep their original look
   useEffect(() => {
     for (const e of registryRef.current) {
       const band = bandBySub.get(e.sub) ?? 'green'
       for (const m of e.mats) {
         if (m.color && m.userData.__base) {
           m.color.copy(m.userData.__base)
-          if (mode === 'health') m.color.lerp(BAND3[band], 0.6)
+          if (band === 'red' || band === 'amber') m.color.lerp(BAND3[band], 0.55)
         }
-        if (band !== 'red' && band !== 'amber' && m.emissive && m.userData.__baseTransparent !== undefined) m.emissiveIntensity = m.emissiveIntensity // leave healthy lamps as-is
         const dim = isolate && e.sub !== isolate
         if (dim) { m.transparent = true; m.opacity = 0.12 }
         else { m.transparent = m.userData.__baseTransparent; m.opacity = m.userData.__baseOpacity }
         m.needsUpdate = true
       }
     }
-  }, [mode, isolate, bandBySub, regVersion])
+  }, [isolate, bandBySub, regVersion])
 
   // dispose cloned materials on unmount (geometries are shared — never disposed)
   useEffect(() => () => {
@@ -236,7 +236,7 @@ export function AssetInspector() {
                   <directionalLight position={[-6, 4, -5]} intensity={0.35} />
                   <Suspense fallback={null}>
                     <Bounds fit clip observe margin={1.2}>
-                      <StageAsset obj={{ ...obj, id }} typeDef={typeDef} bandBySub={bandBySub} mode={mode} isolate={isolate}
+                      <StageAsset obj={{ ...obj, id }} typeDef={typeDef} bandBySub={bandBySub} isolate={isolate}
                         singleBody={singleBody} registryRef={registryRef} onRegistry={() => setRegVersion((v) => v + 1)} />
                     </Bounds>
                     <ContactShadows opacity={0.3} blur={2.5} scale={30} far={12} />
@@ -250,12 +250,6 @@ export function AssetInspector() {
                 </>
               </StageRoot>
             </StageBoundary>
-            {/* mode toggle */}
-            <div style={{ position: 'absolute', top: 10, right: 10, display: 'inline-flex', border: `1px solid ${T.line}`, borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
-              {[['health', 'Health'], ['realistic', 'Realistic']].map(([k, lbl]) => (
-                <button key={k} onClick={() => setMode(k)} style={{ fontSize: 12, fontWeight: 600, padding: '4px 10px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: mode === k ? T.accent : 'transparent', color: mode === k ? '#fff' : T.ink2 }}>{lbl}</button>
-              ))}
-            </div>
             {isolate && (
               <button onClick={() => setIsolate(null)} style={{ position: 'absolute', bottom: 10, left: 10, fontSize: 12, fontWeight: 600, fontFamily: 'inherit', padding: '4px 10px', borderRadius: 999, border: `1px solid ${T.line}`, background: '#fff', color: T.ink2, cursor: 'pointer' }}>All parts</button>
             )}
