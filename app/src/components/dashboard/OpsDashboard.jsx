@@ -10,7 +10,7 @@ import { ChartCard, SCurve, MiniSpark } from './Charts'
 import { useFeedStore } from '../CameraFeed'
 import { DashboardPreviewCard, PreviewBackdrop } from './DashboardPreview'
 import { ZoneAnalytics } from './ZoneAnalytics'
-import { VisionCard, CoalSizeWidget, VisionModal, VisionChip } from './VisionEvidence'
+import { VisionCard, CoalSizeWidget, VisionModal, VisionChip, useVision } from './VisionEvidence'
 import { T, ty, card, Unit, Delta, fmt, rel, STATUS, STATUS_WORD, SHADOW_MODAL, useDashSnapshot } from './tokens'
 
 const num = (o, k) => Number(o?.parameters?.[k])
@@ -86,45 +86,83 @@ function FlowStrip({ m, openZone }) {
   )
 }
 
-// ── use-case tile ──
-function UseTile({ tile, m, objects, alerts, onOpen }) {
-  const st = tileStatus(tile, m, objects, alerts)
-  const val = tile.value(m, objects)
-  const n = domainAlertCount(objects, [tile.tag], alerts)
-  const last = alerts.filter(a => a.useCase === tile.tag).map(a => a.since).sort((a, b) => b - a)[0]
-  const sub = n > 0 ? `${n} alert${n > 1 ? 's' : ''}${last ? ` · ${rel(last)}` : ''}` : (tile.detail(m, objects)[0] ? `${tile.detail(m, objects)[0].label} ${tile.detail(m, objects)[0].value}` : '')
-  return (
-    <button onClick={onOpen} style={{ ...card, height: 96, padding: 16, textAlign: 'left', cursor: 'pointer', font: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflow: 'hidden',
-      borderLeft: st === 'green' ? `1px solid ${T.line}` : `3px solid ${STATUS[st]}`, transition: 'border-color 300ms ease' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-        <span style={{ ...ty.cardTitle, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tile.title}</span>
-        {tile.vision && <VisionChip />}
-        {st !== 'green' && <span style={{ ...ty.label, marginLeft: 'auto', color: STATUS[st], fontWeight: 600 }}>{STATUS_WORD[st]}</span>}
-      </div>
-      <span style={ty.kpiM}>{val}{tile.unit ? <Unit>{tile.unit}</Unit> : null}</span>
-      <span style={{ ...ty.label, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</span>
-    </button>
-  )
+// ── use-case LEDGER (table) — no fixed heights, no absolute, no clipping ──
+const LEDGER = {
+  ops:     { full: 'Mine Operations Optimization', ctx: (m) => `${m.plan.deltaPct >= 0 ? '+' : ''}${m.plan.deltaPct.toFixed(1)}% vs plan` },
+  workers: { full: 'Real-Time Worker Monitoring',   ctx: 'personnel on site' },
+  prox:    { full: 'Collision & Proximity Safety',  ctx: 'closest approach' },
+  fleet:   { full: 'Fleet & Equipment Health',      ctx: 'units running' },
+  pdm:     { full: 'Predictive Maintenance',        ctx: 'lowest asset RUL' },
+  asset:   { full: 'Asset Performance',             ctx: 'worst vibration' },
+  prod:    { full: 'Production & Productivity',      ctx: (m) => `${m.plan.deltaPct >= 0 ? '+' : ''}${m.plan.deltaPct.toFixed(1)}% vs plan` },
+  energy:  { full: 'Energy & Sustainability',       ctx: 'specific energy' },
+  env:     { full: 'Environmental Compliance',      ctx: 'PM10 now' },
+  supply:  { full: 'Supply Chain & Logistics',      ctx: 'stock on ground' },
 }
-function Popover({ tile, m, objects, onView, onClose }) {
+
+function Drawer({ tile, m, objects, spark }) {
   const rows = tile.detail(m, objects)
-  const spark = tile.spark ? getParamHistory('dash', tile.spark) : []
   return (
-    <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />
-      <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 8, width: 360, zIndex: 50, ...card, boxShadow: SHADOW_MODAL, padding: 16, animation: 'popIn 150ms ease' }}>
-        <div style={{ ...ty.cardTitle, marginBottom: 8 }}>{tile.title}</div>
+    <div style={{ padding: '4px 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
         {rows.map((r, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'baseline', padding: '5px 0', borderTop: i ? `1px solid ${T.line}` : 'none' }}>
-            <span style={{ ...ty.body, color: T.ink2, flex: 1 }}>{r.label}{r.sub ? ` · ${r.sub}` : ''}</span>
-            <span style={{ ...ty.body, fontWeight: 600, color: r.status && r.status !== 'green' ? STATUS[r.status] : T.ink }}>{r.value}{r.unit ? <Unit>{r.unit}</Unit> : null}</span>
+          <div key={i} style={{ ...card, padding: 12 }}>
+            <div style={ty.label}>{r.label}{r.sub && r.sub !== '—' ? ` · ${r.sub}` : ''}</div>
+            <div style={{ ...ty.kpiM, fontSize: 18, color: r.status && r.status !== 'green' ? STATUS[r.status] : T.ink }}>{r.value}{r.unit ? <Unit>{r.unit}</Unit> : null}</div>
           </div>
         ))}
-        {spark.length >= 2 && <div style={{ marginTop: 10 }}><MiniSpark data={spark} w={328} h={36} /></div>}
-        {tile.vision === 'coal' ? <div style={{ marginTop: 12 }}><CoalSizeWidget compact /></div> : tile.vision ? <div style={{ marginTop: 12 }}><VisionCard id={tile.vision} /></div> : null}
-        <button onClick={onView} style={{ marginTop: 12, border: 'none', background: 'none', cursor: 'pointer', ...ty.body, fontWeight: 600, color: T.accent, padding: 0 }}>View in Twin →</button>
       </div>
-    </>
+      {spark.length >= 2 && <div style={{ ...card, padding: 12 }}><MiniSpark data={spark} w={640} h={48} /></div>}
+      {tile.vision === 'coal' ? <CoalSizeWidget /> : tile.vision ? <div style={{ maxWidth: 360 }}><VisionCard id={tile.vision} /></div> : null}
+    </div>
+  )
+}
+
+function LedgerRow({ tile, m, objects, alerts, expanded, onToggle, onView, first }) {
+  const st = tileStatus(tile, m, objects, alerts)
+  const val = tile.value(m, objects)
+  const meta = LEDGER[tile.id] || { full: tile.title, ctx: '' }
+  const ctx = typeof meta.ctx === 'function' ? meta.ctx(m, objects) : meta.ctx
+  const n = domainAlertCount(objects, [tile.tag], alerts)
+  const last = alerts.filter(a => a.useCase === tile.tag).map(a => a.since).sort((a, b) => b - a)[0]
+  const spark = tile.spark ? getParamHistory('dash', tile.spark) : []
+  const word = st === 'green' ? 'Normal' : STATUS_WORD[st]
+  const wc = st === 'green' ? T.ink2 : STATUS[st]
+  return (
+    <div style={{ borderTop: first ? 'none' : `1px solid ${T.line}`, borderLeft: st === 'green' ? '3px solid transparent' : `3px solid ${STATUS[st]}`, transition: 'border-color 300ms ease' }}>
+      <div onClick={onToggle} style={{ display: 'flex', alignItems: 'center', gap: 16, minHeight: 56, padding: '12px 16px', cursor: 'pointer' }}>
+        <span style={{ width: 84, flexShrink: 0, fontSize: 12, fontWeight: 600, color: wc }}>{word}</span>
+        <span style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 14, fontWeight: 550, color: T.ink }}>{meta.full}</span>
+          {tile.vision && <VisionChip />}
+        </span>
+        <span style={{ width: 150, flexShrink: 0, textAlign: 'right' }}>
+          <span style={ty.kpiM}>{val}{tile.unit ? <Unit>{tile.unit}</Unit> : null}</span>
+          <span style={{ display: 'block', ...ty.label }}>{ctx}</span>
+        </span>
+        <span style={{ width: 84, flexShrink: 0, display: 'flex', justifyContent: 'center' }}><MiniSpark data={spark} w={80} h={24} /></span>
+        <span style={{ width: 96, flexShrink: 0, ...ty.label }}>{n > 0 ? `${n} alert${n > 1 ? 's' : ''}${last ? ` · ${rel(last)}` : ''}` : '—'}</span>
+        <span style={{ width: 100, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+          <button onClick={(e) => { e.stopPropagation(); onView() }} style={{ ...ty.label, color: T.accent, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>View in Twin →</button>
+          {tile.vision && <button onClick={(e) => { e.stopPropagation(); useVision.getState().show(tile.vision) }} style={{ ...ty.label, color: T.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Evidence</button>}
+        </span>
+      </div>
+      {expanded && <Drawer tile={tile} m={m} objects={objects} spark={spark} />}
+    </div>
+  )
+}
+
+function Ledger({ m, objects, alerts, expanded, setExpanded, dash }) {
+  return (
+    <div style={{ ...card, gridColumn: 'span 9', minWidth: 0, alignSelf: 'start' }}>
+      <div style={{ ...ty.cardTitle, padding: '16px 16px 4px' }}>Monitoring Use Cases</div>
+      {TILES.map((tile, i) => (
+        <LedgerRow key={tile.id} tile={tile} m={m} objects={objects} alerts={alerts} first={i === 0}
+          expanded={expanded === tile.id}
+          onToggle={() => setExpanded(expanded === tile.id ? null : tile.id)}
+          onView={() => { dash.openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(tile.focus), 90) }} />
+      ))}
+    </div>
   )
 }
 
@@ -134,13 +172,13 @@ function AlertFeed({ objects, alerts }) {
   const ordered = [...crit, ...warn].slice(0, 8)
   const openTwin = useDashboard(s => s.openTwin)
   return (
-    <div style={{ ...card, gridColumn: 'span 3', minWidth: 0, height: '100%', padding: 16, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+    <div style={{ ...card, gridColumn: 'span 3', minWidth: 0, alignSelf: 'start', padding: 16, display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
         <span style={ty.cardTitle}>Live Alerts</span>
         <span style={{ ...ty.kpiM, fontSize: 16, marginLeft: 'auto' }}>{alerts.length}</span>
       </div>
       {alerts.length === 0 && <div style={{ flex: 1, display: 'grid', placeItems: 'center', ...ty.label }}>All clear</div>}
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {ordered.map(a => (
           <button key={a.key} onClick={() => { openTwin(); useSceneStore.getState().selectObject(a.objId); setTimeout(() => { useSceneStore.getState().flyToObject(a.objId); if (objects[a.objId]?.config?.watch) useFeedStore.getState().openFeed(a.objId) }, 80) }}
             style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', background: 'none', border: 'none', padding: '8px 0', borderTop: `1px solid ${T.line}`, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -162,12 +200,12 @@ export function OpsDashboard() {
   const subTab = useDashboard(s => s.subTab)
   const snap = useDashSnapshot()
   const { objects, model: m, alerts } = snap
-  const [open, setOpen] = useState(null)
+  const [expanded, setExpanded] = useState(null)
   useEffect(() => {
-    if (!open) return
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(null) }
+    if (!expanded) return
+    const onKey = (e) => { if (e.key === 'Escape') setExpanded(null) }
     window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+  }, [expanded])
   const curve = productionCurve(objects)
 
   return (
@@ -175,7 +213,6 @@ export function OpsDashboard() {
       <style>{`@keyframes flowdrift{to{stroke-dashoffset:-8}} .flowdash{animation:flowdrift 1.4s linear infinite} @keyframes popIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}`}</style>
       {subTab === 'overview' && <PreviewBackdrop />}
       <VisionModal />
-      <div style={{ position: 'fixed', right: 8, bottom: 6, zIndex: 60, fontSize: 10, color: '#98A2B3', pointerEvents: 'none', fontFamily: T.font }}>build r3 · grid-safe</div>
       <div style={{ position: 'relative', zIndex: 1 }}><TopBar dash={dash} /></div>
       {subTab === 'zones' ? <ZoneAnalytics /> : (
         <>
@@ -203,17 +240,9 @@ export function OpsDashboard() {
               </Grid>
               {/* ROW B */}
               <Grid><FlowStrip m={m} openZone={dash.openZone} /></Grid>
-              {/* ROW C */}
-              <Grid style={{ height: 208 }}>
-                <div style={{ gridColumn: 'span 9', minWidth: 0, height: '100%', display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gridAutoRows: 96, gap: 16 }}>
-                  {TILES.map(tile => (
-                    <div key={tile.id} style={{ position: 'relative' }}>
-                      <UseTile tile={tile} m={m} objects={objects} alerts={alerts} onOpen={() => setOpen(open === tile.id ? null : tile.id)} />
-                      {open === tile.id && <Popover tile={tile} m={m} objects={objects} onClose={() => setOpen(null)}
-                        onView={() => { setOpen(null); dash.openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(tile.focus), 90) }} />}
-                    </div>
-                  ))}
-                </div>
+              {/* ROW C — use-case ledger + alert rail (auto-height, no overlap by construction) */}
+              <Grid style={{ alignItems: 'start' }}>
+                <Ledger m={m} objects={objects} alerts={alerts} expanded={expanded} setExpanded={setExpanded} dash={dash} />
                 <AlertFeed objects={objects} alerts={alerts} />
               </Grid>
             </div>
