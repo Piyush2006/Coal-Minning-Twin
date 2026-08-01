@@ -1676,6 +1676,8 @@ function DevFreezeHook() {
         const out = []
         three.scene.traverse((n) => {
           if (!n.isMesh) return
+          // walking workers: gait phase is RNG-order/float-accumulation volatile
+          for (let a = n; a; a = a.parent) if (a.name && a.name.startsWith('worker-')) return
           const m = Array.isArray(n.material) ? n.material[0] : n.material
           const nm = n.name || n.parent?.name || '?'
           // Unnamed meshes are helper/overlay visuals (alert rings, beacons,
