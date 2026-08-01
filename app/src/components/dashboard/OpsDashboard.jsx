@@ -433,7 +433,9 @@ export function OpsDashboard() {
               <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}><SCurve actual={curve.actual} plan={curve.plan} /></div>
             </div>
             <div style={{ minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
-              <div className="panel-in" style={{ flexShrink: 0, animationDelay: '60ms' }}><DashboardPreviewCard onOpen={dash.openTwin} label="Enter Twin" /></div>
+              <div className="panel-in" style={{ flexShrink: 0, height: 'clamp(160px, 48%, 338px)', position: 'relative', borderRadius: 12, border: `1px solid ${T.line}`, boxShadow: '0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)', overflow: 'hidden', animationDelay: '60ms' }}>
+                <DashboardPreviewCard onOpen={dash.openTwin} label="Enter Twin" fill />
+              </div>
               <AssetHealthRail objects={objects} alerts={alerts} dash={dash} />
             </div>
             <div className="panel-in" style={{ gridColumn: '1 / -1', minWidth: 0, animationDelay: '180ms' }}><FlowStrip m={m} openZone={dash.openZone} /></div>
