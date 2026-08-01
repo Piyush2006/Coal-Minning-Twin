@@ -74,7 +74,10 @@ function StageAsset({ obj, typeDef, bandBySub, isolate, singleBody, registryRef,
   if (!Comp) return null
   return (
     <group ref={groupRef}>
-      <Comp typeDef={typeDef} config={obj.config || {}} status={obj.status || 'running'} objId={obj.id} />
+      {/* status "idle" freezes every part animation (spins/bobs/sweeps/smoke
+          all gate on status === 'running') — a pure static exhibit; the user
+          orbits it manually */}
+      <Comp typeDef={typeDef} config={obj.config || {}} status="idle" objId={obj.id} />
     </group>
   )
 }
