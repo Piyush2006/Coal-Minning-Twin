@@ -22,7 +22,7 @@ export function VisionCard({ id }) {
   const show = useVision(s => s.show)
   if (!item) return null
   return (
-    <button onClick={() => show(id)} style={{ width: '100%', textAlign: 'left', cursor: 'pointer', font: 'inherit', padding: 0, border: `1px solid ${C.line}`, borderRadius: R.md, overflow: 'hidden', background: C.surface }}>
+    <button onClick={() => show(id)} style={{ width: '100%', textAlign: 'left', cursor: 'pointer', font: 'inherit', padding: 0, border: '1px solid #EAECF0', borderRadius: 12, overflow: 'hidden', background: '#fff', boxShadow: '0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)' }}>
       <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', background: item.kind === 'image' ? '#0d1016' : 'linear-gradient(135deg,#1b2430,#0d1016)' }}>
         {item.kind === 'image'
           ? <img src={item.src} alt={item.caption} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -48,7 +48,7 @@ export function CoalSizeWidget({ compact = false }) {
   const peak = Math.max(1, ...classes.map(c => c.value))
   const cell = { fontSize: 15, fontWeight: 700, color: C.text, fontVariantNumeric: 'tabular-nums' }
   return (
-    <div style={{ border: `1px solid ${C.line}`, borderRadius: R.lg, background: C.surface, padding: 14 }}>
+    <div style={{ border: '1px solid #EAECF0', borderRadius: 12, background: '#fff', padding: 20, boxShadow: '0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
         <VisionChip />
         <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Coal Size Analysis — AI Vision</span>

@@ -1,13 +1,13 @@
 // Dashboard charts — accent-only, titled, axis-labelled, per the design spec.
 // A ChartCard wraps every chart: CardTitle top-left, current value KPI-M
 // top-right, then the SVG with three #F2F4F7 gridlines and 12px axis labels.
-import { T, ty, fmt, Unit } from './tokens'
+import { T, ty, fmt, Unit, SHADOW_CARD } from './tokens'
 
 const W = 320
 
 export function ChartCard({ title, value, unit, height = '100%', children }) {
   return (
-    <div style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: T.radius, padding: 16, height, minHeight: 0, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+    <div className="panel-in" style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: T.radius, boxShadow: SHADOW_CARD, padding: 20, height, minHeight: 0, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 12 }}>
         <span style={ty.cardTitle}>{title}</span>
         {value != null && <span style={{ ...ty.kpiM, marginLeft: 'auto' }}>{value}{unit ? <Unit>{unit}</Unit> : null}</span>}
@@ -123,7 +123,7 @@ export function MiniSpark({ data = [], w = 40, h = 16, step = false }) {
   const pts = step
     ? src.map((v, i) => (i === 0 ? `${X(0)},${Y(v).toFixed(1)}` : `${X(i).toFixed(1)},${Y(src[i - 1]).toFixed(1)} ${X(i).toFixed(1)},${Y(v).toFixed(1)}`)).join(' ')
     : src.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')
-  return <svg width={w} height={h} style={{ display: 'block' }}><polyline points={pts} fill="none" stroke={T.accent} strokeWidth="1.3" strokeLinejoin="round" /></svg>
+  return <svg width={w} height={h} style={{ display: 'block' }}><polyline className="spark-draw" pathLength="1" points={pts} fill="none" stroke={T.accent} strokeOpacity="0.9" strokeWidth="1.5" strokeLinejoin="round" /></svg>
 }
 
 // compare bars — accent, non-green zones use their status colour

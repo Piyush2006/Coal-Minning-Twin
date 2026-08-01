@@ -66,12 +66,12 @@ export function DashboardPreviewCard({ onOpen, label = 'Open 3D Twin', fill = fa
       ref={el => setEl(el)}
       style={fill
         ? { position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', overflow: 'hidden', background: 'transparent', cursor: 'pointer', padding: 0 }
-        : { position: 'relative', width: '100%', aspectRatio: '16 / 9', border: `1px solid ${C.line}`, borderRadius: R.lg, overflow: 'hidden', background: 'transparent', cursor: 'pointer', padding: 0 }}>
+        : { position: 'relative', width: '100%', aspectRatio: '16 / 9', border: '1px solid #EAECF0', borderRadius: 12, overflow: 'hidden', background: 'transparent', cursor: 'pointer', padding: 0, boxShadow: '0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)' }}>
       {/* chrome only — the 3D shows THROUGH the transparent background */}
       <span style={{ position: 'absolute', top: 10, left: 10, display: 'inline-flex', alignItems: 'center', gap: 6,
         fontFamily: 'inherit', fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, color: '#fff',
         background: 'rgba(10,12,16,0.55)', borderRadius: R.pill, padding: '3px 9px', pointerEvents: 'none' }}>
-        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34c759' }} />LIVE
+        <span className="breathe" style={{ width: 7, height: 7, borderRadius: '50%', background: '#12B76A' }} />LIVE
       </span>
       <span style={{ position: 'absolute', bottom: 10, right: 12, fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
         color: '#fff', background: 'rgba(10,12,16,0.55)', borderRadius: 999, padding: '3px 10px', pointerEvents: 'none' }}>{label} →</span>

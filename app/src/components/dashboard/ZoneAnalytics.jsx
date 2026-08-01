@@ -9,7 +9,7 @@ import {
 import { zoneSeries, zoneAlertEvents, zoneDowntimeMin } from '../../lib/zoneHistory'
 import { ChartCard, TrendChart, AlertTimeline, CompareBars } from './Charts'
 import { CoalSizeWidget } from './VisionEvidence'
-import { T, ty, card, Unit, Delta, fmt, STATUS, STATUS_WORD, useDashSnapshot } from './tokens'
+import { T, ty, card, Unit, Delta, fmt, STATUS, STATUS_WORD, useDashSnapshot, linkStyle } from './tokens'
 
 const Grid = ({ children, style }) => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 16, ...style }}>{children}</div>
 const nomOut = { pit: NOM.romExPit, proc: NOM.chppFeed, yard: NOM.product, rail: NOM.railOut, port: NOM.shipLoad, power: NOM.powerBurn }
@@ -66,9 +66,9 @@ export function ZoneAnalytics() {
   const cmpRows = ZONES.map(z => ({ id: z.id, name: z.name, status: zoneStatus(objects, z, alerts), value: cmp.get(objects, z, alerts), onClick: () => { dash.setCompare(false); dash.setZone(z.id) } }))
 
   return (
-    <div style={{ height: '100%', minHeight: 0, display: 'grid', gridTemplateRows: 'auto auto minmax(0,1fr)', gap: 12, padding: 16 }}>
+    <div style={{ height: '100%', minHeight: 0, display: 'grid', gridTemplateRows: 'auto auto minmax(0,1fr)', gap: 20, padding: 24 }}>
       {/* zone strip — card row, natural height */}
-      <div style={{ ...card, display: 'flex', alignItems: 'stretch' }}>
+      <div className="panel-in" style={{ ...card, display: 'flex', alignItems: 'stretch' }}>
         {ZONES.map((z, i) => <ZoneStripBlock key={z.id} zone={z} objects={objects} alerts={alerts} active={!compare && z.id === zoneId} onSelect={() => { dash.setCompare(false); dash.setZone(z.id) }} last={i === ZONES.length - 1} />)}
       </div>
       {/* mode + metric selector */}
@@ -84,15 +84,15 @@ export function ZoneAnalytics() {
         </div>}
       </div>
       {compare ? (
-        <div style={{ ...card, minHeight: 0, padding: 16, display: 'flex', flexDirection: 'column' }}>
+        <div className="panel-in" style={{ ...card, minHeight: 0, padding: 20, display: 'flex', flexDirection: 'column' }}>
           <div style={{ ...ty.cardTitle, marginBottom: 16, flexShrink: 0 }}>{cmp.label} by zone{cmp.unit ? ` (${cmp.unit})` : ''}</div>
           <div className="dash-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}><CompareBars rows={cmpRows} unit={cmp.unit} /></div>
         </div>
       ) : (
-        <div style={{ minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', gap: 16 }}>
-          <div style={{ minHeight: 0, display: 'grid', gridTemplateRows: 'auto minmax(0,1fr)', gap: 16 }}>
+        <div style={{ minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', gap: 24 }}>
+          <div style={{ minHeight: 0, display: 'grid', gridTemplateRows: 'auto minmax(0,1fr)', gap: 24 }}>
             {/* KPI row — 6 stat blocks, natural height */}
-            <div style={{ ...card, display: 'flex', alignItems: 'stretch', padding: '10px 0' }}>
+            <div className="panel-in" style={{ ...card, display: 'flex', alignItems: 'stretch', padding: '12px 0', animationDelay: '60ms' }}>
               <StatBlock label="Throughput out" value={fmt(t.out)} unit="t/h" sub={<Delta pct={deltaPct(t.out, no)} suffix="vs nom" />} />
               <StatBlock label="Utilization" value={util} unit="%" sub={<Delta pct={deltaPct(util, 88)} suffix="vs target" />} />
               <StatBlock label="Active alerts" value={za.list.length} dot={za.crit ? STATUS.red : za.warn ? STATUS.amber : null} />
@@ -101,17 +101,17 @@ export function ZoneAnalytics() {
               <StatBlock label="Workers" value={zoneWorkers(objects, zone)} last />
             </div>
             {/* three chart cards fill the remaining height */}
-            <div style={{ minHeight: 0, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16 }}>
+            <div style={{ minHeight: 0, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 24 }}>
               <ChartCard title="Throughput · 60 min" value={fmt(t.out)} unit="t/h"><TrendChart data={zoneSeries(zone.id, 'tout')} band={no ? [no * 0.92, no] : null} /></ChartCard>
               <ChartCard title="Alerts · 60 min" value={za.list.length}><AlertTimeline events={zoneAlertEvents(zone.id)} /></ChartCard>
               <ChartCard title="Utilization · 60 min" value={util} unit="%"><TrendChart data={zoneSeries(zone.id, 'util')} band={[82, 96]} /></ChartCard>
             </div>
           </div>
           {/* right column: issues + evidence + machines (machines absorbs overflow) */}
-          <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ ...card, padding: 16, flexShrink: 0 }}>
+          <div style={{ minHeight: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div className="panel-in" style={{ ...card, padding: 20, flexShrink: 0, animationDelay: '120ms' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}><span style={ty.cardTitle}>Top Issues</span>
-                <button onClick={() => { dash.openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(zone.focus), 90) }} style={{ marginLeft: 'auto', border: 'none', background: 'none', cursor: 'pointer', ...ty.body, fontWeight: 600, color: T.accent, padding: 0 }}>View in Twin →</button></div>
+                <button onClick={() => { dash.openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(zone.focus), 90) }} className="link-twin" style={{ ...linkStyle, marginLeft: 'auto' }}>View in Twin →</button></div>
               {problems.length === 0 && <span style={ty.label}>No issues in this zone</span>}
               {problems.map((o, i) => { const hp = assetHeadlineParam(o), st = assetStatus(o); return (
                 <button key={o.id} onClick={() => selectAsset(o.id)} style={{ width: '100%', textAlign: 'left', cursor: 'pointer', font: 'inherit', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', border: 'none', borderTop: i ? `1px solid ${T.line}` : 'none', background: 'none' }}>
@@ -122,7 +122,7 @@ export function ZoneAnalytics() {
               ) })}
             </div>
             {zone.id === 'proc' && <div style={{ flexShrink: 0 }}><CoalSizeWidget compact /></div>}
-            <div style={{ ...card, padding: 16, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            <div className="panel-in" style={{ ...card, padding: 20, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', animationDelay: '180ms' }}>
               <div style={{ ...ty.cardTitle, marginBottom: 8, flexShrink: 0 }}>Machines ({assets.length})</div>
               <div className="dash-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                 {assets.map(o => { const st = assetStatus(o); return (
