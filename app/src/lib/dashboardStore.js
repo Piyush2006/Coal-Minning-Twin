@@ -15,6 +15,9 @@ export const useDashboard = create((set) => ({
   setZone: (zone) => set({ zone }),
   compare: false, cmpMetric: 'alerts',
   setCompare: (compare) => set({ compare }),
+  inspectorAssetId: null,
+  openAssetInspector: (inspectorAssetId) => { console.info('[dashboard] inspect asset', inspectorAssetId); set({ inspectorAssetId }) },
+  closeAssetInspector: () => set({ inspectorAssetId: null }),
   setCmpMetric: (cmpMetric) => set({ cmpMetric }),
   enabled: false,                     // scene has a dashboard config
   setEnabled: (enabled, landOnDashboard) => set({ enabled, mode: enabled && landOnDashboard ? 'dashboard' : 'twin' }),

@@ -6,12 +6,15 @@ import { useDashboard } from '../../lib/dashboardStore'
 import { productionCurve } from '../../lib/mineModel'
 import { TILES, overallStatus, rowAlertsFor } from '../../lib/dashboardConfig'
 import { getParamHistory } from '../../lib/paramHistory'
+import { assetHealthModel } from '../../lib/assetHealth'
+import { assetHeadlineParam } from '../../lib/zones'
+import { motion } from 'framer-motion'
 import { ChartCard, SCurve, MiniSpark } from './Charts'
 import { useFeedStore } from '../CameraFeed'
 import { DashboardPreviewCard, PreviewBackdrop } from './DashboardPreview'
 import { ZoneAnalytics } from './ZoneAnalytics'
 import { VisionCard, CoalSizeWidget, VisionModal, VisionChip, useVision } from './VisionEvidence'
-import { T, ty, card, Unit, PlanDelta, fmt, rel, STATUS, STATUS_WORD, useDashSnapshot, NumberFlow, linkStyle } from './tokens'
+import { T, ty, card, Unit, PlanDelta, fmt, rel, STATUS, STATUS_WORD, useDashSnapshot, NumberFlow, linkStyle, REDUCED_MOTION } from './tokens'
 
 const num = (o, k) => Number(o?.parameters?.[k])
 const Grid = ({ children, style }) => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 16, ...style }}>{children}</div>
@@ -254,40 +257,92 @@ function AlertFeed({ objects, alerts }) {
   )
 }
 
-// compact rail (Overview tab) — renders only as many WHOLE items as fit the
-// measured height; footer switches to the Monitoring tab
-function CompactAlertRail({ objects, alerts }) {
-  const setTab = useDashboard(s => s.setActiveTab)
-  const boxRef = useRef(null)
-  const [fit, setFit] = useState(3)
+// ── asset health rail (Overview) — monitored equipment ranked worst-first,
+// health seeded per asset and banded by its ACTIVE alerts (same single source
+// as the status rings); camera detections attach to the belt they watch.
+const BAND_RANK = { red: 0, amber: 1, green: 2 }
+const BAND_COLOR = { red: T.bad, amber: T.warn, green: T.good }
+
+function HealthRing({ health, band, halo }) {
+  const R = 12.5, C = 2 * Math.PI * R
+  const [on, setOn] = useState(REDUCED_MOTION)
+  useEffect(() => { if (!REDUCED_MOTION) { const id = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(id) } }, [])
+  return (
+    <span className={halo ? 'ring-halo' : undefined} style={{ position: 'relative', width: 28, height: 28, flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: '50%' }}>
+      <svg width="28" height="28" viewBox="0 0 28 28" style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }} aria-hidden>
+        <circle cx="14" cy="14" r={R} fill="none" stroke="#EAECF0" strokeWidth="3" />
+        <circle cx="14" cy="14" r={R} fill="none" stroke={BAND_COLOR[band]} strokeWidth="3" strokeLinecap="round"
+          strokeDasharray={C.toFixed(2)} strokeDashoffset={(C * (1 - (on ? health / 100 : 0))).toFixed(2)}
+          style={{ transition: REDUCED_MOTION ? 'none' : 'stroke-dashoffset 600ms ease-out, stroke 300ms ease' }} />
+      </svg>
+      <span style={{ fontSize: 9, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: T.ink }}><NumberFlow value={health} format={(v) => String(Math.round(v))} /></span>
+    </span>
+  )
+}
+
+function AssetRow({ row, objects, onOpen }) {
+  const prevBand = useRef(row.band)
+  const [pulse, setPulse] = useState(null)
   useEffect(() => {
-    const el = boxRef.current
-    if (!el) return
-    const measure = () => {
-      const hs = [...el.children].map(c => c.offsetHeight).filter(Boolean)
-      const ih = hs.length ? Math.max(...hs) : 54
-      setFit(Math.max(1, Math.floor(el.clientHeight / ih)))
+    if (BAND_RANK[row.band] < BAND_RANK[prevBand.current] && !REDUCED_MOTION) {
+      setPulse(row.band === 'red' ? 'critical' : 'warn')
+      const t = setTimeout(() => setPulse(null), 1900)
+      prevBand.current = row.band
+      return () => clearTimeout(t)
     }
-    const ro = new ResizeObserver(measure)
-    ro.observe(el); measure()
-    return () => ro.disconnect()
-  }, [])
-  const crit = alerts.filter(a => a.severity === 'critical'), warn = alerts.filter(a => a.severity === 'warn')
-  const ordered = [...crit, ...warn]
-  const shown = ordered.slice(0, fit)
+    prevBand.current = row.band
+  }, [row.band])
+  let subtitle
+  if (row.worst) {
+    subtitle = `${row.worst.message}${row.worst.cam ? ` (${row.worst.cam})` : ''} · ${rel(row.worst.since)}`
+  } else {
+    const hp = assetHeadlineParam(objects[row.id])
+    subtitle = hp ? `${hp.label} ${Math.round(+hp.value * 10) / 10}${hp.unit ? ` ${hp.unit}` : ''}` : 'Nominal'
+  }
+  return (
+    <div onClick={onOpen} className={`row-hover asset-row${pulse ? ` row-pulse-${pulse}` : ''}`}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 48, padding: '12px 4px', borderTop: '1px solid #F2F4F7', cursor: 'pointer' }}>
+      <HealthRing health={row.health} band={row.band} halo={row.band === 'red'} />
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: T.ink, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</span>
+        <span style={{ fontSize: 12, fontWeight: 400, color: T.ink2, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitle}</span>
+      </span>
+      <span className="node-arrow" style={{ fontSize: 13, color: T.accent, flexShrink: 0 }}>→</span>
+    </div>
+  )
+}
+
+function AssetHealthRail({ objects, alerts, dash }) {
+  const { rows, counts } = assetHealthModel(objects, alerts)
+  const total = rows.length
+  const firstGreen = rows.findIndex(r2 => r2.band === 'green')
+  const Wrap = REDUCED_MOTION ? 'div' : motion.div
+  const wrapProps = REDUCED_MOTION ? {} : { layout: true, transition: { duration: 0.25, ease: 'easeOut' } }
+  const seg = (n, color, dim) => (n > 0 ? <span style={{ flex: n, minWidth: 8, background: color, opacity: dim ? 0.45 : 1 }} /> : null)
   return (
     <div className="panel-in" style={{ ...card, minWidth: 0, minHeight: 0, flex: 1, padding: '14px 20px', display: 'flex', flexDirection: 'column', animationDelay: '120ms' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, flexShrink: 0 }}>
-        <span style={ty.cardTitle}>Live Alerts</span>
-        <span style={{ ...ty.kpiM, fontSize: 16, marginLeft: 'auto' }}>{alerts.length}</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10, flexShrink: 0 }}>
+        <span style={ty.cardTitle}>Asset Health</span>
+        <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 500, color: T.ink2 }}>{total} assets</span>
       </div>
-      {alerts.length === 0 && <div style={{ flex: 1, display: 'grid', placeItems: 'center', ...ty.label }}>All clear</div>}
-      <div ref={boxRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-        {shown.map(a => <AlertRowBtn key={a.key} a={a} objects={objects} />)}
+      <div style={{ flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 2, height: 6, borderRadius: 3, overflow: 'hidden' }}>
+          {seg(counts.red, T.bad)}{seg(counts.amber, T.warn)}{seg(counts.green, T.good, true)}
+        </div>
+        <div style={{ fontSize: 12, color: T.ink2, margin: '6px 0 4px' }}>{counts.red} critical · {counts.amber} attention · {counts.green} healthy</div>
       </div>
-      {alerts.length > 0 && (
-        <button onClick={() => setTab('monitoring')} style={{ ...ty.label, color: T.accent, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 0 0', textAlign: 'left', flexShrink: 0, borderTop: `1px solid ${T.line}` }}>View all ({alerts.length}) →</button>
-      )}
+      <div className="dash-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+        {rows.map((row, i) => (
+          <Fragment key={row.id}>
+            {i === firstGreen && firstGreen > 0 && (
+              <Wrap {...wrapProps} key="__healthy" style={{ padding: '10px 4px 2px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', color: '#98A2B3' }}>Healthy — {counts.green}</Wrap>
+            )}
+            <Wrap {...wrapProps}>
+              <AssetRow row={row} objects={objects} onOpen={() => dash.openAssetInspector(row.id)} />
+            </Wrap>
+          </Fragment>
+        ))}
+      </div>
     </div>
   )
 }
@@ -340,7 +395,7 @@ export function OpsDashboard() {
         .flow-node{cursor:pointer;transition:border-color 150ms ease, box-shadow 150ms ease}
         .flow-node:hover{border-color:#DDE1E8 !important;box-shadow:0 4px 12px rgba(16,24,40,.08),0 2px 4px rgba(16,24,40,.04)}
         .node-arrow{opacity:0;transition:opacity 150ms ease}
-        .flow-node:hover .node-arrow{opacity:1}
+        .flow-node:hover .node-arrow{opacity:1} .asset-row:hover .node-arrow{opacity:1}
         .flow-dot{display:none;position:absolute;left:2px;top:5.5px;width:5px;height:5px;border-radius:50%;background:rgba(52,64,84,.85)}
         .rej-dot{display:none;position:absolute;left:-1px;top:0;width:4px;height:4px;border-radius:50%;background:#98A2B3}
         @media (prefers-reduced-motion: no-preference){
@@ -364,6 +419,10 @@ export function OpsDashboard() {
           .rej-dot{display:block;animation:rejDot 1.8s linear infinite}
           @keyframes portHalo{0%{box-shadow:0 0 0 0 rgba(247,144,9,.18)}50%{box-shadow:0 0 0 6px rgba(247,144,9,.18)}100%{box-shadow:0 0 0 0 rgba(247,144,9,0)}}
           .port-halo{animation:portHalo 2s ease-in-out infinite}
+          @keyframes ringHalo{0%,100%{box-shadow:0 0 0 0 rgba(240,68,56,0)}50%{box-shadow:0 0 0 6px rgba(240,68,56,.15)}}
+          .ring-halo{animation:ringHalo 2s ease-in-out infinite}
+          .row-pulse-critical{animation:pulseCrit 675ms ease-in-out 2;border-radius:8px}
+          .row-pulse-warn{animation:pulseWarn 675ms ease-in-out 2;border-radius:8px}
         }
       `}</style>
       {activeTab === 'overview' && <PreviewBackdrop />}
@@ -387,7 +446,7 @@ export function OpsDashboard() {
             </div>
             <div style={{ minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
               <div className="panel-in" style={{ flexShrink: 0, animationDelay: '60ms' }}><DashboardPreviewCard onOpen={dash.openTwin} label="Enter Twin" /></div>
-              <CompactAlertRail objects={objects} alerts={alerts} />
+              <AssetHealthRail objects={objects} alerts={alerts} dash={dash} />
             </div>
             <div className="panel-in" style={{ gridColumn: '1 / -1', minWidth: 0, animationDelay: '180ms' }}><FlowStrip m={m} openZone={dash.openZone} /></div>
           </div>
