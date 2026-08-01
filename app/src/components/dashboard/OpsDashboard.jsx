@@ -147,7 +147,7 @@ function AlertFeed({ objects, alerts }) {
             <span style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: a.severity === 'critical' ? T.bad : T.warn }} />
             <span style={{ minWidth: 0 }}>
               <span style={{ ...ty.body, fontWeight: 600, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.asset}</span>
-              <span style={{ ...ty.label, display: 'block', lineHeight: 1.35 }}>{a.message} · {rel(a.since)}</span>
+              <span style={{ ...ty.label, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.3 }}>{a.message} · {rel(a.since)}</span>
             </span>
           </button>
         ))}
