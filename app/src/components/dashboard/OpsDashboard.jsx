@@ -14,7 +14,7 @@ import { VisionCard, CoalSizeWidget, VisionModal, VisionChip } from './VisionEvi
 import { T, ty, card, Unit, Delta, fmt, rel, STATUS, STATUS_WORD, SHADOW_MODAL, useDashSnapshot } from './tokens'
 
 const num = (o, k) => Number(o?.parameters?.[k])
-const Grid = ({ children, style }) => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12,1fr)', gap: 16, ...style }}>{children}</div>
+const Grid = ({ children, style }) => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 16, ...style }}>{children}</div>
 
 // ── top bar (56) ──
 function TopBar({ dash }) {
@@ -62,7 +62,7 @@ function GlanceRow({ m, objects, alerts }) {
 // ── flow strip (128) ──
 function FlowStrip({ m, openZone }) {
   return (
-    <div style={{ ...card, gridColumn: 'span 12', height: 128, padding: 16, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ ...card, gridColumn: 'span 12', minWidth: 0, height: 128, padding: 16, display: 'flex', flexDirection: 'column' }}>
       <span style={ty.cardTitle}>Material Flow · pit → port</span>
       <div style={{ flex: 1, display: 'flex', alignItems: 'stretch', gap: 0, marginTop: 8 }}>
         {m.stages.map((st, i) => {
@@ -134,7 +134,7 @@ function AlertFeed({ objects, alerts }) {
   const ordered = [...crit, ...warn].slice(0, 8)
   const openTwin = useDashboard(s => s.openTwin)
   return (
-    <div style={{ ...card, gridColumn: 'span 3', height: '100%', padding: 16, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+    <div style={{ ...card, gridColumn: 'span 3', minWidth: 0, height: '100%', padding: 16, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
         <span style={ty.cardTitle}>Live Alerts</span>
         <span style={{ ...ty.kpiM, fontSize: 16, marginLeft: 'auto' }}>{alerts.length}</span>
@@ -175,6 +175,7 @@ export function OpsDashboard() {
       <style>{`@keyframes flowdrift{to{stroke-dashoffset:-8}} .flowdash{animation:flowdrift 1.4s linear infinite} @keyframes popIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}`}</style>
       {subTab === 'overview' && <PreviewBackdrop />}
       <VisionModal />
+      <div style={{ position: 'fixed', right: 8, bottom: 6, zIndex: 60, fontSize: 10, color: '#98A2B3', pointerEvents: 'none', fontFamily: T.font }}>build r3 · grid-safe</div>
       <div style={{ position: 'relative', zIndex: 1 }}><TopBar dash={dash} /></div>
       {subTab === 'zones' ? <ZoneAnalytics /> : (
         <>
@@ -183,7 +184,7 @@ export function OpsDashboard() {
             <div style={{ maxWidth: 1600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {/* ROW A */}
               <Grid>
-                <div style={{ ...card, gridColumn: 'span 8', height: 340, padding: 16, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ ...card, gridColumn: 'span 8', minWidth: 0, height: 340, padding: 16, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
                     <span style={ty.cardTitle}>Production vs Plan</span>
                     <Delta pct={m.plan.deltaPct} />
@@ -194,7 +195,7 @@ export function OpsDashboard() {
                   </div>
                   <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}><SCurve actual={curve.actual} plan={curve.plan} /></div>
                 </div>
-                <div style={{ gridColumn: 'span 4', height: 340 }}>
+                <div style={{ gridColumn: 'span 4', minWidth: 0, height: 340 }}>
                   <div style={{ ...card, height: '100%', background: 'transparent', overflow: 'hidden', position: 'relative' }}>
                     <DashboardPreviewCard onOpen={dash.openTwin} label="Enter Twin" fill />
                   </div>
@@ -204,7 +205,7 @@ export function OpsDashboard() {
               <Grid><FlowStrip m={m} openZone={dash.openZone} /></Grid>
               {/* ROW C */}
               <Grid style={{ height: 208 }}>
-                <div style={{ gridColumn: 'span 9', height: '100%', display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gridAutoRows: 96, gap: 16 }}>
+                <div style={{ gridColumn: 'span 9', minWidth: 0, height: '100%', display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gridAutoRows: 96, gap: 16 }}>
                   {TILES.map(tile => (
                     <div key={tile.id} style={{ position: 'relative' }}>
                       <UseTile tile={tile} m={m} objects={objects} alerts={alerts} onOpen={() => setOpen(open === tile.id ? null : tile.id)} />

@@ -11,7 +11,7 @@ import { ChartCard, TrendChart, AlertTimeline, CompareBars } from './Charts'
 import { CoalSizeWidget } from './VisionEvidence'
 import { T, ty, card, Unit, Delta, fmt, STATUS, STATUS_WORD, useDashSnapshot } from './tokens'
 
-const Grid = ({ children, style }) => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12,1fr)', gap: 16, ...style }}>{children}</div>
+const Grid = ({ children, style }) => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 16, ...style }}>{children}</div>
 const nomOut = { pit: NOM.romExPit, proc: NOM.chppFeed, yard: NOM.product, rail: NOM.railOut, port: NOM.shipLoad, power: NOM.powerBurn }
 const deltaPct = (v, nom) => (nom ? ((v - nom) / nom) * 100 : null)
 
@@ -105,13 +105,13 @@ export function ZoneAnalytics() {
               </div>
               {/* three chart cards */}
               <Grid>
-                <div style={{ gridColumn: 'span 4' }}><ChartCard title="Throughput · 60 min" value={fmt(t.out)} unit="t/h" height={280}><TrendChart data={zoneSeries(zone.id, 'tout')} band={no ? [no * 0.92, no] : null} /></ChartCard></div>
-                <div style={{ gridColumn: 'span 4' }}><ChartCard title="Alerts · 60 min" value={za.list.length} height={280}><AlertTimeline events={zoneAlertEvents(zone.id)} /></ChartCard></div>
-                <div style={{ gridColumn: 'span 4' }}><ChartCard title="Utilization · 60 min" value={util} unit="%" height={280}><TrendChart data={zoneSeries(zone.id, 'util')} band={[82, 96]} /></ChartCard></div>
+                <div style={{ gridColumn: 'span 4', minWidth: 0 }}><ChartCard title="Throughput · 60 min" value={fmt(t.out)} unit="t/h" height={280}><TrendChart data={zoneSeries(zone.id, 'tout')} band={no ? [no * 0.92, no] : null} /></ChartCard></div>
+                <div style={{ gridColumn: 'span 4', minWidth: 0 }}><ChartCard title="Alerts · 60 min" value={za.list.length} height={280}><AlertTimeline events={zoneAlertEvents(zone.id)} /></ChartCard></div>
+                <div style={{ gridColumn: 'span 4', minWidth: 0 }}><ChartCard title="Utilization · 60 min" value={util} unit="%" height={280}><TrendChart data={zoneSeries(zone.id, 'util')} band={[82, 96]} /></ChartCard></div>
               </Grid>
               {/* top issues + assets */}
               <Grid style={{ alignItems: 'stretch' }}>
-                <div style={{ ...card, gridColumn: 'span 8', padding: 16 }}>
+                <div style={{ ...card, gridColumn: 'span 8', minWidth: 0, padding: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}><span style={ty.cardTitle}>Top Issues</span>
                     <button onClick={() => { dash.openTwin(); setTimeout(() => useSceneStore.getState().flyToObject(zone.focus), 90) }} style={{ marginLeft: 'auto', border: 'none', background: 'none', cursor: 'pointer', ...ty.body, fontWeight: 600, color: T.accent, padding: 0 }}>View in Twin →</button></div>
                   {problems.length === 0 && <span style={ty.label}>No issues in this zone</span>}
@@ -123,7 +123,7 @@ export function ZoneAnalytics() {
                     </button>
                   ) })}
                 </div>
-                <div style={{ ...card, gridColumn: 'span 4', padding: 16, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ ...card, gridColumn: 'span 4', minWidth: 0, padding: 16, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ ...ty.cardTitle, marginBottom: 8 }}>Machines ({assets.length})</div>
                   <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                     {assets.map(o => { const st = assetStatus(o); return (
