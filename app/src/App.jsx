@@ -1318,12 +1318,13 @@ export default function App() {
   // and rule glows feel alive (no undo history).
   useEffect(() => {
     const tick = () => {
+      if (import.meta.env.DEV && window.__dtNoSim) return   // parity harness drives ticks explicitly
       if (import.meta.env.DEV) performance.mark('dt-tick-a')
       useSceneStore.getState().simulateTick(); const o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o)
       if (import.meta.env.DEV) { performance.mark('dt-tick-b'); performance.measure('dt-tick', 'dt-tick-a', 'dt-tick-b') }
     }
     const t = setInterval(tick, 1000)
-    if (import.meta.env.DEV) window.__dt = { ...(window.__dt || {}), simTimer: t }
+    if (import.meta.env.DEV) window.__dt = { ...(window.__dt || {}), simTimer: t, tick: () => { useSceneStore.getState().simulateTick(); const o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o) } }
     return () => clearInterval(t)
   }, [])
 
@@ -1667,6 +1668,25 @@ function DevFreezeHook() {
         window.__dt.step = () => three.advance(t)
       },
       frameSubCount: () => three.internal.subscribers.length,
+      // Structural digest: every mesh's identity/transform/material — the
+      // deterministic "did anything visible change" check (rotation excluded:
+      // spin parts accumulate per rendered frame, load-timing-dependent)
+      sceneDigest: () => {
+        const v = new THREE.Vector3()
+        const out = []
+        three.scene.traverse((n) => {
+          if (!n.isMesh) return
+          const m = Array.isArray(n.material) ? n.material[0] : n.material
+          n.getWorldPosition(v)
+          out.push([n.name || n.parent?.name || '?', n.geometry?.type || '',
+            n.visible ? 1 : 0,
+            Math.round(v.x * 10) / 10, Math.round(v.y * 10) / 10, Math.round(v.z * 10) / 10,
+            Math.round(n.scale.x * 100) / 100, Math.round(n.scale.y * 100) / 100,
+            m?.color ? m.color.getHexString() : '', m?.emissive ? m.emissive.getHexString() : '',
+            Math.round((m?.opacity ?? 1) * 100), Math.round((m?.emissiveIntensity ?? 0) * 100)].join('|'))
+        })
+        return out.sort().join('\n')
+      },
     }
   }, [three])
   return null
