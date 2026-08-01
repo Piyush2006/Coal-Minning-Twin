@@ -1,6 +1,6 @@
 import { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Environment, Lightformer, GizmoHelper, GizmoViewport, SoftShadows } from '@react-three/drei'
 import { PostFX } from './components/PostFX'
 import { Button }    from '@faclon-labs/design-sdk/Button'
@@ -1317,8 +1317,13 @@ export default function App() {
   // Live-data simulation — gently moves every asset's parameters so readouts
   // and rule glows feel alive (no undo history).
   useEffect(() => {
-    const tick = () => { useSceneStore.getState().simulateTick(); const o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o) }
+    const tick = () => {
+      if (import.meta.env.DEV) performance.mark('dt-tick-a')
+      useSceneStore.getState().simulateTick(); const o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o)
+      if (import.meta.env.DEV) { performance.mark('dt-tick-b'); performance.measure('dt-tick', 'dt-tick-a', 'dt-tick-b') }
+    }
     const t = setInterval(tick, 1000)
+    if (import.meta.env.DEV) window.__dt = { ...(window.__dt || {}), simTimer: t }
     return () => clearInterval(t)
   }, [])
 
@@ -1540,9 +1545,10 @@ export default function App() {
                 <TourDriver orbitRef={orbitRef} />
                 {!dashOn && <Kpi3DLayer />}
                 <BlastLayer />
-                {!SNAP_MODE && <PostFX />}
+                {!SNAP_MODE && !dashOn && <PostFX />}
                 <CameraFeedRenderer />
                 <DashboardPreviewRenderer />
+                {import.meta.env.DEV && <DevFreezeHook />}
 
                 <OrbitControls
                   ref={orbitRef}
@@ -1640,4 +1646,28 @@ export default function App() {
       </div>
     </SceneErrorBoundary>
   )
+}
+
+
+// Dev-only determinism hook for the visual-parity harness: freezes the R3F
+// clock + frame loop at a fixed time so screenshots are reproducible, and
+// exposes a useFrame-subscriber census for perf tracking.
+function DevFreezeHook() {
+  const three = useThree()
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    window.__dt = {
+      ...(window.__dt || {}),
+      freeze: (t = 42) => {
+        clearInterval(window.__dt?.simTimer)
+        three.set({ frameloop: 'never' })
+        three.clock.stop()
+        three.clock.elapsedTime = t
+        three.advance(t); three.advance(t)
+        window.__dt.step = () => three.advance(t)
+      },
+      frameSubCount: () => three.internal.subscribers.length,
+    }
+  }, [three])
+  return null
 }

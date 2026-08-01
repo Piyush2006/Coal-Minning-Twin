@@ -4,7 +4,7 @@
 // so the main twin and preview stay pixel-identical. Subsystem banding comes
 // from subsystems.js (built on the Pass-3 health selector).
 import { useState, useEffect, useRef, useMemo, Suspense, Component as ReactComponent } from 'react'
-import { createRoot, events, useFrame } from '@react-three/fiber'
+import { createRoot, events, useFrame, getRootState } from '@react-three/fiber'
 import { Bounds, ContactShadows, OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { useSceneStore } from '../../store/sceneStore'
@@ -121,7 +121,17 @@ function StageRoot({ children }) {
     configure()
     const ro = new ResizeObserver(configure)
     ro.observe(host)
-    return () => { ro.disconnect(); root.unmount(); canvas.remove(); rootRef.current = null }
+    return () => {
+      ro.disconnect()
+      const st = getRootState(canvas)
+      root.unmount()
+      // explicitly release the GL context — repeated inspector opens must never
+      // accumulate contexts (Chrome force-loses the oldest at ~16, which would
+      // be the main twin's)
+      try { st?.gl?.forceContextLoss?.(); st?.gl?.dispose?.() } catch { /* already gone */ }
+      canvas.remove()
+      rootRef.current = null
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (rootRef.current) { rootRef.current.currentChildren = children; rootRef.current.render(children) }

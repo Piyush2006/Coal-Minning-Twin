@@ -1,0 +1,4 @@
+
+# local visual-parity artifacts (SwiftShader-rendered, machine-specific)
+app/scripts/parity-baseline/
+app/scripts/parity-out/
