@@ -35,6 +35,16 @@ export const Delta = ({ pct, suffix = 'vs plan', goodWhenPositive = true }) => {
   return <span style={{ fontSize: 12, fontWeight: 500, color: good ? T.good : T.bad }}>{up ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}% {suffix}</span>
 }
 
+// ONE plan-tolerance rule: |delta| <= 2% = On plan (neutral); 2-5% behind =
+// amber; >5% behind = red; ahead >2% = good. Used by glance, hero and ledger.
+export const PlanDelta = ({ pct }) => {
+  if (pct == null || !Number.isFinite(pct)) return null
+  if (Math.abs(pct) <= 2) return <span style={{ fontSize: 12, fontWeight: 500, color: T.ink2 }}>On plan</span>
+  const up = pct >= 0
+  const color = up ? T.good : Math.abs(pct) <= 5 ? T.warn : T.bad
+  return <span style={{ fontSize: 12, fontWeight: 500, color }}>{up ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}% vs plan</span>
+}
+
 export const fmt = (v) => (Math.abs(+v) >= 1000 ? Math.round(+v).toLocaleString() : (Math.round(+v * 10) / 10).toLocaleString())
 export const rel = (t) => { const m = Math.round((Date.now() - t) / 60000); return m <= 0 ? 'just now' : m < 60 ? `${m}m ago` : `${Math.round(m / 60)}h ago` }
 

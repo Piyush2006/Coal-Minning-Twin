@@ -24,8 +24,8 @@ function healthCounts(objects) {
 
 // tile: { id, title, tag, focus, value(m,o), unit, status(m,o,alerts), detail(m,o)->rows }
 export const TILES = [
-  { id: 'ops', spark: 'flow_pit', title: 'Mine Operations', tag: 'Optimization', focus: 'crusher-1',
-    value: (m) => (m.bottleneck ? cap(m.bottleneck) : 'On plan'), unit: '',
+  { id: 'ops', spark: null, title: 'Mine Operations', tag: 'Optimization', focus: 'crusher-1',
+    value: (m) => (Math.abs(m.plan.deltaPct) <= 2 ? 'On plan' : `${m.plan.deltaPct > 0 ? '+' : ''}${m.plan.deltaPct.toFixed(1)}%`), unit: '',
     status: (m) => (m.bottleneck ? 'amber' : Math.abs(m.plan.deltaPct) > 8 ? 'amber' : 'green'),
     detail: (m) => [
       { label: 'ROM ex-pit', value: n0(m.rates.rom), unit: 't/h' },

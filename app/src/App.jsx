@@ -1538,7 +1538,7 @@ export default function App() {
                 <MaterialFlowLayer />
                 <CameraController orbitRef={orbitRef} />
                 <TourDriver orbitRef={orbitRef} />
-                <Kpi3DLayer />
+                {!dashOn && <Kpi3DLayer />}
                 <BlastLayer />
                 {!SNAP_MODE && <PostFX />}
                 <CameraFeedRenderer />

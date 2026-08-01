@@ -7,7 +7,7 @@
 // cheap computed snapshot; the integrators (today, stock, downtime) live in
 // module state seeded as if the shift started SHIFT_START_H hours ago.
 import { fleetRunning, lowestRul, worstVibration } from './accumulators'
-import { recordParam } from './paramHistory'
+import { recordParam, getParamHistory } from './paramHistory'
 
 // ── config: nominal rates (t/h) + plan + factors ──
 export const SHIP_CAPACITY = 82000   // t — used for ship fill %
@@ -102,7 +102,7 @@ function recordDashSeries(objects, r) {
   recordParam('dash', 'prod', S.today.rom)
   recordParam('dash', 'workers', Number(objects['safety-1']?.parameters?.workersOnSite) || 0)
   recordParam('dash', 'prox', Number(objects['safety-1']?.parameters?.minWorkerVehicleDistance) || 0)
-  recordParam('dash', 'fleetFuel', fleetRunning(objects).run)
+  recordParam('dash', 'fleetFuel', 78 + (r.rom / NOM.romExPit) * 14)
   recordParam('dash', 'rul', lowestRul(objects).h ?? 0)
   recordParam('dash', 'vib', worstVibration(objects).v)
   recordParam('dash', 'pm10', Number(objects['pm-1']?.parameters?.pm10) || 0)
@@ -115,6 +115,7 @@ function elapsedH() { return Math.min(CFG.shiftHours, (Date.now() - S.t0) / (H *
 // ── the snapshot every view reads ──
 export function getModel(objects) {
   if (!S) initMineModel(objects)
+  if (!S.dashSeeded) { S.dashSeeded = true; backfillDash(objects) }
   const tH = elapsedH()
   const r = ratesAt(tH, objects)
   const fleet = fleetRunning(objects)
@@ -124,7 +125,7 @@ export function getModel(objects) {
   const utilPct = Math.round(Math.min(96, Math.max(78, drift(CFG.utilNom, 3, tH, 0.06))))
   const fuelLh = Math.round(runTrucks * drift(CFG.truckFuelLh, 4, tH, 0.05))
   const elapsedFrac = tH / CFG.shiftHours
-  const planToNow = CFG.dailyPlan * elapsedFrac
+  const planToNow = CFG.dailyPlan * planFrac(tH)
   const productionToday = S.today.rom
   const deltaPct = planToNow > 0 ? ((productionToday - planToNow) / planToNow) * 100 : 0
   const stockTotal = S.stock.A + S.stock.B
@@ -144,13 +145,12 @@ export function getModel(objects) {
     { id: 'port',  zone: 'port',  label: 'Port',      rate: r.ship,     nominal: NOM.shipLoad },
   ]
   // constraint = stage running furthest below its nominal (rail/port idle phases excluded)
-  let bottleneck = null, worstRatio = 1
+  let bottleneck = null, worstRatio = Infinity
   for (const st of stages) {
-    if (st.id === 'rail' || st.id === 'port') continue
+    if (st.id === 'port' || st.id === 'stock') continue  // batch loading / level node
     const ratio = st.rate / st.nominal
     if (ratio < worstRatio) { worstRatio = ratio; bottleneck = st.id }
   }
-  if (worstRatio > 0.9) bottleneck = null                // all healthy → no highlighted constraint
 
   return {
     tH, elapsedFrac, rates: r, stages, bottleneck,
@@ -169,7 +169,29 @@ function dieselTodayL(objects) {
   return run * CFG.truckFuelLh * (S ? elapsedH() : CFG.shiftStartH)
 }
 
-// cumulative production S-curve (actual drift-integrated vs linear plan) for the hero
+// planned rate multiplier across the shift: startup ramp, mid-shift crib dip,
+// recovery — gives the plan line its S-curve shape. planFrac() is the
+// normalized cumulative integral so plan-to-now and the hero share one truth.
+function planProfile(h) {
+  if (h < 0.75) return 0.55 + (h / 0.75) * 0.45
+  if (h < 3.5) return 1.04
+  if (h < 4.25) return 0.72
+  if (h < 5) return 0.72 + ((h - 4.25) / 0.75) * 0.31
+  return 1.03
+}
+function planIntegral(h) {
+  const step = 0.05
+  let a = 0
+  for (let t = 0; t < h; t += step) a += planProfile(t + step / 2) * Math.min(step, h - t)
+  return a
+}
+let _planTotal = null
+export function planFrac(h) {
+  if (_planTotal == null) _planTotal = planIntegral(CFG.shiftHours)
+  return Math.max(0, Math.min(1, planIntegral(Math.min(h, CFG.shiftHours)) / _planTotal))
+}
+
+// cumulative production S-curve (actual drift-integrated vs S-curve plan) for the hero
 export function productionCurve(objects, points = 48) {
   if (!S) initMineModel(objects)
   const tH = elapsedH()
@@ -181,9 +203,37 @@ export function productionCurve(objects, points = 48) {
     // integrate rom over [a-step, a]
     if (i > 0) { const mid = a - stepH / 2; cum += ratesAt(mid, objects).rom * stepH }
     actual.push(cum)
-    plan.push(CFG.dailyPlan * (a / CFG.shiftHours))
+    plan.push(CFG.dailyPlan * planFrac(a))
   }
-  return { actual, plan, target: CFG.dailyPlan * (tH / CFG.shiftHours) }
+  return { actual, plan, target: CFG.dailyPlan * planFrac(tH) }
+}
+
+function backfillDash(objects) {
+  if (getParamHistory('dash', 'flow_pit').length > 8) return
+  const tH = elapsedH()
+  const wob = (i, k, m) => Math.sin(i * 0.37 + k) * m + Math.sin(i * 1.31 + k * 2.7) * m * 0.35
+  const anchor = (id, key, dflt) => { const v = Number(objects[id]?.parameters?.[key]); return Number.isFinite(v) ? v : dflt }
+  const rul0 = lowestRul(objects).h
+  for (let i = 0; i < 63; i++) {
+    const f = i / 62
+    const h = Math.max(0.05, tH - (1 - f) * 1.0)
+    const r = ratesAt(h, objects)
+    recordParam('dash', 'flow_pit', r.rom + wob(i, 1, 6))
+    recordParam('dash', 'flow_crush', r.crusher + wob(i, 2, 5))
+    recordParam('dash', 'flow_chpp', r.chppFeed + wob(i, 3, 5))
+    recordParam('dash', 'flow_rail', r.rail + wob(i, 4, 8))
+    recordParam('dash', 'flow_port', r.ship + wob(i, 5, 9))
+    const lvl = (S.stock.A + S.stock.B) - (1 - f) * 260 + wob(i, 6, 40)
+    recordParam('dash', 'flow_stock', lvl); recordParam('dash', 'stockFlow', lvl); recordParam('dash', 'stock', lvl)
+    recordParam('dash', 'prod', Math.max(0, S.today.rom - (1 - f) * r.rom) + wob(i, 7, 12))
+    recordParam('dash', 'workers', 11 + Math.round(Math.sin(i * 0.5) * 1.2))
+    recordParam('dash', 'prox', anchor('safety-1', 'minWorkerVehicleDistance', 34) + wob(i, 8, 6))
+    recordParam('dash', 'fleetFuel', 78 + (r.rom / NOM.romExPit) * 14 + wob(i, 9, 1.5))
+    if (rul0 != null) recordParam('dash', 'rul', rul0 + (1 - f) * 1.4 + wob(i, 10, 0.4))
+    recordParam('dash', 'vib', anchor('crusher-1', 'vibration', 7.4) + wob(i, 11, 0.8))
+    recordParam('dash', 'pm10', anchor('pm-1', 'pm10', 205) + wob(i, 12, 16))
+    recordParam('dash', 'sec', anchor('screen-1', 'kwhPerTonne', 1.12) + wob(i, 13, 0.05))
+  }
 }
 
 export function resetMineModel() { S = null }

@@ -11,7 +11,7 @@ import { useFeedStore } from '../CameraFeed'
 import { DashboardPreviewCard, PreviewBackdrop } from './DashboardPreview'
 import { ZoneAnalytics } from './ZoneAnalytics'
 import { VisionCard, CoalSizeWidget, VisionModal, VisionChip, useVision } from './VisionEvidence'
-import { T, ty, card, Unit, Delta, fmt, rel, STATUS, STATUS_WORD, SHADOW_MODAL, useDashSnapshot } from './tokens'
+import { T, ty, card, Unit, PlanDelta, fmt, rel, STATUS, STATUS_WORD, useDashSnapshot } from './tokens'
 
 const num = (o, k) => Number(o?.parameters?.[k])
 const Grid = ({ children, style }) => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 16, ...style }}>{children}</div>
@@ -50,7 +50,7 @@ function GlanceRow({ m, objects, alerts }) {
   return (
     <div style={{ height: 84, flexShrink: 0, background: T.surface, borderBottom: `1px solid ${T.line}`, display: 'flex', alignItems: 'stretch' }}>
       <GlanceBlock label="Overall status" value={STATUS_WORD[overall]} dot={STATUS[overall]} />
-      <GlanceBlock label="Production today" value={fmt(m.today.production)} unit="t" sub={<Delta pct={m.plan.deltaPct} />} />
+      <GlanceBlock label="Production today" value={fmt(m.today.production)} unit="t" sub={<PlanDelta pct={m.plan.deltaPct} />} />
       <GlanceBlock label="Throughput" value={fmt(m.rates.crusher)} unit="t/h" />
       <GlanceBlock label="Fleet running" value={`${m.fleet.running}/${m.fleet.total}`} />
       <GlanceBlock label="Active alerts" value={alerts.length} sub={nCrit ? <span style={{ fontSize: 12, fontWeight: 500, color: T.bad }}>{nCrit} critical</span> : null} />
@@ -59,25 +59,26 @@ function GlanceRow({ m, objects, alerts }) {
   )
 }
 
-// ── flow strip (128) ──
+// ── flow strip (128) — shared baseline, integer rates, arrow connectors ──
 function FlowStrip({ m, openZone }) {
   return (
     <div style={{ ...card, gridColumn: 'span 12', minWidth: 0, height: 128, padding: 16, display: 'flex', flexDirection: 'column' }}>
       <span style={ty.cardTitle}>Material Flow · pit → port</span>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'stretch', gap: 0, marginTop: 8 }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', marginTop: 6 }}>
         {m.stages.map((st, i) => {
           const bn = m.bottleneck === st.id
           const rising = st.trend != null ? st.trend >= 0 : null
           const spark = getParamHistory('dash', st.id === 'stock' ? 'stockFlow' : 'flow_' + st.id)
           return (
-            <div key={st.id} style={{ display: 'flex', alignItems: 'stretch', flex: 1, minWidth: 0 }}>
-              <button onClick={() => openZone(st.zone)} style={{ flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit', background: 'none', border: 'none', borderLeft: bn ? `3px solid ${T.warn}` : 'none', paddingLeft: bn ? 10 : 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3 }}>
-                <span style={{ ...ty.label, display: 'flex', alignItems: 'center', gap: 6 }}>{st.label}{bn && <span style={{ fontSize: 12, fontWeight: 600, color: T.warn }}>Bottleneck</span>}</span>
-                <span style={ty.kpiM}>{st.id === 'stock' ? fmt(st.level) : fmt(st.rate)}<Unit>{st.id === 'stock' ? 't' : 't/h'}</Unit>{st.id === 'stock' && rising != null && <span style={{ ...ty.label, marginLeft: 4 }}>{rising ? '▲' : '▼'}</span>}</span>
-                <MiniSpark data={spark} />
-                {st.reject != null && <span style={ty.label}>rejects {Math.round(st.reject)} t/h</span>}
+            <div key={st.id} style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+              <button onClick={() => openZone(st.zone)} style={{ flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit', background: 'none', border: 'none',
+                borderLeft: bn ? `3px solid ${T.warn}` : '3px solid transparent', paddingLeft: 8, display: 'grid', gridTemplateRows: '14px 28px 14px 12px', alignItems: 'center' }}>
+                <span style={{ ...ty.label, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>{st.label}{bn && <span style={{ fontSize: 12, fontWeight: 600, color: T.warn }}>Bottleneck</span>}</span>
+                <span style={{ ...ty.kpiM, whiteSpace: 'nowrap' }}>{st.id === 'stock' ? Math.round(st.level).toLocaleString() : Math.round(st.rate).toLocaleString()}<Unit>{st.id === 'stock' ? 't' : 't/h'}</Unit>{st.id === 'stock' && rising != null && <span style={{ ...ty.label, marginLeft: 4 }}>{rising ? '▲' : '▼'}</span>}</span>
+                <MiniSpark data={spark} w={64} h={12} />
+                <span style={{ ...ty.label, whiteSpace: 'nowrap' }}>{st.reject != null ? `rejects ${Math.round(st.reject)} t/h` : ''}</span>
               </button>
-              {i < m.stages.length - 1 && <svg width="28" height="100%" viewBox="0 0 28 40" preserveAspectRatio="none" style={{ flexShrink: 0 }}><line x1="2" y1="20" x2="26" y2="20" stroke={T.line} strokeWidth="2" strokeDasharray="4 4" className="flowdash" /></svg>}
+              {i < m.stages.length - 1 && <span aria-hidden style={{ flexShrink: 0, padding: '0 8px', color: '#D0D5DD', fontSize: 16, lineHeight: 1 }}>›</span>}
             </div>
           )
         })}
@@ -88,12 +89,12 @@ function FlowStrip({ m, openZone }) {
 
 // ── use-case LEDGER (table) — no fixed heights, no absolute, no clipping ──
 const LEDGER = {
-  ops:     { full: 'Mine Operations Optimization', ctx: (m) => `${m.plan.deltaPct >= 0 ? '+' : ''}${m.plan.deltaPct.toFixed(1)}% vs plan` },
+  ops:     { full: 'Mine Operations Optimization', ctx: 'production vs plan' },
   workers: { full: 'Real-Time Worker Monitoring',   ctx: 'personnel on site' },
   prox:    { full: 'Collision & Proximity Safety',  ctx: 'closest approach' },
-  fleet:   { full: 'Fleet & Equipment Health',      ctx: 'units running' },
+  fleet:   { full: 'Fleet & Equipment Management',  ctx: 'units running' },
   pdm:     { full: 'Predictive Maintenance',        ctx: 'lowest asset RUL' },
-  asset:   { full: 'Asset Performance',             ctx: 'worst vibration' },
+  asset:   { full: 'Asset Performance Management',  ctx: 'worst vibration' },
   prod:    { full: 'Production & Productivity',      ctx: (m) => `${m.plan.deltaPct >= 0 ? '+' : ''}${m.plan.deltaPct.toFixed(1)}% vs plan` },
   energy:  { full: 'Energy & Sustainability',       ctx: 'specific energy' },
   env:     { full: 'Environmental Compliance',      ctx: 'PM10 now' },
@@ -119,12 +120,13 @@ function Drawer({ tile, m, objects, spark }) {
 }
 
 function LedgerRow({ tile, m, objects, alerts, expanded, onToggle, onView, first }) {
-  const st = tileStatus(tile, m, objects, alerts)
+  const rowAlerts = alerts.filter(a => a.useCase === tile.tag)
+  const st = rowAlerts.some(a => a.severity === 'critical') ? 'red' : rowAlerts.length ? 'amber' : 'green'
   const val = tile.value(m, objects)
   const meta = LEDGER[tile.id] || { full: tile.title, ctx: '' }
   const ctx = typeof meta.ctx === 'function' ? meta.ctx(m, objects) : meta.ctx
-  const n = domainAlertCount(objects, [tile.tag], alerts)
-  const last = alerts.filter(a => a.useCase === tile.tag).map(a => a.since).sort((a, b) => b - a)[0]
+  const n = rowAlerts.length
+  const last = rowAlerts.map(a => a.since).sort((a, b) => b - a)[0]
   const spark = tile.spark ? getParamHistory('dash', tile.spark) : []
   const word = st === 'green' ? 'Normal' : STATUS_WORD[st]
   const wc = st === 'green' ? T.ink2 : STATUS[st]
@@ -185,7 +187,7 @@ function AlertFeed({ objects, alerts }) {
             <span style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: a.severity === 'critical' ? T.bad : T.warn }} />
             <span style={{ minWidth: 0 }}>
               <span style={{ ...ty.body, fontWeight: 600, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.asset}</span>
-              <span style={{ ...ty.label, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.3 }}>{a.message} · {rel(a.since)}</span>
+              <span style={{ ...ty.label, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.3 }}>{a.message}<span style={{ whiteSpace: 'nowrap' }}> · {rel(a.since)}</span></span>
             </span>
           </button>
         ))}
@@ -210,7 +212,7 @@ export function OpsDashboard() {
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 40, background: subTab === 'overview' ? 'transparent' : T.bg, fontFamily: T.font, fontVariantNumeric: 'tabular-nums', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <style>{`@keyframes flowdrift{to{stroke-dashoffset:-8}} .flowdash{animation:flowdrift 1.4s linear infinite} @keyframes popIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <style>{`@keyframes popIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}`}</style>
       {subTab === 'overview' && <PreviewBackdrop />}
       <VisionModal />
       <div style={{ position: 'relative', zIndex: 1 }}><TopBar dash={dash} /></div>
@@ -224,7 +226,7 @@ export function OpsDashboard() {
                 <div style={{ ...card, gridColumn: 'span 8', minWidth: 0, height: 340, padding: 16, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
                     <span style={ty.cardTitle}>Production vs Plan</span>
-                    <Delta pct={m.plan.deltaPct} />
+                    <PlanDelta pct={m.plan.deltaPct} />
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 20, margin: '10px 0 14px' }}>
                     <span style={ty.kpiXL}>{fmt(m.today.production)}<Unit>t today</Unit></span>

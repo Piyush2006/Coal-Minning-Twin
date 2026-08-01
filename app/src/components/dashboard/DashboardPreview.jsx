@@ -74,7 +74,7 @@ export function DashboardPreviewCard({ onOpen, label = 'Open 3D Twin', fill = fa
         <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34c759' }} />LIVE
       </span>
       <span style={{ position: 'absolute', bottom: 10, right: 12, fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
-        color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.6)', pointerEvents: 'none' }}>{label} →</span>
+        color: '#fff', background: 'rgba(10,12,16,0.55)', borderRadius: 999, padding: '3px 10px', pointerEvents: 'none' }}>{label} →</span>
     </button>
   )
 }

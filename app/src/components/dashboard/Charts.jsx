@@ -46,24 +46,42 @@ export function TrendChart({ data = [], band = null, xLabels = ['60m', '30m', 'n
   )
 }
 
-// production S-curve: accent actual (line+area) vs ink-2 dashed plan
+// production S-curve: accent actual vs dashed plan; the actual-plan gap is
+// shaded good-tint when ahead / bad-tint when behind; 3 labelled y gridlines.
 export function SCurve({ actual = [], plan = [] }) {
-  if (actual.length < 2) return <Empty />
+  if (actual.length < 2 || plan.length < 2) return <Empty />
   const hi = Math.max(...plan, ...actual) || 1, H = 100
+  const n = Math.min(actual.length, plan.length)
   const y = (v) => H - (v / hi) * H
-  const px = (i, n) => (i / (n - 1)) * W
-  const a = actual.map((v, i) => `${px(i, actual.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ')
-  const p = plan.map((v, i) => `${px(i, plan.length).toFixed(1)},${y(v).toFixed(1)}`).join(' ')
-  const gl = [0.25, 0.5, 0.75].map(f => H * f)
+  const x = (i) => (i / (n - 1)) * W
+  const aPts = [], pPts = []
+  for (let i = 0; i < n; i++) { aPts.push([x(i), y(actual[i])]); pPts.push([x(i), y(plan[i])]) }
+  const P = (pts) => pts.map(q => `${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(' ')
+  const bands = []                                   // same-sign runs of the gap
+  const sign = (i) => (actual[i] >= plan[i] ? 1 : -1)
+  let s0 = 0
+  for (let i = 1; i <= n; i++) {
+    if (i === n || sign(i) !== sign(s0)) {
+      const seg = []
+      for (let k = s0; k < i; k++) seg.push(aPts[k])
+      for (let k = i - 1; k >= s0; k--) seg.push(pPts[k])
+      bands.push({ d: P(seg), good: sign(s0) > 0 })
+      s0 = i
+    }
+  }
+  const gl = [0.25, 0.5, 0.75]
   return (
     <>
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: 'block' }}>
-          {gl.map((gy, i) => <line key={i} x1="0" y1={gy} x2={W} y2={gy} stroke={T.grid} strokeWidth="1" />)}
-          <polyline points={`0,${H} ${a} ${px(actual.length - 1, actual.length)},${H}`} fill={T.accentSoft} stroke="none" />
-          <polyline points={p} fill="none" stroke={T.ink2} strokeWidth="1.5" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />
-          <polyline points={a} fill="none" stroke={T.accent} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          {gl.map((f, i) => <line key={i} x1="0" y1={H * f} x2={W} y2={H * f} stroke={T.grid} strokeWidth="1" />)}
+          {bands.map((b, i) => <polygon key={i} points={b.d} fill={b.good ? 'rgba(18,183,106,0.08)' : 'rgba(240,68,56,0.08)'} stroke="none" />)}
+          <polyline points={P(pPts)} fill="none" stroke={T.ink2} strokeWidth="1.5" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />
+          <polyline points={P(aPts)} fill="none" stroke={T.accent} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
         </svg>
+        {gl.map((f, i) => (
+          <span key={i} style={{ position: 'absolute', left: 0, top: `${f * 100}%`, transform: 'translateY(-115%)', ...ty.label }}>{fmt(hi * (1 - f))} t</span>
+        ))}
       </div>
       <Axis labels={['start', 'shift', 'now']} legend />
     </>
@@ -94,7 +112,9 @@ export function AlertTimeline({ events = [], cap = 720 }) {
 export function MiniSpark({ data = [], w = 40, h = 16 }) {
   if (!data || data.length < 2) return <span style={{ display: 'inline-block', width: w, height: h }} />
   const lo = Math.min(...data), hi = Math.max(...data), span = hi - lo || 1
-  const pts = data.slice(-24).map((v, i, arr) => `${(i / (arr.length - 1)) * w},${(h - ((v - lo) / span) * h).toFixed(1)}`).join(' ')
+  const stride = Math.max(1, Math.ceil(data.length / 48))
+  const src = data.filter((_, i) => i % stride === 0 || i === data.length - 1)
+  const pts = src.map((v, i) => `${(i / (src.length - 1)) * w},${(h - ((v - lo) / span) * h).toFixed(1)}`).join(' ')
   return <svg width={w} height={h} style={{ display: 'block' }}><polyline points={pts} fill="none" stroke={T.accent} strokeWidth="1.3" strokeLinejoin="round" /></svg>
 }
 
