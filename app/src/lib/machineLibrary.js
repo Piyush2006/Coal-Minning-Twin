@@ -27,6 +27,7 @@ import { GLBModel }          from '../components/assets/GLBModel'
 import { PPBoiler }          from '../components/assets/PPBoiler'
 import { PitTerrain }        from '../components/terrain/PitTerrain'
 import { TerrainMound }      from '../components/terrain/TerrainMound'
+import { SiteWorker }        from '../components/assets/SiteWorker'
 import { getCustomTypes }    from './customTypesRef'
 
 export const MACHINE_COMPONENTS = {
@@ -59,6 +60,7 @@ export const MACHINE_COMPONENTS = {
   pp_boiler: PPBoiler,
   PitTerrain,
   TerrainMound,
+  site_worker: SiteWorker,
 }
 
 // Port definitions per machine type.

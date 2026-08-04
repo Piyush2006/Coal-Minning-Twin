@@ -1669,6 +1669,7 @@ function DevFreezeHook() {
         window.__dt.step = () => three.advance(t)
       },
       frameSubCount: () => three.internal.subscribers.length,
+      workerTris: () => { let n = 0; three.scene.traverse(o => { for (let a = o; a; a = a.parent) if (a.name === 'worker-1') { if (o.isMesh && o.geometry) { const g = o.geometry; n += (g.index ? g.index.count : g.attributes.position.count) / 3 } break } }); return Math.round(n) },
       // Structural digest: every mesh's identity/transform/material — the
       // deterministic "did anything visible change" check (rotation excluded:
       // spin parts accumulate per rendered frame, load-timing-dependent)
