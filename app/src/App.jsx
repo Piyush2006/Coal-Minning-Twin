@@ -15,13 +15,16 @@ import { TEMPLATES }          from './lib/templates'
 import { getSchema, coerceConfigValue } from './lib/assetSchemas'
 import { effectiveParamDefs, paramFreqKey, FREQUENCIES } from './lib/parameterSchemas'
 import { getConnectorSchema }   from './lib/connectorSchemas'
-import { vehicleState } from './lib/vehicleMotion'
+import { vehicleState, hasStop as _hasStop } from './lib/vehicleMotion'
 import { RuleEditor }           from './components/RuleEditor'
 import { SceneRenderer }      from './components/SceneRenderer'
 import { Connectors }         from './components/Connectors'
 import { MaterialFlowLayer }  from './components/effects/MaterialFlow'
 import { CameraFeedRenderer, CameraFeedPanel } from './components/CameraFeed'
 import { RestrictedZones } from './components/safety/RestrictedZones'
+import { ProximityLayer, NearMissActor } from './components/safety/ProximityLayer'
+import { proximityState } from './lib/proximity'
+import { startNearMiss, stopNearMiss, nearMissActive, phantom as _phantom } from './lib/nearMissDirector'
 import { ShopFloorEnvironment } from './components/ShopFloorEnvironment'
 import { MACHINE_LIBRARY }    from './lib/machineLibrary'
 import { dragGuard }          from './lib/interactionGuard'
@@ -45,6 +48,7 @@ import { tickSafetyBridge, liveSafety } from './lib/liveSafety'
 import { evaluateAlerts } from './lib/alertsEngine'
 import { useFeedStore } from './components/CameraFeed'
 import { workerPosMap as _workerPosMap } from './lib/workerPosMap'
+import { useSafetyLayer } from './lib/safetyLayer'
 import { useDayNight } from './lib/dayNight'
 import { useViewTab } from './lib/viewTab'
 import { CommandPalette }     from './components/CommandPalette'
@@ -1550,6 +1554,8 @@ export default function App() {
                 <Connectors />
                 <MaterialFlowLayer />
                 <RestrictedZones />
+                <ProximityLayer />
+                <NearMissActor />
                 <CameraController orbitRef={orbitRef} />
                 <TourDriver orbitRef={orbitRef} />
                 {!dashOn && <Kpi3DLayer />}
@@ -1677,7 +1683,7 @@ function DevFreezeHook() {
         window.__dt.step = () => three.advance(t)
       },
       frameSubCount: () => three.internal.subscribers.length,
-      vstate: (id) => { const s = vehicleState(id); return s ? { arc: +s.arc.toFixed(2), v: +s.v.toFixed(3), yaw: +s.yaw.toFixed(3), pitch: +s.pitch.toFixed(4), roll: +s.roll.toFixed(4), dwellT: +s.dwellT.toFixed(2) } : null },
+      vstate: (id) => { const s = vehicleState(id); return s ? { arc: +s.arc.toFixed(2), v: +s.v.toFixed(3), yaw: +s.yaw.toFixed(3), wx: +s.wx.toFixed(2), wz: +s.wz.toFixed(2), aheadX: +s.aheadX.toFixed(2), aheadZ: +s.aheadZ.toFixed(2), initDone: s.initDone, dwellT: +s.dwellT.toFixed(2) } : null },
       // patch a dot-path into an object's config (e.g. patchConfig('worker-2','ppe.helmet',false))
       patchConfig: (id, path, value) => {
         const o = useSceneStore.getState().objects[id]; if (!o) return false
@@ -1694,11 +1700,23 @@ function DevFreezeHook() {
       safetyParams: () => ({ ...(useSceneStore.getState().objects['safety-1']?.parameters || {}) }),
       liveSafety: () => ({ ...liveSafety }),
       siteCompliance: () => siteCompliance(useSceneStore.getState().objects),
-      ppeAlerts: () => evaluateAlerts(useSceneStore.getState().objects).filter(a => a.useCase === 'PPE Vision' || a.useCase === 'Worker Safety').map(a => ({ objId: a.objId, useCase: a.useCase, severity: a.severity, message: a.message })),
+      ppeAlerts: () => evaluateAlerts(useSceneStore.getState().objects).filter(a => ['PPE Vision', 'Worker Safety', 'Proximity', 'Geofence'].includes(a.useCase)).map(a => ({ objId: a.objId, useCase: a.useCase, severity: a.severity, message: a.message })),
       moveWorker: (id, x, z) => { const o = useSceneStore.getState().objects[id]; if (!o) return false; useSceneStore.getState().updateObject(id, { position: [x, o.position[1], z] }); return true },
       workerWorld: (id) => { const w = _workerPosMap.get(id); return w ? [+w.pos.x.toFixed(2), +w.pos.y.toFixed(2), +w.pos.z.toFixed(2)] : null },
       workerIds: () => [..._workerPosMap.keys()],
       objPos: (id) => { const o = useSceneStore.getState().objects[id]; return o ? [...o.position] : null },
+      // ── Stage-4 proximity test accessors ──
+      nearMiss: (opts) => startNearMiss(opts),
+      stopNearMiss: () => stopNearMiss(),
+      nearMissActive: () => nearMissActive(),
+      proxState: (id) => proximityState(id),
+      safetyOn: (v) => useSafetyLayer.getState().setOn(!!v),
+      phantomState: () => ({ ..._phantom }),
+      placePhantom: (x, z) => { _phantom.x = x; _phantom.y = 0; _phantom.z = z; _phantom.active = true; return true },  // detection is always-on; leave visuals off for fast headless frames
+      clearPhantom: () => { _phantom.active = false; return true },
+      // force N R3F frames (drives every useFrame — PathDrive, proximity — past headless rAF throttling)
+      pump: (n = 40, stepMs = 33) => { let t = (typeof performance !== 'undefined' ? performance.now() : 0); for (let i = 0; i < n; i++) { t += stepMs; three.advance(t) } return n },
+      hasStop: (id, reason) => _hasStop(id, reason),
       workerTris: () => { let n = 0; three.scene.traverse(o => { for (let a = o; a; a = a.parent) if (a.name === 'worker-1') { if (o.isMesh && o.geometry) { const g = o.geometry; n += (g.index ? g.index.count : g.attributes.position.count) / 3 } break } }); return Math.round(n) },
       // Structural digest: every mesh's identity/transform/material — the
       // deterministic "did anything visible change" check (rotation excluded:

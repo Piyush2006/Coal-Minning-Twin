@@ -34,6 +34,8 @@ export function vehicleMotion(id) {
       arc: 0, v: 0, yaw: 0, prevV: 0,
       pitch: 0, roll: 0, settle: 0,       // body dynamics
       dwellT: 0,                          // remaining dwell seconds (>0 = parked at wp0)
+      wx: 0, wy: 0, wz: 0,                // live world position (written by PathDrive, read by proximity)
+      aheadX: 0, aheadY: 0, aheadZ: 0,    // a point ~20 m ahead ALONG the curve (for the near-miss director)
       targets: new Map(),                 // reason -> speed cap (m/s)
       stops: new Set(),                   // reasons forcing a hard stop
       initDone: false,
