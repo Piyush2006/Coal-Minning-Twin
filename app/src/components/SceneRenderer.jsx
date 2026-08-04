@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo } from 'react'
+import { memo, useRef, useState, useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { TransformControls, useHelper, Html } from '@react-three/drei'
 import { BoxHelper, Vector3, Box3, CatmullRomCurve3, RingGeometry, CircleGeometry, SphereGeometry } from 'three'
@@ -267,18 +267,21 @@ function SelectionFX({ groupRef, color = '#0a84ff' }) {
   )
 }
 
-function SceneObject({ obj, orbitRef, glowColor, allowLight, inGroup, pointRef, setHoveredId, alertSev }) {
+function SceneObjectImpl({ obj, orbitRef, glowColor, allowLight, inGroup, pointRef, setHoveredId, alertSev }) {
   const groupRef  = useRef()
   const visualRef = useRef()   // the asset visual only — measured by AlertIndicator
   const [mounted, setMounted] = useState(false)
 
-  const {
-    selectedId, editMode, transformMode, layers, customAssetTypes,
-    selectObject, flyToObject, updateObject, commitTransform, addConnection, clearSelection,
-  } = useSceneStore()
-
-  const isSelected = selectedId === obj.id
-  const layer      = layers[obj.layer]
+  // Narrow subscriptions: primitives / stable slices only, so the 1 Hz
+  // telemetry tick (which rebuilds the objects map) re-renders an object ONLY
+  // when a field its 3D actually consumes changed (see memo comparator below).
+  const isSelected = useSceneStore(s => s.selectedId === obj.id)
+  const editMode = useSceneStore(s => s.editMode)
+  const transformMode = useSceneStore(s => s.transformMode)
+  const layer = useSceneStore(s => s.layers[obj.layer])
+  const customAssetTypes = useSceneStore(s => s.customAssetTypes)
+  // zustand actions are stable references — read once, no subscription
+  const { selectObject, flyToObject, updateObject, commitTransform, addConnection, clearSelection } = useSceneStore.getState()
   const popRef     = useRef(0)
   // Ground planes (built-in Floor, or any custom type flagged `ground` e.g. a
   // plant grade/apron) cover the whole scene — skip pop/lift/fly cues AND don't
@@ -531,8 +534,27 @@ function HoverTooltips({ hoveredId, pointRef }) {
   )
 }
 
+
+const _arrEq = (a, b) => a === b || (!!a && !!b && a.length === b.length && a.every((v, i) => v === b[i]))
+const _objEq = (a, b) => a === b || (
+  a.id === b.id && a.type === b.type && a.name === b.name &&
+  a.visible === b.visible && a.layer === b.layer &&
+  a.status === b.status && a.state === b.state &&
+  a.config === b.config && a.subOverrides === b.subOverrides && a.connections === b.connections &&
+  _arrEq(a.position, b.position) && _arrEq(a.rotation, b.rotation) && _arrEq(a.scale, b.scale)
+)
+// NOTE for future work: any NEW render-time read of obj.<field> inside the
+// SceneObject tree must be added to _objEq — parameters etc. are intentionally
+// ignored here (imperative/self-subscribed consumers only).
+const SceneObject = memo(SceneObjectImpl, (p, n) =>
+  _objEq(p.obj, n.obj) && p.glowColor === n.glowColor && p.allowLight === n.allowLight &&
+  p.inGroup === n.inGroup && p.alertSev === n.alertSev)
+
 export function SceneRenderer({ orbitRef, glowMap = {} }) {
-  const { objects, groups, selectedGroupId, editMode, clearSelection } = useSceneStore()
+  const objects = useSceneStore(s => s.objects)
+  const groups = useSceneStore(s => s.groups)
+  const selectedGroupId = useSceneStore(s => s.selectedGroupId)
+  const editMode = useSceneStore(s => s.editMode)
   const [hoveredId, setHoveredId] = useState(null)
   const pointRef = useRef(new Vector3())   // live cursor hit-point → tooltip anchor
   useEffect(() => { if (editMode) setHoveredId(null) }, [editMode])
@@ -547,7 +569,7 @@ export function SceneRenderer({ orbitRef, glowMap = {} }) {
   const groupMembers = selectedGroupId ? descendantObjectIds(objects, groups, selectedGroupId) : null
 
   return (
-    <group onClick={(e) => { if (e.object.type === 'Mesh') return; clearSelection() }}>
+    <group onClick={(e) => { if (e.object.type === 'Mesh') return; useSceneStore.getState().clearSelection() }}>
       {Object.values(objects).map(obj => (
         <SceneObject key={obj.id} obj={obj} orbitRef={orbitRef}
           glowColor={glowMap[obj.id] ?? null}
