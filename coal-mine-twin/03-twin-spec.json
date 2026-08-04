@@ -4075,9 +4075,9 @@
       "type": "site_worker",
       "name": "Worker 01",
       "position": [
-        1,
+        -1,
         0,
-        6.8
+        6.5
       ],
       "rotation": [
         0,
@@ -4092,7 +4092,33 @@
       "status": "running",
       "parentId": "grp_personnel",
       "config": {
-        "animPhase": 0
+        "animPhase": 0,
+        "path": {
+          "waypoints": [
+            [
+              -1,
+              0,
+              6.5
+            ],
+            [
+              3,
+              0,
+              6.2
+            ],
+            [
+              4,
+              0,
+              8.8
+            ],
+            [
+              -1,
+              0,
+              8.8
+            ]
+          ],
+          "speed": 0.8,
+          "loop": true
+        }
       }
     },
     "worker-2": {
@@ -4125,9 +4151,9 @@
       "type": "site_worker",
       "name": "Worker 03",
       "position": [
-        65.5,
+        61,
         0,
-        -22.5
+        -18
       ],
       "rotation": [
         0,
@@ -4200,7 +4226,7 @@
       "type": "site_worker",
       "name": "Worker 06",
       "position": [
-        24,
+        20,
         0,
         9.5
       ],
@@ -4217,7 +4243,33 @@
       "status": "running",
       "parentId": "grp_personnel",
       "config": {
-        "animPhase": 0.8
+        "animPhase": 0.8,
+        "path": {
+          "waypoints": [
+            [
+              20,
+              0,
+              9.5
+            ],
+            [
+              25,
+              0,
+              9.5
+            ],
+            [
+              25,
+              0,
+              13
+            ],
+            [
+              20,
+              0,
+              13
+            ]
+          ],
+          "speed": 0.8,
+          "loop": true
+        }
       }
     },
     "worker-7": {

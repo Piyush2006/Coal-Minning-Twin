@@ -228,12 +228,18 @@ const GEN = {
           [-58, 0, 11], [-42, 0, -9], [-24, 0, -12], [-12, 0, -11], [-4, 0, -16]],
   },
   'worker-7': { speed: 0.85, loop: true, wps: [[2.5, 0, 9], [11, 0, 8.2], [13, 0, 12], [4.5, 0, 13.8]] },
+  // patrols: worker-1 loops the CHP walkway (in/out of the PPE-04 camera zone),
+  // worker-6 loops the stockyard walkway (through the ppe-cam-2 zone).
+  'worker-1': { speed: 0.8, loop: true, wps: [[-1, 0, 6.5], [3, 0, 6.2], [4, 0, 8.8], [-1, 0, 8.8]] },
+  'worker-6': { speed: 0.8, loop: true, wps: [[20, 0, 9.5], [25, 0, 9.5], [25, 0, 13], [20, 0, 13]] },
 }
-const HALF_W = { 'truck-1': 1.75, 'truck-2': 1.75, 'truck-3': 1.75, 'lv-1': 1.0, 'worker-7': 0.35 }
-// a mover may hug the thing it services (its excavator / the crusher bin edge)
+const HALF_W = { 'truck-1': 1.75, 'truck-2': 1.75, 'truck-3': 1.75, 'lv-1': 1.0, 'worker-7': 0.35, 'worker-1': 0.35, 'worker-6': 0.35 }
+// a mover may hug the thing it services (its excavator / the crusher bin edge);
+// patrol workers skip their OWN static footprint (they become movers).
 const SKIP = {
   'truck-1': new Set(['exc-coal-1']), 'truck-2': new Set(['exc-coal-1']),
   'truck-3': new Set(['exc-ob-1']),
+  'worker-1': new Set(['worker-1']), 'worker-6': new Set(['worker-6']),
 }
 
 // vertical clearance to the NEAREST drivable surface at (x,z) — several
