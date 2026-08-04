@@ -45,6 +45,7 @@ import { useDashboard, syncDashboardForScene } from './lib/dashboardStore'
 import { tickMineModel } from './lib/mineModel'
 import { tickZoneHistory } from './lib/zoneHistory'
 import { tickPpeVision, ppeCameraDetections, siteCompliance } from './lib/ppeVision'
+import { tickChainSim } from './lib/chainLive'
 import { tickSafetyBridge, liveSafety } from './lib/liveSafety'
 import { evaluateAlerts } from './lib/alertsEngine'
 import { useFeedStore } from './components/CameraFeed'
@@ -1337,7 +1338,7 @@ export default function App() {
     const tick = () => {
       if (import.meta.env.DEV && window.__dtNoSim) return   // parity harness drives ticks explicitly
       if (import.meta.env.DEV) performance.mark('dt-tick-a')
-      useSceneStore.getState().simulateTick(); let o = useSceneStore.getState().objects; tickPpeVision(o); tickSafetyBridge(o); o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o)
+      useSceneStore.getState().simulateTick(); let o = useSceneStore.getState().objects; tickChainSim(o, useSceneStore.getState().patchParams); o = useSceneStore.getState().objects; tickPpeVision(o); tickSafetyBridge(o); o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o)
       if (import.meta.env.DEV) { performance.mark('dt-tick-b'); performance.measure('dt-tick', 'dt-tick-a', 'dt-tick-b') }
     }
     const t = setInterval(tick, 1000)

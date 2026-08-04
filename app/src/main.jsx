@@ -10,6 +10,17 @@ import Root from './Root'
 // bundle. #/design-system → the Step-1 component gallery.
 const DV3Gallery = React.lazy(() => import('./dashboardV3/Gallery'))
 const DV3Screen0 = React.lazy(() => import('./dashboardV3/screen0/Screen0'))
+const DV3Screen1 = React.lazy(() => import('./dashboardV3/screen1/Screen1'))
+const DV3Screen2 = React.lazy(() => import('./dashboardV3/screen2/Screen2'))
+const DV3Screen3 = React.lazy(() => import('./dashboardV3/screen3/Screen3'))
+const DV3Screen4 = React.lazy(() => import('./dashboardV3/screen4/Screen4'))
+const DV3Screen5 = React.lazy(() => import('./dashboardV3/screen5/Screen5'))
+const DV3Screen6 = React.lazy(() => import('./dashboardV3/screen6/Screen6'))
+const DV3_ROUTES = [
+  ['#/design-system', DV3Gallery], ['#/dashboard', DV3Screen0], ['#/mine-pulse', DV3Screen0], ['#/production', DV3Screen1],
+  ['#/fleet', DV3Screen2], ['#/plant', DV3Screen3], ['#/health', DV3Screen4],
+  ['#/energy', DV3Screen5], ['#/safety', DV3Screen6],
+]
 function HashRouter() {
   const [hash, setHash] = React.useState(window.location.hash)
   React.useEffect(() => {
@@ -17,13 +28,12 @@ function HashRouter() {
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
-  const lazyPage = hash.startsWith('#/design-system') ? <DV3Gallery />
-    : hash.startsWith('#/mine-pulse') ? <DV3Screen0 />
-    : null
-  if (lazyPage) {
+  const match = DV3_ROUTES.find(([prefix]) => hash.startsWith(prefix))
+  if (match) {
+    const Page = match[1]
     return (
       <React.Suspense fallback={<div style={{ minHeight: '100vh', background: '#EBEEF4' }} />}>
-        {lazyPage}
+        <Page />
       </React.Suspense>
     )
   }

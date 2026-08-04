@@ -58,10 +58,13 @@ const customAssetTypes = scene.customAssetTypes || {}
 {
   const cv = objects['cv-01']
   const injected = cv.parameters?.motorTemp == null
-  cv.parameters = { ...cv.parameters, motorTemp: CV_BASE_TEMP + (HISTORY ? cvResidual(0) : cvResidual(30)), motorCurrent: 142 }
+  cv.parameters = { ...cv.parameters, motorTemp: CV_BASE_TEMP + (HISTORY ? cvResidual(0) : cvResidual(30)), motorCurrent: 142, vibration: 2.1 }
   cv.paramMeta = { ...cv.paramMeta,
     motorTemp: { custom: true, label: 'Drive Motor Temp', unit: '°C', frequency: '5s' },
-    motorCurrent: { custom: true, label: 'Drive Motor Current', unit: 'A', frequency: '5s' } }
+    motorCurrent: { custom: true, label: 'Drive Motor Current', unit: 'A', frequency: '5s' },
+    // flat vibration — the visible rule-out on Screen 4 (thermal drift with
+    // steady vibration ⇒ cooling path, not a bearing)
+    vibration: { custom: true, label: 'Drive Vibration', unit: 'mm/s', frequency: '5s' } }
   console.log(`cv-01 motor params: ${injected ? 'injected at load (spec lacks them)' : 'present in spec'}`)
 }
 
@@ -96,19 +99,27 @@ function writeChain(o, c, thermal, residual, dt) {
   const set = (id, patch, st) => { const x = o[id]; if (!x) return; x.parameters = { ...x.parameters, ...patch }; if (st) { x.state = st.state ?? x.state; x.status = st.status ?? x.status } }
   const romTph = c.flows.crushIn / YIELD
   set('crusher-1', { throughput: r1(romTph) }, c.state.crush === 'down' ? { state: 'fault', status: 'fault' } : { state: 'crushing', status: 'running' })
-  set('screen-1', { feedRate: r1(c.flows.chpIn / YIELD) })
-  set('chpp-1', { feedRate: r1(c.flows.chpIn / YIELD), yield: r1(YIELD * 100) })
+  // Downstream of the crusher: when almost no feed reaches a stage it is STARVED
+  // — the status must say idle so the Gantt and Screen-1 chain agree with the
+  // arbitration classifier (waiting-on-feed, not a fault of its own).
+  const RmH = Math.min(...Object.values(RATED)) / 60          // reference t/min
+  const chpStarved = c.flows.chpIn / 60 < RmH * 0.05           // <5% of reference into CHP
+  const dispStarved = c.flows.dispatched / 60 < RmH * 0.05
+  set('screen-1', { feedRate: r1(c.flows.chpIn / YIELD) }, chpStarved ? { status: 'idle' } : { status: 'running' })
+  set('chpp-1', { feedRate: r1(c.flows.chpIn / YIELD), yield: r1(YIELD * 100) }, chpStarved ? { status: 'idle' } : { status: 'running' })
+  set('stacker-1', {}, chpStarved ? { status: 'idle' } : { status: 'running' })
   // CV-01: belt load + LOAD-AWARE drive thermal model. During starvation the
   // absolute temp falls toward no-load expected while the residual keeps
-  // climbing — load is thereby ruled out as the cause.
+  // climbing — load is thereby ruled out as the cause. NB: CV-01 stays RUNNING
+  // with load → 0 (the empty-belt story) — it is not idle, it is running empty.
   const cvLoad = clamp(c.flows.chpIn / RATED.chp, 0, 1)
   const mt = thermal.step(cvLoad, residual, dt)
-  set('cv-01', { load: r1(cvLoad * 100), motorTemp: mt.temp, motorCurrent: mt.current })
+  set('cv-01', { load: r1(cvLoad * 100), motorTemp: mt.temp, motorCurrent: mt.current, vibration: r1(2.05 + cvLoad * 0.18) }, { status: 'running' })
   set('pile-1', { stockTonnes: r1(480 + c.buf.chp) })
   const disp = c.flows.dispatched
   trainT += (disp * railShare) / 3600 * dt
-  set('loadout-1', { loadRate: r1(disp * railShare), trainLoadedT: r1(trainT), wagonsLoaded: Math.floor(trainT / 64) })
-  set('shiploader-1', { loadRate: r1(disp * (1 - railShare)), loadedThisShift: r1((o['shiploader-1']?.parameters?.loadedThisShift ?? 0) + disp * (1 - railShare) / 3600 * dt) })
+  set('loadout-1', { loadRate: r1(disp * railShare), trainLoadedT: r1(trainT), wagonsLoaded: Math.floor(trainT / 64) }, dispStarved ? { status: 'idle' } : { status: 'running' })
+  set('shiploader-1', { loadRate: r1(disp * (1 - railShare)), loadedThisShift: r1((o['shiploader-1']?.parameters?.loadedThisShift ?? 0) + disp * (1 - railShare) / 3600 * dt) }, dispStarved ? { status: 'idle' } : { status: 'running' })
   const faceIdle = c.state.face === 'idle'
   set('exc-coal-1', {}, faceIdle ? { status: 'idle' } : { status: 'running' })
   set('loader-1', {}, faceIdle ? { status: 'idle' } : { status: 'running' })

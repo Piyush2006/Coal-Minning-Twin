@@ -6,94 +6,47 @@
 // unification (pre-Screen-4 gate).
 import { useEffect, useMemo, useState } from 'react'
 import '../tokens.css'
-import { StatusPatternDefs, STATUS } from '../patterns'
-import { Card, Reading, ConfidenceBadge, MaturityBadge, Pill, Segmented, AlertCard } from '../ui'
-import { useScrub, useFixtures, ensureFixtures, startReplayDriver, SHIFT_MIN } from './store'
-import { deriveShift, deriveGantt, NAV_TREE, BUCKET_LABEL, STAGE_LABEL } from './derive'
+import { Card, Reading, ConfidenceBadge, MaturityBadge, AlertCard } from '../ui'
+import { ScreenFrame } from '../chrome'
+import { useScrub } from './store'
+import { deriveGantt, BUCKET_LABEL, STAGE_LABEL } from './derive'
 import { Waterfall } from './Waterfall'
 import { Ribbon, ConstraintShares } from './Ribbon'
 import { Gantt } from './Gantt'
 
 const mono = 'var(--font-mono)'
-const STATUS_DOT = { running: '#12A16E', idle: '#E0A32E', fault: '#E04B4B', off: '#DCE1E9' }
-const OWNER = {
-  Proximity: ['Shift In-charge', 'now'], 'Worker Safety': ['Safety Officer', 'now'], Geofence: ['Safety Officer', '4 h'],
-  TPMS: ['Dispatch', '4 h'], Haulage: ['Dispatch', '2 h'], 'HEMM PdM': ['Reliability', '48 h'],
-  'Vibration CBM': ['Reliability', '7 d'], 'Conveyor Vision': ['CHP Control', '2 h'], 'CHP SEC': ['Energy', '7 d'], 'Dust & Env': ['Environment', '1 h'],
-}
-const sevOf = (e) => (e.sev === 'critical' ? (e.useCase === 'Proximity' || e.useCase === 'Worker Safety' ? 'P1' : 'P2') : e.sev === 'warn' ? 'P3' : 'P4')
 
 export default function Screen0() {
-  const { fx, error } = useFixtures()
-  useEffect(() => { ensureFixtures(); return startReplayDriver() }, [])
-  if (error) return <Shell><Card title="Fixture failed to load"><div className="dv3-support">{error}</div></Card></Shell>
-  if (!fx) return <Shell><Card title="Mine Pulse"><div className="dv3-support">Loading golden shift…</div></Card></Shell>
-  return <Loaded fx={fx} />
+  return <ScreenFrame title="Mine Pulse" renderMain={(ctx) => <PulseMain {...ctx} />} />
 }
 
-const Shell = ({ children }) => (
-  <div className="dv3" style={{ minHeight: '100vh', padding: 32 }}>{children}</div>
-)
-
-function Loaded({ fx }) {
-  const tMin = useScrub(s => s.tMin)
-  const m = Math.floor(tMin)
-  const derived = useMemo(() => deriveShift(fx), [fx])
+function PulseMain({ fx, derived, m }) {
   const gantt = useMemo(() => deriveGantt(fx), [fx])
   const snap = useMemo(() => derived.atMinute(m), [derived, m])
   const drill = useScrub(s => s.drill)
-
   return (
-    <div className="dv3" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <StatusPatternDefs />
-      <TopBar derived={derived} />
-      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-        <NavRail fx={fx} m={m} derived={derived} />
-        <main style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 40px', minWidth: 0 }}>
-          <K1 derived={derived} snap={snap} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.65fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
-            <Card title={`Production loss attribution — to ${derived.fmt(m)}`} density="airy">
-              <Waterfall snap={snap} width={660} />
-            </Card>
-            <Card title="Shift constraint — bottleneck of record">
-              <Ribbon derived={derived} m={m} width={430} />
-              <ConstraintShares derived={derived} m={m} />
-              <ConstraintReading derived={derived} snap={snap} m={m} />
-            </Card>
-          </div>
-          <Card title="Equipment state timeline" density="working" style={{ marginTop: 16 }}>
-            <Gantt rows={gantt} derived={derived} m={m} width={1020} />
-          </Card>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16, marginTop: 16 }}>
-            <SafetyCard fx={fx} derived={derived} m={m} />
-            <RiskCard fx={fx} derived={derived} m={m} />
-            <StrippingCard fx={fx} derived={derived} m={m} />
-          </div>
-        </main>
-        <ActionRail derived={derived} m={m} />
+    <>
+      <K1 derived={derived} snap={snap} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.65fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
+        <Card title={`Production loss attribution — to ${derived.fmt(m)}`} density="airy">
+          <Waterfall snap={snap} width={660} />
+        </Card>
+        <Card title="Shift constraint — bottleneck of record">
+          <Ribbon derived={derived} m={m} width={430} />
+          <ConstraintShares derived={derived} m={m} />
+          <ConstraintReading derived={derived} snap={snap} m={m} />
+        </Card>
+      </div>
+      <Card title="Equipment state timeline" density="working" style={{ marginTop: 16 }}>
+        <Gantt rows={gantt} derived={derived} m={m} width={1020} />
+      </Card>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16, marginTop: 16 }}>
+        <SafetyCard fx={fx} derived={derived} m={m} />
+        <RiskCard fx={fx} derived={derived} m={m} />
+        <StrippingCard fx={fx} derived={derived} m={m} />
       </div>
       {drill && <DrillOverlay derived={derived} m={m} />}
-    </div>
-  )
-}
-
-/* ── top bar with the global scrubber ── */
-function TopBar({ derived }) {
-  const { tMin, playing, speed, setT, setPlaying, setSpeed } = useScrub()
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 20px', background: 'var(--surface)', boxShadow: 'var(--card-shadow)', zIndex: 5 }}>
-      <div style={{ fontWeight: 650, fontSize: 15, letterSpacing: '-0.01em' }}>Blackridge · Mine Pulse</div>
-      <span className="dv3-chip" style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}>Shift B · 04 Aug</span>
-      <span style={{ flex: 0.06 }} />
-      <button className="dv3-btn dv3-btn--ghost" style={{ padding: '6px 12px', fontSize: 14 }} onClick={() => setPlaying(!playing)}>{playing ? '❚❚' : '▶'}</button>
-      <input type="range" min={0} max={SHIFT_MIN} step={0.5} value={tMin} onChange={e => setT(+e.target.value)}
-        style={{ flex: 1, accentColor: 'var(--accent)' }} aria-label="shift time scrubber" />
-      <span className="dv3-mono" style={{ fontSize: 13, fontWeight: 700, width: 46 }}>{derived.fmt(Math.floor(tMin))}</span>
-      <Segmented options={['60×', '120×', '240×']} value={`${speed}×`} onChange={v => setSpeed(parseInt(v))} />
-      <span className="dv3-chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)', fontWeight: 700 }}>REPLAY</span>
-      <span className="dv3-chip" title="Live binding lands with plane unification (before Screen 4)" style={{ background: 'var(--surface-2)', color: 'var(--text-tertiary)' }}>LIVE ·soon</span>
-      <a href="#/design-system" style={{ fontSize: 12, color: 'var(--text-tertiary)', textDecoration: 'none' }}>design system →</a>
-    </div>
+    </>
   )
 }
 
@@ -186,64 +139,6 @@ function ConstraintReading({ derived, snap, m }) {
   if (!cs.top) return <Reading>The chain has run at reference rate so far.</Reading>
   const t = Math.round(snap.buckets[{ crush: 'crushing', face: 'faceLoading', dispatch: 'dispatch', haul: 'haulage', chp: 'chp' }[cs.top.root]] ?? 0)
   return <Reading>{STAGE_LABEL[cs.top.root] ?? cs.top.root} has been the constraint for {Math.round(cs.top.share * 100)}% of this shift — about {t} t.</Reading>
-}
-
-/* ── twin navigator ── */
-function NavRail({ fx, m, derived }) {
-  const [open, setOpen] = useState(true)
-  const selection = useScrub(s => s.selection)
-  const select = useScrub(s => s.select)
-  const snap = useMemo(() => fx.snapshot(derived.t0 + m * 60000), [fx, m, derived])
-  if (!open) return <div style={{ width: 26, display: 'flex', alignItems: 'flex-start', padding: 6 }}><button className="dv3-btn dv3-btn--ghost" style={{ padding: '4px 7px' }} onClick={() => setOpen(true)}>›</button></div>
-  return (
-    <aside style={{ width: 212, flexShrink: 0, overflowY: 'auto', padding: '14px 10px 24px 16px', borderRight: '1px solid var(--hairline)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-        <div className="dv3-cardhead">Twin navigator</div><span style={{ flex: 1 }} />
-        <button className="dv3-btn dv3-btn--ghost" style={{ padding: '2px 7px', fontSize: 11 }} onClick={() => setOpen(false)}>‹</button>
-      </div>
-      {NAV_TREE.map(g => (
-        <div key={g.label} style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '6px 0 4px' }}>{g.label}</div>
-          {g.assets.map(([id, label]) => {
-            const st = snap[id]?.status ?? 'running'
-            return (
-              <button key={id} onClick={() => select(id)}
-                style={{ display: 'flex', alignItems: 'center', gap: 7, width: '100%', border: 'none', cursor: 'pointer', textAlign: 'left',
-                  background: selection === id ? 'var(--accent-soft)' : 'transparent', borderRadius: 7, padding: '4px 8px', fontSize: 12.5,
-                  color: selection === id ? 'var(--accent)' : 'var(--text-secondary)', fontFamily: 'var(--font-ui)' }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: STATUS_DOT[st] ?? '#DCE1E9', flexShrink: 0 }} />
-                {label}
-              </button>
-            )
-          })}
-        </div>
-      ))}
-    </aside>
-  )
-}
-
-/* ── action-center rail ── */
-function ActionRail({ derived, m }) {
-  const eps = useMemo(() => derived.episodes(m).slice().sort((a, b) => b.firstT - a.firstT), [derived, m])
-  const activeish = eps.filter(e => e.active || m * 60 - e.lastT < 1800).slice(0, 7)
-  return (
-    <aside style={{ width: 296, flexShrink: 0, overflowY: 'auto', padding: '14px 16px 24px 10px', borderLeft: '1px solid var(--hairline)' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
-        <div className="dv3-cardhead">Action center</div>
-        <span className="dv3-chip" style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}>{activeish.length} open</span>
-      </div>
-      <div style={{ display: 'grid', gap: 8 }}>
-        {activeish.length === 0 && <div className="dv3-support">Nothing needs attention at {derived.fmt(m)}.</div>}
-        {activeish.map(e => {
-          const [owner, sla] = OWNER[e.useCase] ?? ['—', '—']
-          return (
-            <AlertCard key={e.key + e.firstT} compact severity={sevOf(e)} asset={`${derived.fmt(Math.floor(e.firstT / 60))} · ${e.useCase}`}
-              hypothesis={e.msg} owner={owner} sla={sla} />
-          )
-        })}
-      </div>
-    </aside>
-  )
 }
 
 /* ── row-2 cards ── */
