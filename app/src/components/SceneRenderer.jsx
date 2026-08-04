@@ -6,6 +6,7 @@ import { useSceneStore } from '../store/sceneStore'
 import { useActiveAlerts, alertSeverityMap, ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
 import { useFeedStore } from './CameraFeed'
 import { pathFillMap } from '../lib/loadStateMap'
+import { vehicleMotion, accelFor, effectiveCap, integrate, stoppingSpeed } from '../lib/vehicleMotion'
 import { MACHINE_COMPONENTS, getPorts } from '../lib/machineLibrary'
 import { CompositeAsset } from './CompositeAsset'
 import { SubComponentsLayer } from './SubComponentsLayer'
@@ -136,63 +137,129 @@ function MaybePathDrive({ obj, editMode, children }) {
   return <PathDrive obj={obj} editMode={editMode}>{children}</PathDrive>
 }
 
+// Motion-shaping constants (all subtle by design — see self-check "lean/dip
+// subtle"). Curvature slows the vehicle in bends; yaw eases toward the tangent
+// instead of snapping; pitch/roll come from longitudinal / lateral accel.
+const CURVE_K = 6, CURVE_FLOOR = 0.4       // v_limit = max·clamp(1−κ·K, FLOOR, 1)
+const YAW_K = 5                            // yaw ease rate (higher = snappier)
+const PITCH_K = 0.020, PITCH_MAX = 0.026   // ~1.5° nose dip/lift from accel
+const ROLL_K = 0.016, ROLL_MAX = 0.035     // ~2° bank into corners
+const _clampf = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
+
 function PathDrive({ obj, editMode, children }) {
-  const ref = useRef()
+  const ref = useRef()      // outer: position + yaw
+  const tilt = useRef()     // inner: body pitch/roll/settle (vehicle-local frame)
   const path = obj.config?.path
   const key = JSON.stringify(path?.waypoints ?? null)
-  const curve = useMemo(() => {
+  // curve + arc length + a curvature LUT (κ per sample), all memoised together.
+  const geom = useMemo(() => {
     const wps = path?.waypoints
     if (!Array.isArray(wps) || wps.length < 2) return null
-    return new CatmullRomCurve3(wps.map(w => new Vector3(w[0], w[1] ?? 0, w[2])), path.loop !== false, 'centripetal')
+    const curve = new CatmullRomCurve3(wps.map(w => new Vector3(w[0], w[1] ?? 0, w[2])), path.loop !== false, 'centripetal')
+    const len = curve.getLength() || 1
+    const N = 96
+    const curv = new Float32Array(N)
+    const a = new Vector3(), b = new Vector3()
+    for (let i = 0; i < N; i++) {
+      curve.getTangentAt(i / N, a)
+      curve.getTangentAt(((i + 1) % N) / N, b)       // wrap to 0 on the last cell (loop)
+      let d = a.dot(b); d = d > 1 ? 1 : d < -1 ? -1 : d
+      curv[i] = Math.acos(d) / (len / N)             // κ ≈ dθ/ds
+    }
+    return { curve, len, curv, N }
   }, [key]) // eslint-disable-line react-hooks/exhaustive-deps
-  useFrame(({ clock }) => {
+
+  useFrame((_, delta) => {
     const g = ref.current
-    if (!g || !curve) return
+    if (!g || !geom) return
+    const st = vehicleMotion(obj.id)
+    // parked (edit / not running / disabled): sit at the authored pose, freeze.
     if (editMode || obj.status !== 'running' || obj.config?.enabled === false) {
       g.position.set(0, 0, 0); g.rotation.y = 0
+      if (tilt.current) { tilt.current.rotation.set(0, 0, 0); tilt.current.position.y = 0 }
+      st.v = 0
       return
     }
-    const len = curve.getLength()
-    if (!len) return
-    const speed = path.speed ?? 3
+    const { curve, len, curv, N } = geom
+    const dtc = Math.min(delta || 0.016, 0.05)   // clamp dt (tab-refocus spikes)
+    const maxSpeed = path.speed ?? 3
     const dwell = Math.max(0, Number(path.dwell) || 0)
-    const travel = len / speed                       // seconds to drive the loop once
-    const cycle = travel + dwell
-    const u = (clock.elapsedTime + (path.phase ?? 0) * cycle) % cycle
-    const t = u < dwell ? 0 : Math.min((u - dwell) / travel, 0.9999)   // park at waypoint 0, then drive
-
-    // ── load state (generic): parts flagged material.loadState read this ──
-    // While dwelling at waypoint 0 the load RAMPS 0→1 (being loaded, e.g. by
-    // the excavator's dig-swings); it stays full until `loadState.dumpAt`
-    // (fraction of the loop where the vehicle tips), then empty for the
-    // return leg. Vehicles without loadState stay permanently full (legacy).
+    const { accel, decel } = accelFor(obj.type)
     const ls = path.loadState
-    // path.loadedSlow (>1): the LOADED leg (up to dumpAt) is driven that much
-    // slower, the empty return correspondingly faster — same cycle time. f is
-    // the warped ARC fraction; position and load state both read it so trucks
-    // still flip loaded/empty exactly at the dump point.
-    let f = t
-    const slow = Number(path.loadedSlow) || 0
-    if (ls && slow > 1) {
-      const dA = ls.dumpAt ?? 0.5
-      const TA = dA * slow, T = TA + (1 - dA)
-      const tau = t * T
-      f = tau < TA ? tau / slow : dA + (tau - TA)
+
+    // first running frame: distribute along the loop from path.phase and start
+    // at cruise (so the fleet doesn't visibly spin up from a standstill on load).
+    if (!st.initDone) {
+      st.arc = (((path.phase ?? 0) % 1) + 1) % 1 * len
+      curve.getTangentAt(_clampf(st.arc / len, 0, 0.999999), _pdTan)
+      st.yaw = Math.atan2(-_pdTan.z, _pdTan.x) - (obj.rotation?.[1] ?? 0)
+      st.v = maxSpeed
+      st.initDone = true
     }
+
+    // ── speed target = MIN of cruise / loadedSlow / curvature / dwell-approach,
+    //    then folded with any external caps + hard stops (proximity, director) ─
+    const f0 = st.arc / len
+    let cruise = maxSpeed
+    const slow = Number(path.loadedSlow) || 0
+    if (ls && slow > 1 && f0 < (ls.dumpAt ?? 0.5)) cruise = maxSpeed / slow   // slower while loaded
+    const kappa = curv[Math.min(N - 1, Math.floor(f0 * N))] || 0
+    let cap = Math.min(cruise, maxSpeed * _clampf(1 - kappa * CURVE_K, CURVE_FLOOR, 1))
+    // anticipate the dwell stop at waypoint 0 (ease OUT, not screech to a halt)
+    if (dwell > 0 && st.dwellT <= 0) cap = Math.min(cap, stoppingSpeed(len - st.arc, decel))
+    // hold during the dwell
+    if (st.dwellT > 0) { st.dwellT = Math.max(0, st.dwellT - dtc); cap = 0 }
+
+    const prevYaw = st.yaw
+    integrate(st, effectiveCap(st, cap), accel, decel, dtc)
+
+    // arrival at wp0 → begin the dwell; plain loop wrap otherwise
+    if (dwell > 0 && st.dwellT <= 0 && (len - st.arc) < 0.25 && st.v < 0.4) {
+      st.arc = 0; st.v = 0; st.dwellT = dwell
+    }
+    if (st.arc >= len) st.arc = path.loop !== false ? st.arc - len : len
+    const f = _clampf(st.arc / len, 0, 0.999999)
+
+    // ── load fill (unchanged semantics): ramps 0→1 while parked, then 1 until
+    //    dumpAt, then 0 for the return leg. Rising edge kicks a load-settle dip.
     if (ls) {
-      let fill
-      if (dwell > 0 && u < dwell) fill = Math.min(1, u / (dwell * 0.85))
-      else fill = f < (ls.dumpAt ?? 0.5) ? 1 : 0
+      const fill = st.dwellT > 0 ? Math.min(1, (1 - st.dwellT / dwell) / 0.85)
+        : f < (ls.dumpAt ?? 0.5) ? 1 : 0
+      if ((st._fill ?? 0) < 0.9 && fill >= 0.9) st.settle = 1
+      st._fill = fill
       pathFillMap[obj.id] = fill
     }
+
+    // position
     const p = curve.getPointAt(f, _pdPos)
-    const tan = curve.getTangentAt(f, _pdTan)
     g.position.set(p.x - obj.position[0], p.y - obj.position[1], p.z - obj.position[2])
-    // vehicle forward = +X; yaw from the path tangent, minus the authored yaw
-    g.rotation.y = Math.atan2(-tan.z, tan.x) - (obj.rotation?.[1] ?? 0)
+
+    // yaw: damped shortest-angle ease toward the tangent (kills the corner snap)
+    const tan = curve.getTangentAt(f, _pdTan)
+    const targetYaw = Math.atan2(-tan.z, tan.x) - (obj.rotation?.[1] ?? 0)
+    let dy = targetYaw - st.yaw
+    while (dy > Math.PI) dy -= 2 * Math.PI
+    while (dy < -Math.PI) dy += 2 * Math.PI
+    st.yaw += dy * Math.min(1, dtc * YAW_K)
+    g.rotation.y = st.yaw
+
+    // body dynamics (inner group, vehicle frame): pitch from accel, roll from
+    // lateral accel (v·yawRate), plus a decaying settle when freshly loaded.
+    if (tilt.current) {
+      const accelInst = (st.v - st.prevV) / Math.max(dtc, 1e-4)
+      const yawRate = ((st.yaw - prevYaw)) / Math.max(dtc, 1e-4)
+      const pitchT = _clampf(-accelInst * PITCH_K, -PITCH_MAX, PITCH_MAX)
+      const rollT = _clampf(st.v * yawRate * ROLL_K, -ROLL_MAX, ROLL_MAX)
+      st.pitch += (pitchT - st.pitch) * Math.min(1, dtc * 6)
+      st.roll += (rollT - st.roll) * Math.min(1, dtc * 6)
+      if (st.settle > 0.001) st.settle *= Math.pow(0.05, dtc); else st.settle = 0
+      tilt.current.rotation.z = st.pitch          // nose up/down
+      tilt.current.rotation.x = st.roll           // bank
+      tilt.current.position.y = -0.03 * st.settle // load squat, recovers
+    }
   })
-  if (!curve) return children
-  return <group ref={ref}>{children}</group>
+  if (!geom) return children
+  return <group ref={ref}><group ref={tilt}>{children}</group></group>
 }
 
 // ── AlertIndicator (generic, replaces the old StatusLamp) ──────────────────

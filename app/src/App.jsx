@@ -15,6 +15,7 @@ import { TEMPLATES }          from './lib/templates'
 import { getSchema, coerceConfigValue } from './lib/assetSchemas'
 import { effectiveParamDefs, paramFreqKey, FREQUENCIES } from './lib/parameterSchemas'
 import { getConnectorSchema }   from './lib/connectorSchemas'
+import { vehicleState } from './lib/vehicleMotion'
 import { RuleEditor }           from './components/RuleEditor'
 import { SceneRenderer }      from './components/SceneRenderer'
 import { Connectors }         from './components/Connectors'
@@ -1669,6 +1670,7 @@ function DevFreezeHook() {
         window.__dt.step = () => three.advance(t)
       },
       frameSubCount: () => three.internal.subscribers.length,
+      vstate: (id) => { const s = vehicleState(id); return s ? { arc: +s.arc.toFixed(2), v: +s.v.toFixed(3), yaw: +s.yaw.toFixed(3), pitch: +s.pitch.toFixed(4), roll: +s.roll.toFixed(4), dwellT: +s.dwellT.toFixed(2) } : null },
       workerTris: () => { let n = 0; three.scene.traverse(o => { for (let a = o; a; a = a.parent) if (a.name === 'worker-1') { if (o.isMesh && o.geometry) { const g = o.geometry; n += (g.index ? g.index.count : g.attributes.position.count) / 3 } break } }); return Math.round(n) },
       // Structural digest: every mesh's identity/transform/material — the
       // deterministic "did anything visible change" check (rotation excluded:
