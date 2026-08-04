@@ -23,7 +23,8 @@ import { MaterialFlowLayer }  from './components/effects/MaterialFlow'
 import { CameraFeedRenderer, CameraFeedPanel } from './components/CameraFeed'
 import { RestrictedZones } from './components/safety/RestrictedZones'
 import { ProximityLayer, NearMissActor } from './components/safety/ProximityLayer'
-import { proximityState } from './lib/proximity'
+import { DetectionBoxLayer } from './components/safety/DetectionBoxLayer'
+import { proximityState, workerBreachInfo as _workerBreachInfo } from './lib/proximity'
 import { startNearMiss, stopNearMiss, nearMissActive, phantom as _phantom } from './lib/nearMissDirector'
 import { ShopFloorEnvironment } from './components/ShopFloorEnvironment'
 import { MACHINE_LIBRARY }    from './lib/machineLibrary'
@@ -1560,6 +1561,7 @@ export default function App() {
                 <MaterialFlowLayer />
                 <RestrictedZones />
                 <ProximityLayer />
+                <DetectionBoxLayer />
                 <NearMissActor />
                 <CameraController orbitRef={orbitRef} />
                 <TourDriver orbitRef={orbitRef} />
@@ -1715,6 +1717,7 @@ function DevFreezeHook() {
       stopNearMiss: () => stopNearMiss(),
       nearMissActive: () => nearMissActive(),
       proxState: (id) => proximityState(id),
+      breachInfo: (id) => _workerBreachInfo(id),
       safetyOn: (v) => useSafetyLayer.getState().setOn(!!v),
       phantomState: () => ({ ..._phantom }),
       placePhantom: (x, z) => { _phantom.x = x; _phantom.y = 0; _phantom.z = z; _phantom.active = true; return true },  // detection is always-on; leave visuals off for fast headless frames

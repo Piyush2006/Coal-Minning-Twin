@@ -17,7 +17,7 @@ import { useSceneStore } from '../../store/sceneStore'
 import { useSafetyLayer } from '../../lib/safetyLayer'
 import { workerPosMap } from '../../lib/workerPosMap'
 import { vehicleState, setSpeedTarget, clearSpeedTarget, requestStop, releaseStop } from '../../lib/vehicleMotion'
-import { proximityStateMap, zonesFor, zoneTest, zoneOutline } from '../../lib/proximity'
+import { proximityStateMap, workerBreach, zonesFor, zoneTest, zoneOutline } from '../../lib/proximity'
 import { liveSafety, seedCounters } from '../../lib/liveSafety'
 import { phantom } from '../../lib/nearMissDirector'
 import { SiteWorker } from '../assets/SiteWorker'
@@ -76,11 +76,14 @@ function VehicleZone({ id, type }) {
     const st = vehicleState(id)
     const g = grp.current
     if (!g || !st || !st.initDone) { if (g) g.visible = false; return }
-    g.visible = true
-    g.position.set(st.wx, 0.08, st.wz)
-    g.rotation.y = st.yaw
     const state = proximityStateMap.get(id) || 'ok'
     const breach = state === 'danger', warn = state === 'warn'
+    // visible when the safety layer is on OR this vehicle is in a live breach —
+    // so the zone the worker is entering shows even with the layer off.
+    g.visible = useSafetyLayer.getState().on || state !== 'ok'
+    if (!g.visible) return
+    g.position.set(st.wx, 0.08, st.wz)
+    g.rotation.y = st.yaw
     const col = breach ? DANGER_COLOR : warn ? WARN_COLOR : OK_COLOR
     const pulse = 0.5 + 0.5 * Math.sin(clock.elapsedTime * 5)
     // outer ring = warning colour; inner = danger colour. Dim when idle, bright + pulse on breach.
@@ -149,8 +152,13 @@ export function ProximityLayer() {
     for (const [wid, w] of workerPosMap) workers.push({ id: wid, x: w.pos.x, z: w.pos.z })
 
     let siteMinWorker = Infinity, anyInnerWorker = false
-    const workerWorst = new Map()
+    const wInfo = new Map()       // workerId -> { rank, vehId, dist }  (rank: 2 danger / 1 warn)
+    const objects = useSceneStore.getState().objects
     let bestDanger = null
+    const noteWorker = (tid, rank, vehId, dist) => {
+      const cur = wInfo.get(tid)
+      if (!cur || rank > cur.rank || (rank === cur.rank && dist < cur.dist)) wInfo.set(tid, { rank, vehId, dist })
+    }
 
     for (const veh of vs) {
       const z = zonesFor(veh.type)
@@ -162,15 +170,14 @@ export function ProximityLayer() {
         const inr = zoneTest(veh.x, veh.z, veh.yaw, tx, tz, z.inner)
         if (inr.inside) {
           worst = 'danger'
-          if (isWorker) anyInnerWorker = true
+          if (isWorker) { anyInnerWorker = true; noteWorker(tid, 2, veh.id, dist) }
           if (dist < closestDangerDist) { closestDangerDist = dist; closestTarget = { x: tx, z: tz } }
-          if (isWorker) workerWorst.set(tid, 'danger')
           return
         }
         const out = zoneTest(veh.x, veh.z, veh.yaw, tx, tz, z.outer)
         if (out.inside) {
           if (worst === 'ok') worst = 'warn'
-          if (isWorker && workerWorst.get(tid) !== 'danger') workerWorst.set(tid, 'warn')
+          if (isWorker) noteWorker(tid, 1, veh.id, dist)
         }
       }
       for (const w of workers) consider(w.x, w.z, true, w.id)
@@ -189,8 +196,15 @@ export function ProximityLayer() {
       }
     }
 
-    // worker tag colours (read by SiteWorker's ring) + state map
-    for (const w of workers) { const s = workerWorst.get(w.id) || 'ok'; proximityStateMap.set(w.id, s); const reg = workerPosMap.get(w.id); if (reg) reg.prox = s }
+    // worker tag colours (read by SiteWorker's ring) + state map + breach detail
+    for (const w of workers) {
+      const info = wInfo.get(w.id)
+      const s = info ? (info.rank === 2 ? 'danger' : 'warn') : 'ok'
+      proximityStateMap.set(w.id, s)
+      const reg = workerPosMap.get(w.id); if (reg) reg.prox = s
+      if (info) workerBreach.set(w.id, { state: s, vehId: info.vehId, vehName: objects[info.vehId]?.name || info.vehId, dist: info.dist })
+      else workerBreach.delete(w.id)
+    }
 
     // ── bridge → safety-1 (existing params/rules) ──
     liveSafety.minWorkerVehicleDistance = siteMinWorker === Infinity ? 60 : Math.round(siteMinWorker)
@@ -206,7 +220,7 @@ export function ProximityLayer() {
     const d = danger.current
     const ln = lineRef.current, wrap = labelWrapRef.current
     if (!ln || !wrap) return
-    if (!on || !d.active) { ln.visible = false; wrap.visible = false; return }
+    if (!d.active) { ln.visible = false; wrap.visible = false; return }   // shown on breach even with layer off
     ln.visible = true; wrap.visible = true
     const pos = ln.geometry.attributes.position
     pos.setXYZ(0, d.ax, 1.4, d.az); pos.setXYZ(1, d.bx, 1.0, d.bz); pos.needsUpdate = true
@@ -214,7 +228,8 @@ export function ProximityLayer() {
     if (labelRef.current) labelRef.current.textContent = `${d.dist.toFixed(1)} m · AUTO-STOP`
   })
 
-  if (!on) return null
+  // always mounted: detection + breach-visible zones run regardless of the layer;
+  // each VehicleZone / the danger overlay control their own visibility.
   return (
     <group>
       {vehicles.map(v => <VehicleZone key={v.id} id={v.id} type={v.type} />)}
@@ -223,11 +238,10 @@ export function ProximityLayer() {
         <lineBasicMaterial color={DANGER_COLOR} transparent opacity={0.9} toneMapped={false} depthTest={false} />
       </line>
       <group ref={labelWrapRef}>
-        <Html center distanceFactor={42} style={{ pointerEvents: 'none' }}>
-          <div ref={labelRef} style={{ fontFamily: "'SF Mono', ui-monospace, monospace", fontSize: 12, fontWeight: 800, letterSpacing: 0.3,
-            color: '#fff', background: 'rgba(200,32,24,0.85)', border: '1px solid rgba(255,120,100,0.7)',
-            borderRadius: 6, padding: '3px 9px', whiteSpace: 'nowrap' }}>— m</div>
-        </Html>
+        <Html center distanceFactor={9} style={{ pointerEvents: 'none' }}>
+          <div ref={labelRef} style={{ fontFamily: "'SF Mono', ui-monospace, monospace", fontSize: 11, fontWeight: 800, letterSpacing: 0.2,
+            color: '#fff', background: 'rgba(200,32,24,0.9)', border: '1px solid rgba(255,120,100,0.7)',
+            borderRadius: 5, padding: '2px 7px', whiteSpace: 'nowrap' }} /></Html>
       </group>
     </group>
   )

@@ -204,9 +204,9 @@ export function CameraFeedPanel() {
           <div key={b.id} style={{ position: 'absolute', left: `${b.x * 100}%`, top: `${b.y * 100}%`,
             width: `${b.w * 100}%`, height: `${b.h * 100}%`, transform: 'translate(-50%, -50%)',
             border: `2px solid ${col}`, borderRadius: 3, boxShadow: `0 0 8px ${col}66`, pointerEvents: 'none' }}>
-            <span style={{ position: 'absolute', top: -13, left: -2, fontFamily: mono, fontSize: 8.5, fontWeight: 700,
-              color: '#0b0e12', background: col, borderRadius: 3, padding: '0 4px', whiteSpace: 'nowrap' }}>
-              {b.compliant ? 'PPE OK' : 'PPE VIOLATION'} · {b.conf}%
+            <span style={{ position: 'absolute', top: -13, left: -2, fontFamily: mono, fontSize: 8, fontWeight: 700,
+              color: b.compliant ? '#0b0e12' : '#fff', background: col, borderRadius: 3, padding: '0 4px', whiteSpace: 'nowrap' }}>
+              {b.compliant ? 'SAFETY COMPLIANT' : 'SAFETY VIOLATION'} · {b.conf}%
             </span>
             {!b.compliant && (
               <span style={{ position: 'absolute', bottom: -13, left: -2, fontFamily: mono, fontSize: 8, fontWeight: 700,

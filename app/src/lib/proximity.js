@@ -6,6 +6,11 @@
 export const proximityStateMap = new Map()   // objId (vehicle or worker) -> 'ok' | 'warn' | 'danger'
 export function proximityState(id) { return proximityStateMap.get(id) || 'ok' }
 
+// Per-worker breach detail for the detection-box labels — the worst vehicle
+// breaching each worker + the live distance. Written by ProximityLayer each tick.
+export const workerBreach = new Map()   // workerId -> { state, vehId, vehName, dist }
+export function workerBreachInfo(id) { return workerBreach.get(id) || null }
+
 // per-type zone extents (metres): f = front, r = rear (blind spot), s = side.
 export const PROX_ZONES = {
   haul_truck:    { outer: { f: 14, r: 26, s: 9 },   inner: { f: 7, r: 13, s: 5 } },
