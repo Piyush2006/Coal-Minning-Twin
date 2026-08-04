@@ -18,6 +18,7 @@ import { create } from 'zustand'
 import { useSceneStore } from '../store/sceneStore'
 import { useActiveAlerts, alertSeverityMap, ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
 import { beltWatchWorldPos } from './Connectors'
+import { ppeCameraDetections, PPE_LABEL } from '../lib/ppeVision'
 import { nightMix } from '../lib/dayNight'
 import { C, R, FONT, glass, SHADOW } from '../ui/theme'
 
@@ -27,14 +28,16 @@ export const FEED_W = 384, FEED_H = 216, FEED_LEFT = 300, FEED_BOTTOM = 24
 export const useFeedStore = create((set) => ({
   feedId: null,
   // detection box projected into the feed (updated by the renderer, throttled)
-  box: null,                       // { x, y, w, h } in 0..1 panel coords, or null
+  box: null,                       // { x, y } belt-cam single box in 0..1 panel coords, or null
+  boxes: [],                       // PPE-cam multi-person boxes [{id,x,y,w,h,compliant,missing,conf}]
   scale: 1,                        // 1x default; 2x for big-screen demos
   _panelEl: null,                  // DOM panel node — the render rect derives from it
-  openFeed: (id) => set({ feedId: id, box: null }),
-  closeFeed: () => set({ feedId: null, box: null }),
+  openFeed: (id) => set({ feedId: id, box: null, boxes: [] }),
+  closeFeed: () => set({ feedId: null, box: null, boxes: [] }),
   toggleScale: () => set(st => ({ scale: st.scale === 1 ? 2 : 1 })),
   _setPanelEl: (el) => set({ _panelEl: el }),
   _setBox: (box) => set({ box }),
+  _setBoxes: (boxes) => set({ boxes }),
 }))
 
 const _eye = new THREE.Vector3(), _tgt = new THREE.Vector3(), _dir = new THREE.Vector3()
@@ -47,7 +50,7 @@ export function CameraFeedRenderer() {
   const frame = useRef(0)
 
   useFrame(({ gl, scene, size }) => {
-    const { feedId, _setBox, box, scale } = useFeedStore.getState()
+    const { feedId, _setBox, _setBoxes, box, scale } = useFeedStore.getState()
     if (!feedId) return                                     // zero cost when closed
     const objects = useSceneStore.getState().objects
     const obj = objects[feedId]
@@ -93,13 +96,31 @@ export function CameraFeedRenderer() {
     gl.setViewport(0, 0, size.width, size.height)
     gl.autoClear = prevAutoClear
 
-    // throttled: project the detection point into panel coords for the bbox overlay
-    if ((frame.current++ % 10) === 0) {
-      _proj.set(watchPos[0], watchPos[1] + 0.1, watchPos[2]).project(fc)   // box sits ON the spot
-      if (_proj.z < 1 && Math.abs(_proj.x) < 1.2 && Math.abs(_proj.y) < 1.2) {
-        const nb = { x: (_proj.x + 1) / 2, y: 1 - (_proj.y + 1) / 2 }
-        if (!box || Math.abs(box.x - nb.x) > 0.01 || Math.abs(box.y - nb.y) > 0.01) _setBox(nb)
-      } else if (box) _setBox(null)
+    // throttled: project detections into panel coords for the overlay boxes
+    if ((frame.current++ % 6) === 0) {
+      if (obj.type === 'ppe_camera') {
+        // one box PER detected worker: project head + feet → a person-shaped box,
+        // coloured by PPE compliance. This is the multi-person vision overlay.
+        const out = []
+        for (const d of ppeCameraDetections(feedId)) {
+          const wx = d.pos[0], wz = d.pos[2]
+          _proj.set(wx, 1.72, wz).project(fc)                 // head
+          const hx = _proj.x, hy = _proj.y, hz = _proj.z
+          _proj.set(wx, 0.06, wz).project(fc)                 // feet
+          const cx = (hx + _proj.x) / 2
+          if (hz >= 1 || Math.abs(cx) > 1.3) continue          // behind camera / off-frame
+          const topY = 1 - (hy + 1) / 2, botY = 1 - (_proj.y + 1) / 2
+          const h = Math.max(0.05, botY - topY)
+          out.push({ id: d.id, x: (cx + 1) / 2, y: (topY + botY) / 2, w: h * 0.42, h, compliant: d.compliant, missing: d.missing, conf: d.conf })
+        }
+        _setBoxes(out)
+      } else {
+        _proj.set(watchPos[0], watchPos[1] + 0.1, watchPos[2]).project(fc)   // box sits ON the spot
+        if (_proj.z < 1 && Math.abs(_proj.x) < 1.2 && Math.abs(_proj.y) < 1.2) {
+          const nb = { x: (_proj.x + 1) / 2, y: 1 - (_proj.y + 1) / 2 }
+          if (!box || Math.abs(box.x - nb.x) > 0.01 || Math.abs(box.y - nb.y) > 0.01) _setBox(nb)
+        } else if (box) _setBox(null)
+      }
     }
   }, 100)   // AFTER the EffectComposer pass
 
@@ -112,6 +133,7 @@ const mono = "'SF Mono', ui-monospace, Menlo, monospace"
 export function CameraFeedPanel() {
   const feedId = useFeedStore(s => s.feedId)
   const box = useFeedStore(s => s.box)
+  const boxes = useFeedStore(s => s.boxes)
   const scale = useFeedStore(s => s.scale)
   const closeFeed = useFeedStore(s => s.closeFeed)
   const toggleScale = useFeedStore(s => s.toggleScale)
@@ -132,6 +154,8 @@ export function CameraFeedPanel() {
   const sev = sevMap[feedId] ?? null
   const sevColor = sev ? ALERT_SEVERITY_COLOR[sev] : null
   const camAlert = alerts.find(a => a.objId === feedId)
+  const isPpe = obj.type === 'ppe_camera'
+  const ppeViol = boxes.filter(b => !b.compliant).length
 
   return (
     <div ref={el => useFeedStore.getState()._setPanelEl(el)}
@@ -165,7 +189,36 @@ export function CameraFeedPanel() {
           style={{ background: 'none', border: 'none', color: '#e8edf2', fontSize: 14, cursor: 'pointer', lineHeight: 1, padding: '0 2px' }}>×</button>
       </div>
 
-      {/* detection tag + fake vision-model bounding box */}
+      {/* PPE multi-person detection: one box per worker, coloured by compliance */}
+      {isPpe && (
+        <div style={{ position: 'absolute', top: 30, left: 8, display: 'inline-flex', alignItems: 'center', gap: 6,
+          fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: '#e8edf2',
+          background: 'rgba(8,10,14,0.6)', borderRadius: 4, padding: '2px 7px', pointerEvents: 'none' }}>
+          <span style={{ color: '#E8863B' }}>PPE-VISION</span>
+          {boxes.length} detected{ppeViol > 0 && <span style={{ color: '#F04438' }}> · {ppeViol} violation{ppeViol > 1 ? 's' : ''}</span>}
+        </div>
+      )}
+      {isPpe && boxes.map(b => {
+        const col = b.compliant ? '#12B76A' : '#F04438'
+        return (
+          <div key={b.id} style={{ position: 'absolute', left: `${b.x * 100}%`, top: `${b.y * 100}%`,
+            width: `${b.w * 100}%`, height: `${b.h * 100}%`, transform: 'translate(-50%, -50%)',
+            border: `2px solid ${col}`, borderRadius: 3, boxShadow: `0 0 8px ${col}66`, pointerEvents: 'none' }}>
+            <span style={{ position: 'absolute', top: -13, left: -2, fontFamily: mono, fontSize: 8.5, fontWeight: 700,
+              color: '#0b0e12', background: col, borderRadius: 3, padding: '0 4px', whiteSpace: 'nowrap' }}>
+              {b.compliant ? 'PPE OK' : 'PPE VIOLATION'} · {b.conf}%
+            </span>
+            {!b.compliant && (
+              <span style={{ position: 'absolute', bottom: -13, left: -2, fontFamily: mono, fontSize: 8, fontWeight: 700,
+                color: '#F04438', background: 'rgba(11,14,18,0.85)', borderRadius: 3, padding: '0 4px', whiteSpace: 'nowrap' }}>
+                missing {b.missing.map(m => PPE_LABEL[m]).join(', ')}
+              </span>
+            )}
+          </div>
+        )
+      })}
+
+      {/* detection tag + fake vision-model bounding box (belt cams) */}
       {camAlert && (
         <div style={{ position: 'absolute', bottom: 6, left: 8, right: 8, display: 'flex', pointerEvents: 'none' }}>
           <span style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: '#0b0e12',

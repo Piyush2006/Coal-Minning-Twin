@@ -1,0 +1,121 @@
+{
+  "label": "PPE Detection Camera",
+  "category": "Coal Mining",
+  "layer": "structural",
+  "parts": [
+    {
+      "id": "footing",
+      "label": "Footing",
+      "parentId": null,
+      "geometry": "box",
+      "dims": { "width": 0.7, "height": 0.25, "depth": 0.7 },
+      "position": [ 0, 0.125, 0 ],
+      "material": { "color": "@concrete", "metalness": 0.04, "roughness": 0.92 }
+    },
+    {
+      "id": "pole",
+      "label": "Pole",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": { "radius": 0.09, "height": 3.4 },
+      "position": [ 0, 1.95, 0 ],
+      "material": { "color": "@darkSteel", "metalness": 0.6, "roughness": 0.45 }
+    },
+    {
+      "id": "poleBand",
+      "label": "PPE Vision Band",
+      "parentId": null,
+      "geometry": "cylinder",
+      "dims": { "radius": 0.1, "height": 0.35 },
+      "position": [ 0, 3.2, 0 ],
+      "material": { "color": "#E8863B", "metalness": 0.3, "roughness": 0.4, "polygonOffset": true }
+    },
+    {
+      "id": "headPivot",
+      "label": "Camera Head",
+      "parentId": null,
+      "kind": "group",
+      "position": [ 0, 3.7, 0 ],
+      "rotation": [ 0, 0, -0.3 ]
+    },
+    {
+      "id": "camBody",
+      "label": "Housing",
+      "parentId": "headPivot",
+      "geometry": "roundedBox",
+      "dims": { "width": 0.95, "height": 0.4, "depth": 0.44, "bevel": 0.08 },
+      "position": [ 0.35, 0, 0 ],
+      "material": { "color": "@securityWhite", "metalness": 0.35, "roughness": 0.35, "weather": { "kind": "dust", "amount": 0.2 } }
+    },
+    {
+      "id": "snout",
+      "label": "Lens Hood",
+      "parentId": "headPivot",
+      "geometry": "cylinder",
+      "dims": { "radius": 0.17, "height": 0.28 },
+      "position": [ 0.92, 0, 0 ],
+      "rotation": [ 0, 0, 1.5708 ],
+      "material": { "color": "#E8863B", "metalness": 0.35, "roughness": 0.35 }
+    },
+    {
+      "id": "lens",
+      "label": "Lens",
+      "parentId": "headPivot",
+      "geometry": "cylinder",
+      "dims": { "radius": 0.12, "height": 0.05 },
+      "position": [ 1.07, 0, 0 ],
+      "rotation": [ 0, 0, 1.5708 ],
+      "material": { "color": "#141a20", "metalness": 0.3, "roughness": 0.1 }
+    },
+    {
+      "id": "shield",
+      "label": "Sun Shield",
+      "parentId": "headPivot",
+      "geometry": "box",
+      "dims": { "width": 1.0, "height": 0.06, "depth": 0.5 },
+      "position": [ 0.42, 0.24, 0 ],
+      "material": { "color": "@securityWhite", "metalness": 0.35, "roughness": 0.35 }
+    },
+    {
+      "id": "watchLed",
+      "label": "Status Light",
+      "parentId": "headPivot",
+      "geometry": "sphere",
+      "dims": { "radius": 0.09 },
+      "position": [ -0.18, 0.07, 0.24 ],
+      "material": {
+        "color": "#3ecf6f",
+        "metalness": 0.1,
+        "roughness": 0.3,
+        "emissive": "#3ecf6f",
+        "emissiveIntensity": 1.3,
+        "alertGlow": true
+      }
+    },
+    {
+      "id": "junctionBox",
+      "label": "Junction Box",
+      "parentId": null,
+      "geometry": "box",
+      "dims": { "width": 0.32, "height": 0.44, "depth": 0.2 },
+      "position": [ 0, 1.2, 0.16 ],
+      "material": { "color": "@structureGrey", "metalness": 0.5, "roughness": 0.5 }
+    }
+  ],
+  "ports": [],
+  "config": [
+    { "key": "enabled", "label": "Watching", "type": "boolean", "default": true },
+    { "key": "speed", "label": "LED Pulse", "type": "number", "default": 0.7, "min": 0, "max": 3, "step": 0.1 }
+  ],
+  "parameters": [
+    { "key": "ppeDetected",    "label": "Persons Detected",   "unit": "",  "default": 0,   "min": 0, "max": 20,  "freq": "5s" },
+    { "key": "ppeViolations",  "label": "PPE Violations",     "unit": "",  "default": 0,   "min": 0, "max": 20,  "freq": "5s" },
+    { "key": "complianceRate", "label": "PPE Compliance",     "unit": "%", "default": 100, "min": 0, "max": 100, "freq": "5s" },
+    { "key": "eventPos",       "label": "Detection Position", "unit": "% span", "default": 50, "min": 0, "max": 100, "freq": "manual" }
+  ],
+  "states": [
+    { "key": "watching", "label": "Watching",      "color": "#34c759", "severity": "ok" },
+    { "key": "degraded", "label": "Degraded Feed",  "color": "#ff9f0a", "severity": "warn" },
+    { "key": "offline",  "label": "Offline",        "color": "#ff3b30", "severity": "down" }
+  ]
+}

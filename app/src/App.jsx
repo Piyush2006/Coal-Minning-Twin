@@ -21,6 +21,7 @@ import { SceneRenderer }      from './components/SceneRenderer'
 import { Connectors }         from './components/Connectors'
 import { MaterialFlowLayer }  from './components/effects/MaterialFlow'
 import { CameraFeedRenderer, CameraFeedPanel } from './components/CameraFeed'
+import { RestrictedZones } from './components/safety/RestrictedZones'
 import { ShopFloorEnvironment } from './components/ShopFloorEnvironment'
 import { MACHINE_LIBRARY }    from './lib/machineLibrary'
 import { dragGuard }          from './lib/interactionGuard'
@@ -39,6 +40,11 @@ import { DashboardPreviewRenderer } from './components/dashboard/DashboardPrevie
 import { useDashboard, syncDashboardForScene } from './lib/dashboardStore'
 import { tickMineModel } from './lib/mineModel'
 import { tickZoneHistory } from './lib/zoneHistory'
+import { tickPpeVision, ppeCameraDetections, siteCompliance } from './lib/ppeVision'
+import { tickSafetyBridge, liveSafety } from './lib/liveSafety'
+import { evaluateAlerts } from './lib/alertsEngine'
+import { useFeedStore } from './components/CameraFeed'
+import { workerPosMap as _workerPosMap } from './lib/workerPosMap'
 import { useDayNight } from './lib/dayNight'
 import { useViewTab } from './lib/viewTab'
 import { CommandPalette }     from './components/CommandPalette'
@@ -1321,11 +1327,11 @@ export default function App() {
     const tick = () => {
       if (import.meta.env.DEV && window.__dtNoSim) return   // parity harness drives ticks explicitly
       if (import.meta.env.DEV) performance.mark('dt-tick-a')
-      useSceneStore.getState().simulateTick(); const o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o)
+      useSceneStore.getState().simulateTick(); let o = useSceneStore.getState().objects; tickPpeVision(o); tickSafetyBridge(o); o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o)
       if (import.meta.env.DEV) { performance.mark('dt-tick-b'); performance.measure('dt-tick', 'dt-tick-a', 'dt-tick-b') }
     }
     const t = setInterval(tick, 1000)
-    if (import.meta.env.DEV) window.__dt = { ...(window.__dt || {}), simTimer: t, tick: () => { useSceneStore.getState().simulateTick(); const o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o) } }
+    if (import.meta.env.DEV) window.__dt = { ...(window.__dt || {}), simTimer: t, tick: () => { useSceneStore.getState().simulateTick(); let o = useSceneStore.getState().objects; tickPpeVision(o); tickSafetyBridge(o); o = useSceneStore.getState().objects; tickMineModel(o); tickZoneHistory(o) } }
     return () => clearInterval(t)
   }, [])
 
@@ -1543,6 +1549,7 @@ export default function App() {
                 <SceneRenderer orbitRef={orbitRef} glowMap={glowMap} />
                 <Connectors />
                 <MaterialFlowLayer />
+                <RestrictedZones />
                 <CameraController orbitRef={orbitRef} />
                 <TourDriver orbitRef={orbitRef} />
                 {!dashOn && <Kpi3DLayer />}
@@ -1671,6 +1678,27 @@ function DevFreezeHook() {
       },
       frameSubCount: () => three.internal.subscribers.length,
       vstate: (id) => { const s = vehicleState(id); return s ? { arc: +s.arc.toFixed(2), v: +s.v.toFixed(3), yaw: +s.yaw.toFixed(3), pitch: +s.pitch.toFixed(4), roll: +s.roll.toFixed(4), dwellT: +s.dwellT.toFixed(2) } : null },
+      // patch a dot-path into an object's config (e.g. patchConfig('worker-2','ppe.helmet',false))
+      patchConfig: (id, path, value) => {
+        const o = useSceneStore.getState().objects[id]; if (!o) return false
+        const keys = String(path).split('.'); const cfg = { ...(o.config || {}) }; let n = cfg
+        for (let i = 0; i < keys.length - 1; i++) { n[keys[i]] = { ...(n[keys[i]] || {}) }; n = n[keys[i]] }
+        n[keys[keys.length - 1]] = value
+        useSceneStore.getState().updateObject(id, { config: cfg }); return true
+      },
+      // ── Stage-3 PPE / safety test accessors ──
+      openFeed: (id) => useFeedStore.getState().openFeed(id),
+      closeFeed: () => useFeedStore.getState().closeFeed(),
+      ppeDet: (id) => ppeCameraDetections(id),
+      camParams: (id) => ({ ...(useSceneStore.getState().objects[id]?.parameters || {}) }),
+      safetyParams: () => ({ ...(useSceneStore.getState().objects['safety-1']?.parameters || {}) }),
+      liveSafety: () => ({ ...liveSafety }),
+      siteCompliance: () => siteCompliance(useSceneStore.getState().objects),
+      ppeAlerts: () => evaluateAlerts(useSceneStore.getState().objects).filter(a => a.useCase === 'PPE Vision' || a.useCase === 'Worker Safety').map(a => ({ objId: a.objId, useCase: a.useCase, severity: a.severity, message: a.message })),
+      moveWorker: (id, x, z) => { const o = useSceneStore.getState().objects[id]; if (!o) return false; useSceneStore.getState().updateObject(id, { position: [x, o.position[1], z] }); return true },
+      workerWorld: (id) => { const w = _workerPosMap.get(id); return w ? [+w.pos.x.toFixed(2), +w.pos.y.toFixed(2), +w.pos.z.toFixed(2)] : null },
+      workerIds: () => [..._workerPosMap.keys()],
+      objPos: (id) => { const o = useSceneStore.getState().objects[id]; return o ? [...o.position] : null },
       workerTris: () => { let n = 0; three.scene.traverse(o => { for (let a = o; a; a = a.parent) if (a.name === 'worker-1') { if (o.isMesh && o.geometry) { const g = o.geometry; n += (g.index ? g.index.count : g.attributes.position.count) / 3 } break } }); return Math.round(n) },
       // Structural digest: every mesh's identity/transform/material — the
       // deterministic "did anything visible change" check (rotation excluded:

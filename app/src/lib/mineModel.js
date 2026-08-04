@@ -8,6 +8,8 @@
 // module state seeded as if the shift started SHIFT_START_H hours ago.
 import { fleetRunning, lowestRul, worstVibration } from './accumulators'
 import { recordParam, getParamHistory } from './paramHistory'
+import { liveSafety } from './liveSafety'
+import { siteCompliance } from './ppeVision'
 
 // ── config: nominal rates (t/h) + plan + factors ──
 export const SHIP_CAPACITY = 82000   // t — used for ship fill %
@@ -185,9 +187,13 @@ export function getModel(objects) {
   // CO2 today is ARITHMETICALLY TIED to diesel + grid energy (one number).
   const gridKWhToday = S.today.product * sec
   const co2TodayT = (dieselTodayL * CFG.dieselKgPerL + gridKWhToday * CFG.gridCo2KgPerKwh) / 1000
-  // Safety / compliance (deterministic, from safety-1 sim + seeded PPE drift).
+  // Safety / compliance (from the safety-1 sim + REAL PPE-vision compliance).
   const sp = objects['safety-1']?.parameters || {}
-  const ppeCompliance = Math.min(100, Math.max(95, 98.2 + 1.6 * (vnoise(tH * 0.25 + 3, 41) * 2 - 1)))
+  // ppeCompliance is now REAL: derived from every worker's live config.ppe by the
+  // PPE-vision system (liveSafety bridge), computed from configs directly as the
+  // fallback before the first vision tick. One helmet off → 95.2 (amber). No more
+  // synthetic vnoise drift — the twin's PPE state IS the dashboard number.
+  const ppeCompliance = liveSafety.ppeCompliance != null ? liveSafety.ppeCompliance : siteCompliance(objects)
   const vehicleHoursToday = mobileCount(objects) * tH * (utilPct / 100)
   const geofenceViol = Number(sp.geofenceViolationsToday) || 0
   const geofenceRate = vehicleHoursToday > 0 ? geofenceViol / (vehicleHoursToday / 100) : 0

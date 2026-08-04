@@ -6,6 +6,11 @@
     "prompt": "Create a digital twin of the coal mining process flow (upstream mine operations, processing plant, downstream logistics & shipping)."
   },
   "groups": {
+    "grp_ppevision": {
+      "name": "PPE Detection (Worker Safety)",
+      "parentId": "grp_services",
+      "order": 1
+    },
     "grp_site": {
       "name": "Blackridge Coal Mine",
       "parentId": null,
@@ -298,6 +303,250 @@
     }
   },
   "objects": {
+    "ppe-cam-1": {
+      "type": "ppe_camera",
+      "name": "PPE Cam - Main Gate",
+      "position": [
+        15,
+        0,
+        -13
+      ],
+      "parentId": "grp_ppevision",
+      "order": 0,
+      "parameters": {
+        "ppeDetected": 0,
+        "ppeViolations": 0,
+        "complianceRate": 100,
+        "eventPos": 50
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "ppeDetected",
+          "ppeViolations",
+          "complianceRate"
+        ]
+      },
+      "config": {
+        "watch": {
+          "point": [
+            12,
+            1.6,
+            -16
+          ],
+          "radius": 12,
+          "fovDeg": 70
+        },
+        "alertRules": [
+          {
+            "id": "ppe-violation",
+            "param": "ppeViolations",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "PPE Vision",
+            "message": "PPE violation \u2014 {ppeViolations} worker(s) missing required PPE at Main Gate"
+          },
+          {
+            "id": "ppe-multi",
+            "param": "ppeViolations",
+            "op": ">",
+            "threshold": 1.5,
+            "severity": "critical",
+            "useCase": "PPE Vision",
+            "message": "Multiple PPE violations \u2014 {ppeViolations} workers non-compliant at Main Gate"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        2.36,
+        0
+      ]
+    },
+    "ppe-cam-2": {
+      "type": "ppe_camera",
+      "name": "PPE Cam - Plant Walkway",
+      "position": [
+        27,
+        0,
+        12
+      ],
+      "parentId": "grp_ppevision",
+      "order": 1,
+      "parameters": {
+        "ppeDetected": 0,
+        "ppeViolations": 0,
+        "complianceRate": 100,
+        "eventPos": 50
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "ppeDetected",
+          "ppeViolations",
+          "complianceRate"
+        ]
+      },
+      "config": {
+        "watch": {
+          "point": [
+            24,
+            1.6,
+            9.5
+          ],
+          "radius": 12,
+          "fovDeg": 70
+        },
+        "alertRules": [
+          {
+            "id": "ppe-violation",
+            "param": "ppeViolations",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "PPE Vision",
+            "message": "PPE violation \u2014 {ppeViolations} worker(s) missing required PPE at Plant Walkway"
+          },
+          {
+            "id": "ppe-multi",
+            "param": "ppeViolations",
+            "op": ">",
+            "threshold": 1.5,
+            "severity": "critical",
+            "useCase": "PPE Vision",
+            "message": "Multiple PPE violations \u2014 {ppeViolations} workers non-compliant at Plant Walkway"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        2.45,
+        0
+      ]
+    },
+    "ppe-cam-3": {
+      "type": "ppe_camera",
+      "name": "PPE Cam - Crusher Workshop",
+      "position": [
+        -27,
+        0,
+        7
+      ],
+      "parentId": "grp_ppevision",
+      "order": 2,
+      "parameters": {
+        "ppeDetected": 0,
+        "ppeViolations": 0,
+        "complianceRate": 100,
+        "eventPos": 50
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "ppeDetected",
+          "ppeViolations",
+          "complianceRate"
+        ]
+      },
+      "config": {
+        "watch": {
+          "point": [
+            -30,
+            1.6,
+            4
+          ],
+          "radius": 12,
+          "fovDeg": 70
+        },
+        "alertRules": [
+          {
+            "id": "ppe-violation",
+            "param": "ppeViolations",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "PPE Vision",
+            "message": "PPE violation \u2014 {ppeViolations} worker(s) missing required PPE at Crusher Workshop"
+          },
+          {
+            "id": "ppe-multi",
+            "param": "ppeViolations",
+            "op": ">",
+            "threshold": 1.5,
+            "severity": "critical",
+            "useCase": "PPE Vision",
+            "message": "Multiple PPE violations \u2014 {ppeViolations} workers non-compliant at Crusher Workshop"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        2.36,
+        0
+      ]
+    },
+    "ppe-cam-4": {
+      "type": "ppe_camera",
+      "name": "PPE Cam - CHP / Washery",
+      "position": [
+        4,
+        0,
+        12
+      ],
+      "parentId": "grp_ppevision",
+      "order": 3,
+      "parameters": {
+        "ppeDetected": 0,
+        "ppeViolations": 0,
+        "complianceRate": 100,
+        "eventPos": 50
+      },
+      "tooltip": {
+        "enabled": true,
+        "params": [
+          "ppeDetected",
+          "ppeViolations",
+          "complianceRate"
+        ]
+      },
+      "config": {
+        "watch": {
+          "point": [
+            4,
+            1.6,
+            6.6
+          ],
+          "radius": 14,
+          "fovDeg": 70
+        },
+        "alertRules": [
+          {
+            "id": "ppe-violation",
+            "param": "ppeViolations",
+            "op": ">",
+            "threshold": 0.5,
+            "severity": "warn",
+            "useCase": "PPE Vision",
+            "message": "PPE violation \u2014 {ppeViolations} worker(s) missing required PPE at CHP / Washery"
+          },
+          {
+            "id": "ppe-multi",
+            "param": "ppeViolations",
+            "op": ">",
+            "threshold": 1.5,
+            "severity": "critical",
+            "useCase": "PPE Vision",
+            "message": "Multiple PPE violations \u2014 {ppeViolations} workers non-compliant at CHP / Washery"
+          }
+        ]
+      },
+      "rotation": [
+        0,
+        1.5708,
+        0
+      ]
+    },
     "pit-1": {
       "type": "PitTerrain",
       "name": "Open Pit - West Cut",
@@ -4133,6 +4382,35 @@
       "config": {
         "hidden": true,
         "safetySignals": true,
+        "restrictedZones": [
+          {
+            "name": "Crusher Maintenance Bay",
+            "center": [
+              -30,
+              0,
+              -7
+            ],
+            "radius": 6
+          },
+          {
+            "name": "CHP Washery Floor",
+            "center": [
+              12,
+              0,
+              -5
+            ],
+            "radius": 6
+          },
+          {
+            "name": "Active Blast Area",
+            "center": [
+              -155,
+              -8,
+              -20
+            ],
+            "radius": 20
+          }
+        ],
         "alertRules": [
           {
             "id": "prox-crit",

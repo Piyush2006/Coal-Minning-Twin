@@ -108,6 +108,22 @@ function runTourAction(a, segIndex) {
         ok = useSceneStore.getState().selectedId == null && useFeedStore.getState().feedId == null && useViewTab.getState().tab === 'overview'
         assert = 'panels closed'
         break
+      case 'patchConfig': {
+        // set a dot-path value into an object's config (e.g. ppe.helmet=false to
+        // strip a worker's hard hat live). Writes the SAME config the twin + the
+        // PPE-vision detection both read, so the 3D and the alert flip together.
+        const id = resolve(a.target)
+        const obj = id && objects[id]
+        const path = String(a.params?.path || '').split('.').filter(Boolean)
+        if (!obj || !path.length) { ok = false; assert = 'bad target/path'; break }
+        const cfg = { ...(obj.config || {}) }
+        let node = cfg
+        for (let i = 0; i < path.length - 1; i++) { node[path[i]] = { ...(node[path[i]] || {}) }; node = node[path[i]] }
+        node[path[path.length - 1]] = a.params.value
+        useSceneStore.getState().updateObject(id, { config: cfg })
+        ok = true; assert = `${a.params.path}=${JSON.stringify(a.params.value)}`
+        break
+      }
       default: ok = false; assert = 'unknown type'
     }
   } catch (err) { ok = false; assert = String(err).slice(0, 60) }

@@ -213,7 +213,7 @@ export const ALERT_ROW_MAP = {
   'Haulage': 'fleet', 'TPMS': 'fleet',
   'CHP SEC': 'energy',
   'Dust & Env': 'env',
-  'Worker Safety': 'workers',
+  'Worker Safety': 'workers', 'PPE Vision': 'workers',
   'Proximity': 'prox', 'Geofence': 'prox',
   'Logistics': 'supply', 'Rail': 'supply', 'Shiploading': 'supply',
   'Optimization': 'ops', 'Production': 'prod',

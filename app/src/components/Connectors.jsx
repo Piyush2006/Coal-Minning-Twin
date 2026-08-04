@@ -401,6 +401,10 @@ export function beltWatchWorldPos(objects, watcherId) {
   const w = objects[watcherId]
   const watch = w?.config?.watch
   if (!watch) return null
+  // PPE cameras watch a fixed ground point (a walkway / gate), not a belt span —
+  // the aim target IS the point; the per-worker detection boxes are projected
+  // separately by the feed from live worker positions.
+  if (Array.isArray(watch.point)) return [watch.point[0], watch.point[1] ?? 1.6, watch.point[2]]
   const t = Math.min(0.97, Math.max(0.03, (Number(w.parameters?.eventPos) || 50) / 100))
   if (watch.assetId && objects[watch.assetId]) {
     const belt = objects[watch.assetId]
