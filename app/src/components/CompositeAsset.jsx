@@ -137,6 +137,7 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId 
     ? (useSceneStore.getState().environment?.sky?.night?.emissiveBoost ?? NIGHT_DEFAULTS.emissiveBoost)
     : 1
   const ref = useRef()
+  const waterMat = useRef()
   const phase = useRef(Math.random())   // stable per-instance offset → staggered loops (rising smoke)
   // Generic alert indicator light: a part flagged material.alertGlow renders
   // its normal calm emissive when idle, and switches to the shared alert
@@ -160,6 +161,14 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId 
         g.scale.y = sy
         g.position.y = ((part.dims?.height ?? 1) * (sy - 1)) / 2
       }
+    }
+    // animated water surface: scroll the normal/detail maps for a live shimmer
+    // (merged here — a second useFrame per part was pure subscription overhead)
+    const wm = waterMat.current
+    if (wm && part.material?.water) {
+      const ws = (part.material.waterSpeed ?? 1) * dt * 0.02
+      if (wm.normalMap) { wm.normalMap.offset.x += ws; wm.normalMap.offset.y += ws * 0.6 }
+      if (wm.roughnessMap) wm.roughnessMap.offset.x -= ws * 0.7
     }
     if (!part.animate) return
     const live = config.enabled !== false && status === 'running'
@@ -238,6 +247,27 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId 
       default: break
     }
   })
+  return (
+    <PrimitiveMesh part={part} meshRef={ref} waterMatRef={waterMat}
+      glowSev={glowSev} highlighted={highlighted} emissiveNightBoost={emissiveNightBoost} />
+  )
+}
+
+// Static parts (no animate / water / alertGlow / loadState) render the same
+// mesh with ZERO useFrame subscriptions — ~70% of all parts in a scene.
+function StaticPrimitive({ part, highlighted }) {
+  const nightOn = useDayNight(s => s.night)
+  const emissiveNightBoost = nightOn && part.material?.emissive
+    ? (useSceneStore.getState().environment?.sky?.night?.emissiveBoost ?? NIGHT_DEFAULTS.emissiveBoost)
+    : 1
+  return (
+    <PrimitiveMesh part={part} meshRef={undefined} waterMatRef={undefined}
+      glowSev={null} highlighted={highlighted} emissiveNightBoost={emissiveNightBoost} />
+  )
+}
+
+// The shared mesh/material body (identical output for both paths).
+function PrimitiveMesh({ part, meshRef, waterMatRef, glowSev, highlighted, emissiveNightBoost }) {
   const m = part.material || {}
   // Weathering (rust/dust/concrete/paint film) picks the procedural finish;
   // `granular` is shorthand for the bulk-solids finish (coal/ore/aggregate).
@@ -248,18 +278,9 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId 
   const v = m.vary ? (hash01(part.id) - 0.5) * m.vary : 0
   const rough = Math.min(1, Math.max(0, (m.roughness ?? 0.35) + v * 0.3 + (weather ? weather.amount * 0.25 : 0)))
   const metal = Math.min(1, Math.max(0, (m.metalness ?? 0.6) + v * -0.2 - (weather ? weather.amount * 0.15 : 0)))
-  // Animated water surface: scroll the normal/detail maps for a live shimmer.
-  const waterMat = useRef()
-  useFrame((_, dt) => {
-    const wm = waterMat.current
-    if (!wm || !m.water) return
-    const s = (m.waterSpeed ?? 1) * dt * 0.02
-    if (wm.normalMap) { wm.normalMap.offset.x += s; wm.normalMap.offset.y += s * 0.6 }
-    if (wm.roughnessMap) wm.roughnessMap.offset.x -= s * 0.7
-  })
   const waterTx = useMemo(() => (m.water ? getFinishMaps('rubber') : null), [m.water])  // fine pebbling reads as wavelets
   return (
-    <mesh ref={ref} castShadow receiveShadow>
+    <mesh ref={meshRef} castShadow receiveShadow>
       <PartGeometry part={part} />
       {m.transmission ? (
         // Real refractive glass / liquid (opt-in — costly, use sparingly on hero parts).
@@ -268,7 +289,7 @@ function AnimatedPrimitive({ part, config, status, highlighted, alertSev, objId 
           chromaticAberration={0.02} anisotropy={0.1} distortion={0.1} distortionScale={0.2} />
       ) : m.water ? (
         // Live water: low roughness + scrolling micro-normals (shimmer/ripples).
-        <meshStandardMaterial ref={waterMat}
+        <meshStandardMaterial ref={waterMatRef}
           color={resolveColor(m.color, '#2f6fb0')} metalness={m.metalness ?? 0.1} roughness={m.roughness ?? 0.22}
           envMapIntensity={m.envMapIntensity ?? 0.9}
           transparent={!!m.transparent} opacity={m.opacity ?? 1} depthWrite={m.transparent ? false : true} side={m.transparent ? 2 : 0}
@@ -306,6 +327,9 @@ export function PartVisual({ part, config = {}, status = 'running', depth = 0, h
   if (part.kind === 'component') return <RefBlock refType={part.ref} depth={depth} />
   if (part.kind === 'model') return <ModelVisual part={part} />
   if (part.kind === 'emitter') return <ParticleEmitter {...(part.emitter || {})} active={config.enabled !== false && status === 'running'} />
+  const pm = part.material || {}
+  const needsFrame = !!(part.animate || pm.water || pm.alertGlow || pm.loadState)
+  if (!needsFrame) return <StaticPrimitive part={part} highlighted={highlighted} />
   return <AnimatedPrimitive part={part} config={config} status={status} highlighted={highlighted} alertSev={alertSev} objId={objId} />
 }
 

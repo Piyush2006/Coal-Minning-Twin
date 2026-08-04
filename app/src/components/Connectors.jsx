@@ -10,6 +10,8 @@ import { ConveyorItem }   from './ConveyorBelt'
 import { ITEM_MAP }       from '../lib/itemLibrary'
 import { resolveColor }   from '../lib/paletteTokens'
 
+const _ccPos = new THREE.Vector3()   // scratch: per-frame belt-item position (no alloc)
+
 // ── Conveyor belt swept along the connector curve ──────────────────────────
 // One CONTINUOUS belt (gray surface + amber guide rails + legs) that bends to
 // follow the curve, so it reads the same as a straight belt — just curved.
@@ -112,8 +114,8 @@ function CurveConveyor({ curve, config }) {
       if (t > 1) t -= 1
       prog.current[i] = t
       const g = refs.current[i]; if (!g) continue
-      const p = curve.getPointAt(t)
-      g.position.set(p.x, p.y + itemY, p.z)
+      curve.getPointAt(t, _ccPos)
+      g.position.set(_ccPos.x, _ccPos.y + itemY, _ccPos.z)
     }
   })
 

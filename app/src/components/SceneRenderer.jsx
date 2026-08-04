@@ -104,6 +104,38 @@ const LIFT = 1.0   // how far a selected asset / line "pops" up (view mode)
 // loop. The store object keeps its authored position (selection, connectors
 // and snapping unaffected); only the rendered mesh is offset. Paused in edit
 // mode and when not running.
+// Hook-free gate: only actual path-driven movers mount PathDrive (and its
+// per-frame subscription); everything else renders children directly.
+const _pdPos = new Vector3(), _pdTan = new Vector3()
+
+// One frame subscriber animates the selection pop for whichever objects want
+// it (the selected one / selected-group members) — byte-identical math to the
+// old per-object callbacks, minus 63 idle subscriptions.
+const popRegistry = new Map()
+function SelectionPopDriver() {
+  useFrame(() => {
+    for (const e of popRegistry.values()) {
+      const g = e.g.current
+      if (!g) continue
+      if (!e.want && e.v === 0) continue
+      if (e.edit) { e.v = 0; continue }
+      const target = e.want ? LIFT : 0
+      e.v += (target - e.v) * 0.14
+      if (e.v < 0.003) e.v = 0
+      g.position.y = e.baseY + e.v
+      const k = 1 + e.v * 0.03
+      g.scale.set(e.baseScale[0] * k, e.baseScale[1] * k, e.baseScale[2] * k)
+    }
+  })
+  return null
+}
+
+function MaybePathDrive({ obj, editMode, children }) {
+  const wps = obj.config?.path?.waypoints
+  if (!Array.isArray(wps) || wps.length < 2) return children
+  return <PathDrive obj={obj} editMode={editMode}>{children}</PathDrive>
+}
+
 function PathDrive({ obj, editMode, children }) {
   const ref = useRef()
   const path = obj.config?.path
@@ -153,8 +185,8 @@ function PathDrive({ obj, editMode, children }) {
       else fill = f < (ls.dumpAt ?? 0.5) ? 1 : 0
       pathFillMap[obj.id] = fill
     }
-    const p = curve.getPointAt(f)
-    const tan = curve.getTangentAt(f)
+    const p = curve.getPointAt(f, _pdPos)
+    const tan = curve.getTangentAt(f, _pdTan)
     g.position.set(p.x - obj.position[0], p.y - obj.position[1], p.z - obj.position[2])
     // vehicle forward = +X; yaw from the path tangent, minus the authored yaw
     g.rotation.y = Math.atan2(-tan.z, tan.x) - (obj.rotation?.[1] ?? 0)
@@ -282,7 +314,6 @@ function SceneObjectImpl({ obj, orbitRef, glowColor, allowLight, inGroup, pointR
   const customAssetTypes = useSceneStore(s => s.customAssetTypes)
   // zustand actions are stable references — read once, no subscription
   const { selectObject, flyToObject, updateObject, commitTransform, addConnection, clearSelection } = useSceneStore.getState()
-  const popRef     = useRef(0)
   // Ground planes (built-in Floor, or any custom type flagged `ground` e.g. a
   // plant grade/apron) cover the whole scene — skip pop/lift/fly cues AND don't
   // grab selection on click (a click on the ground deselects, like empty space).
@@ -293,18 +324,15 @@ function SceneObjectImpl({ obj, orbitRef, glowColor, allowLight, inGroup, pointR
   // Selection "pop": in view mode, the selected asset (or every member of a
   // selected group/line) lifts + scales up slightly — a clearer cue than a
   // ground ring. Never runs in edit mode so it can't fight the gizmo transform.
-  useFrame(() => {
-    const g = groupRef.current
-    if (!g) return
-    const want = !editMode && !isGround && (isSelected || inGroup)
-    if (!want && popRef.current === 0) return
-    if (editMode) { popRef.current = 0; return }
-    const target = want ? LIFT : 0
-    popRef.current += (target - popRef.current) * 0.14
-    if (popRef.current < 0.003) popRef.current = 0
-    g.position.y = obj.position[1] + popRef.current
-    const k = 1 + popRef.current * 0.03
-    g.scale.set(obj.scale[0] * k, obj.scale[1] * k, obj.scale[2] * k)
+  // Selection pop is driven by ONE global subscriber (SelectionPopDriver) —
+  // register this object's group + base transform; keep them fresh on change.
+  useEffect(() => {
+    popRegistry.set(obj.id, { g: groupRef, baseY: obj.position[1], baseScale: obj.scale, isGround, want: false, v: 0 })
+    return () => { popRegistry.delete(obj.id) }
+  }, [obj.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const e = popRegistry.get(obj.id)
+    if (e) { e.baseY = obj.position[1]; e.baseScale = obj.scale; e.isGround = isGround; e.want = !editMode && !isGround && (isSelected || inGroup); e.edit = editMode }
   })
 
   if (obj.config?.hidden) return null            // data-only object (KPIs/alerts, no 3D)
@@ -380,7 +408,7 @@ function SceneObjectImpl({ obj, orbitRef, glowColor, allowLight, inGroup, pointR
         onPointerMove={(e) => { if (editMode || isGround || !pointRef) return; e.stopPropagation(); if (e.point) pointRef.current.copy(e.point) }}
         onPointerOut={(e) => { if (editMode || !setHoveredId) return; e.stopPropagation(); setHoveredId(cur => (cur === obj.id ? null : cur)) }}
       >
-        <PathDrive obj={obj} editMode={editMode}>
+        <MaybePathDrive obj={obj} editMode={editMode}>
           {/* visualRef wraps ONLY the asset's own visual — the AlertIndicator
               measures it as a sibling, so its ring never inflates itself */}
           <group ref={visualRef}>
@@ -392,7 +420,7 @@ function SceneObjectImpl({ obj, orbitRef, glowColor, allowLight, inGroup, pointR
           {!isGround && obj.config?.alertIndicator !== false && alertSev && mounted && (
             <AlertIndicator severity={alertSev} targetRef={visualRef} />
           )}
-        </PathDrive>
+        </MaybePathDrive>
         {editMode && <PortDots obj={obj} isSelected={isSelected} />}
         {glowColor && <Glow color={glowColor} allowLight={allowLight} />}
       </group>
@@ -581,6 +609,7 @@ export function SceneRenderer({ orbitRef, glowMap = {} }) {
       {editMode && selectedGroupId && groupMembers?.size > 0 && (
         <GroupGizmo key={selectedGroupId} groupId={selectedGroupId} orbitRef={orbitRef} />
       )}
+      <SelectionPopDriver />
       {!editMode && <HoverTooltips hoveredId={hoveredId} pointRef={pointRef} />}
     </group>
   )
