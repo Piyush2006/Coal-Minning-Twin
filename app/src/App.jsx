@@ -1550,6 +1550,7 @@ export default function App() {
                 <CameraFeedRenderer />
                 <DashboardPreviewRenderer />
                 {import.meta.env.DEV && <DevFreezeHook />}
+                <ShadowCadence on={dashOn} />
 
                 <OrbitControls
                   ref={orbitRef}
@@ -1696,5 +1697,21 @@ function DevFreezeHook() {
       },
     }
   }, [three])
+  return null
+}
+
+
+// While the dashboard overlay fully covers the main view (only the small live
+// preview shows 3D), regenerating the 4096^2 PCSS shadow map every frame is
+// waste — pulse it at 2 Hz instead, restoring full auto-update on the twin.
+function ShadowCadence({ on }) {
+  const gl = useThree((s2) => s2.gl)
+  useEffect(() => {
+    if (!on) return
+    gl.shadowMap.autoUpdate = false
+    gl.shadowMap.needsUpdate = true
+    const iv = setInterval(() => { gl.shadowMap.needsUpdate = true }, 500)
+    return () => { clearInterval(iv); gl.shadowMap.autoUpdate = true; gl.shadowMap.needsUpdate = true }
+  }, [on, gl])
   return null
 }
