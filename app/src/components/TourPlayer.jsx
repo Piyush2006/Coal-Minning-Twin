@@ -24,6 +24,8 @@ import { useBlastStore } from './effects/BlastFX'
 import { useFeedStore } from './CameraFeed'
 import { useViewTab } from '../lib/viewTab'
 import { triggerScenario, clearScenario, clearAllScenarios, setScenarioExclusive } from '../lib/demoScenarios'
+import { useSafetyLayer } from '../lib/safetyLayer'
+import { startNearMiss, stopNearMiss } from '../lib/nearMissDirector'
 import { C, R, FONT, glass, SHADOW } from '../ui/theme'
 
 export const useTourStore = create((set) => ({
@@ -51,6 +53,8 @@ function tourCleanupUI() {
     if (feed.scale !== 1) useFeedStore.setState({ scale: 1 })
     useSceneStore.getState().clearSelection?.()
     useViewTab.getState().setTab('overview')
+    stopNearMiss()                          // director never leaks past its beat
+    useSafetyLayer.getState().setOn(false)  // safety overlay off between beats / on exit
   } catch { /* never stall the tour */ }
 }
 
@@ -107,6 +111,16 @@ function runTourAction(a, segIndex) {
         tourCleanupUI()
         ok = useSceneStore.getState().selectedId == null && useFeedStore.getState().feedId == null && useViewTab.getState().tab === 'overview'
         assert = 'panels closed'
+        break
+      case 'safetyLayer':
+        useSafetyLayer.getState().setOn(a.params?.on !== false)
+        ok = useSafetyLayer.getState().on === (a.params?.on !== false)
+        assert = `safety=${useSafetyLayer.getState().on}`
+        break
+      case 'director':
+        if (a.target === 'near-miss') { ok = !!startNearMiss(a.params); assert = ok ? 'near-miss armed' : 'no rolling truck' }
+        else if (a.target === 'stop') { stopNearMiss(); ok = true; assert = 'director stopped' }
+        else { ok = false; assert = 'unknown director target' }
         break
       case 'patchConfig': {
         // set a dot-path value into an object's config (e.g. ppe.helmet=false to

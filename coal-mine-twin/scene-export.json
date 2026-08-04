@@ -4715,12 +4715,12 @@
             "target": "ht01-idle"
           },
           {
-            "at": 2.0,
+            "at": 2,
             "type": "triggerScenario",
             "target": "ht03-tyre"
           },
           {
-            "at": 11.0,
+            "at": 11,
             "type": "clearScenario",
             "target": "ht01-idle"
           },
@@ -4792,7 +4792,7 @@
             "target": "cv01-idler"
           },
           {
-            "at": 2.0,
+            "at": 2,
             "type": "openFeed",
             "target": "cam-2",
             "params": {
@@ -4934,8 +4934,98 @@
         "night": true
       },
       {
+        "title": "Real-Time Worker Monitoring",
+        "subtitle": "AI vision at every gate and walkway \u2014 hard hat, hi-vis, boots, gloves. Any lapse flags in real time.",
+        "position": [
+          13,
+          5,
+          16
+        ],
+        "target": [
+          3,
+          1.3,
+          6.8
+        ],
+        "travel": 2.4,
+        "hold": 13,
+        "tag": "Real-Time Worker Monitoring",
+        "actions": [
+          {
+            "at": 0,
+            "type": "safetyLayer",
+            "params": {
+              "on": true
+            }
+          },
+          {
+            "at": 2,
+            "type": "openFeed",
+            "target": "ppe-cam-4",
+            "params": {
+              "size": 2
+            }
+          },
+          {
+            "at": 4,
+            "type": "patchConfig",
+            "target": "worker-2",
+            "params": {
+              "path": "ppe.helmet",
+              "value": false
+            }
+          },
+          {
+            "at": 10,
+            "type": "patchConfig",
+            "target": "worker-2",
+            "params": {
+              "path": "ppe.helmet",
+              "value": true
+            }
+          },
+          {
+            "at": 11.5,
+            "type": "closeFeed"
+          }
+        ]
+      },
+      {
+        "title": "Collision & Proximity Safety",
+        "subtitle": "RF proximity zones on every machine \u2014 a worker in the blind spot triggers an automatic stop.",
+        "position": [
+          -70,
+          40,
+          60
+        ],
+        "target": [
+          -110,
+          5,
+          -5
+        ],
+        "travel": 2.6,
+        "hold": 13,
+        "tag": "Collision & Proximity Safety",
+        "actions": [
+          {
+            "at": 0,
+            "type": "safetyLayer",
+            "params": {
+              "on": true
+            }
+          },
+          {
+            "at": 1.5,
+            "type": "director",
+            "target": "near-miss",
+            "params": {
+              "holdMs": 8000
+            }
+          }
+        ]
+      },
+      {
         "title": "Blackridge Coal Mine \u2014 Pit to Port",
-        "subtitle": "One living twin \u2014 {assetCount} assets, seven monitoring use cases, end to end.",
+        "subtitle": "One living twin \u2014 {assetCount} assets, nine monitoring use cases, end to end.",
         "position": [
           16,
           56,
@@ -5088,7 +5178,7 @@
           "geometry": "box",
           "dims": {
             "width": 0.7,
-            "height": 8.0,
+            "height": 8,
             "depth": 0.7
           },
           "position": [
@@ -5158,7 +5248,7 @@
           "geometry": "cylinder",
           "dims": {
             "radius": 0.12,
-            "height": 1.0
+            "height": 1
           },
           "position": [
             2.3,
@@ -5178,7 +5268,7 @@
           "geometry": "cylinder",
           "dims": {
             "radius": 0.12,
-            "height": 1.0
+            "height": 1
           },
           "position": [
             -2.4,
@@ -5274,13 +5364,13 @@
           "parentId": "carriage",
           "geometry": "box",
           "dims": {
-            "width": 1.0,
+            "width": 1,
             "height": 0.8,
-            "depth": 1.0
+            "depth": 1
           },
           "position": [
             0.6,
-            7.0,
+            7,
             0
           ],
           "material": {
@@ -5731,7 +5821,7 @@
           "dims": {
             "width": 6.5,
             "height": 0.18,
-            "depth": 1.0
+            "depth": 1
           },
           "position": [
             -1.8,
@@ -5966,8 +6056,8 @@
           "geometry": "box",
           "dims": {
             "width": 40,
-            "height": 5.0,
-            "depth": 9.0
+            "height": 5,
+            "depth": 9
           },
           "position": [
             -2,
@@ -5992,7 +6082,7 @@
           "geometry": "cone",
           "dims": {
             "radius": 4.4,
-            "height": 6.0
+            "height": 6
           },
           "position": [
             21,
@@ -6138,11 +6228,11 @@
           "dims": {
             "width": 4.5,
             "height": 5.5,
-            "depth": 7.0
+            "depth": 7
           },
           "position": [
             -20.5,
-            8.0,
+            8,
             0
           ],
           "material": {
@@ -6184,11 +6274,11 @@
           "geometry": "cylinder",
           "dims": {
             "radius": 0.9,
-            "height": 3.0
+            "height": 3
           },
           "position": [
-            -23.0,
-            12.0,
+            -23,
+            12,
             0
           ],
           "material": {
@@ -6242,7 +6332,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 6.0,
+            "width": 6,
             "height": 0.6,
             "depth": 0.25
           },
@@ -6268,7 +6358,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 6.0,
+            "width": 6,
             "height": 0.6,
             "depth": 0.25
           },
@@ -6376,7 +6466,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 6.0,
+            "width": 6,
             "height": 0.6,
             "depth": 0.25
           },
@@ -6402,7 +6492,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 6.0,
+            "width": 6,
             "height": 0.6,
             "depth": 0.25
           },
@@ -6512,7 +6602,7 @@
           "direction": "in",
           "offset": [
             5,
-            6.0,
+            6,
             0
           ]
         },
@@ -6522,7 +6612,7 @@
           "direction": "out",
           "offset": [
             21,
-            4.0,
+            4,
             0
           ]
         }
@@ -6765,7 +6855,7 @@
           },
           "position": [
             0,
-            4.0,
+            4,
             0
           ],
           "material": {
@@ -6850,7 +6940,7 @@
           },
           "position": [
             1.8,
-            9.0,
+            9,
             0
           ],
           "material": {
@@ -6892,11 +6982,11 @@
           "dims": {
             "width": 3.6,
             "height": 0.5,
-            "depth": 2.0
+            "depth": 2
           },
           "position": [
             3.2,
-            5.0,
+            5,
             1.8
           ],
           "rotation": [
@@ -6919,11 +7009,11 @@
           "dims": {
             "width": 3.6,
             "height": 0.5,
-            "depth": 2.0
+            "depth": 2
           },
           "position": [
             3.2,
-            5.0,
+            5,
             -1.8
           ],
           "rotation": [
@@ -6944,12 +7034,12 @@
           "parentId": null,
           "geometry": "cylinder",
           "dims": {
-            "radius": 1.0,
+            "radius": 1,
             "height": 2.6
           },
           "position": [
             -4.6,
-            2.0,
+            2,
             -2.2
           ],
           "material": {
@@ -7094,7 +7184,7 @@
           "dims": {
             "width": 2.2,
             "height": 0.5,
-            "depth": 1.0
+            "depth": 1
           },
           "position": [
             5.3,
@@ -7172,7 +7262,7 @@
           },
           "position": [
             0.4,
-            9.0,
+            9,
             -1.2
           ],
           "rotation": [
@@ -7195,7 +7285,7 @@
           "direction": "in",
           "offset": [
             -6.8,
-            4.0,
+            4,
             0
           ]
         },
@@ -7225,7 +7315,7 @@
           "direction": "out",
           "offset": [
             0,
-            1.0,
+            1,
             4.8
           ]
         },
@@ -7235,7 +7325,7 @@
           "direction": "in",
           "offset": [
             -3.5,
-            1.0,
+            1,
             4.8
           ]
         },
@@ -7245,7 +7335,7 @@
           "direction": "in",
           "offset": [
             -5.5,
-            1.0,
+            1,
             4.8
           ]
         },
@@ -7255,7 +7345,7 @@
           "direction": "in",
           "offset": [
             -1.5,
-            1.0,
+            1,
             4.8
           ]
         }
@@ -7310,7 +7400,7 @@
           "label": "Media Density",
           "unit": "SG",
           "default": 1.45,
-          "min": 1.0,
+          "min": 1,
           "max": 2.2,
           "freq": "5s"
         },
@@ -7393,7 +7483,7 @@
           "parentId": null,
           "geometry": "cylinder",
           "dims": {
-            "radius": 8.0,
+            "radius": 8,
             "height": 0.08
           },
           "position": [
@@ -7413,7 +7503,7 @@
           "parentId": null,
           "geometry": "cone",
           "dims": {
-            "radius": 7.0,
+            "radius": 7,
             "height": 4.5
           },
           "position": [
@@ -7432,7 +7522,7 @@
             "period": 360,
             "from": 0.62,
             "to": 1.04,
-            "phase": 0.0,
+            "phase": 0,
             "speedKey": "speed"
           }
         },
@@ -7442,13 +7532,13 @@
           "parentId": null,
           "geometry": "cone",
           "dims": {
-            "radius": 4.0,
+            "radius": 4,
             "height": 2.8
           },
           "position": [
             4.5,
             1.4,
-            2.0
+            2
           ],
           "material": {
             "color": "@coalBlack",
@@ -7460,7 +7550,7 @@
             "kind": "level",
             "period": 360,
             "from": 0.5,
-            "to": 1.0,
+            "to": 1,
             "phase": 0.33,
             "speedKey": "speed"
           }
@@ -7471,13 +7561,13 @@
           "parentId": null,
           "geometry": "cone",
           "dims": {
-            "radius": 3.0,
-            "height": 2.0
+            "radius": 3,
+            "height": 2
           },
           "position": [
             -4.5,
-            1.0,
-            -2.0
+            1,
+            -2
           ],
           "material": {
             "color": "@coalBlack",
@@ -7489,7 +7579,7 @@
             "kind": "level",
             "period": 360,
             "from": 0.45,
-            "to": 1.0,
+            "to": 1,
             "phase": 0.62,
             "speedKey": "speed"
           }
@@ -7654,7 +7744,7 @@
           "id": "dataPatch",
           "geometry": "box",
           "dims": {
-            "width": 1.0,
+            "width": 1,
             "height": 0.5,
             "depth": 0.04
           },
@@ -8528,7 +8618,7 @@
           "parentId": "headPivot",
           "geometry": "box",
           "dims": {
-            "width": 1.0,
+            "width": 1,
             "height": 0.06,
             "depth": 0.5
           },
@@ -8761,7 +8851,7 @@
           "geometry": "box",
           "dims": {
             "width": 0.5,
-            "height": 6.0,
+            "height": 6,
             "depth": 0.5
           },
           "position": [
@@ -8787,7 +8877,7 @@
           },
           "position": [
             1.1,
-            3.0,
+            3,
             0.4
           ],
           "material": {
@@ -9199,7 +9289,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 9.0,
+            "width": 9,
             "height": 0.8,
             "depth": 3.4
           },
@@ -9356,7 +9446,7 @@
           "dims": {
             "width": 1.2,
             "height": 1.4,
-            "depth": 3.0
+            "depth": 3
           },
           "position": [
             4.3,
@@ -9387,12 +9477,12 @@
           "parentId": "wheelsGrp",
           "geometry": "cylinder",
           "dims": {
-            "radius": 1.0,
+            "radius": 1,
             "height": 0.7
           },
           "position": [
             3.2,
-            1.0,
+            1,
             1.75
           ],
           "rotation": [
@@ -9416,12 +9506,12 @@
           "parentId": "wheelsGrp",
           "geometry": "cylinder",
           "dims": {
-            "radius": 1.0,
+            "radius": 1,
             "height": 0.7
           },
           "position": [
             3.2,
-            1.0,
+            1,
             -1.75
           ],
           "rotation": [
@@ -9445,12 +9535,12 @@
           "parentId": "wheelsGrp",
           "geometry": "cylinder",
           "dims": {
-            "radius": 1.0,
+            "radius": 1,
             "height": 0.7
           },
           "position": [
             -0.6,
-            1.0,
+            1,
             1.75
           ],
           "rotation": [
@@ -9474,12 +9564,12 @@
           "parentId": "wheelsGrp",
           "geometry": "cylinder",
           "dims": {
-            "radius": 1.0,
+            "radius": 1,
             "height": 0.7
           },
           "position": [
             -0.6,
-            1.0,
+            1,
             -1.75
           ],
           "rotation": [
@@ -9503,12 +9593,12 @@
           "parentId": "wheelsGrp",
           "geometry": "cylinder",
           "dims": {
-            "radius": 1.0,
+            "radius": 1,
             "height": 0.7
           },
           "position": [
             -2.6,
-            1.0,
+            1,
             1.75
           ],
           "rotation": [
@@ -9532,12 +9622,12 @@
           "parentId": "wheelsGrp",
           "geometry": "cylinder",
           "dims": {
-            "radius": 1.0,
+            "radius": 1,
             "height": 0.7
           },
           "position": [
             -2.6,
-            1.0,
+            1,
             -1.75
           ],
           "rotation": [
@@ -9566,7 +9656,7 @@
           },
           "position": [
             2.6,
-            5.0,
+            5,
             1.2
           ],
           "material": {
@@ -9898,7 +9988,7 @@
           },
           "position": [
             -2.1,
-            3.0,
+            3,
             0
           ],
           "material": {
@@ -9973,7 +10063,7 @@
           },
           "position": [
             2.22,
-            1.0,
+            1,
             0.62
           ],
           "material": {
@@ -9993,7 +10083,7 @@
           },
           "position": [
             2.22,
-            1.0,
+            1,
             -0.62
           ],
           "material": {
@@ -10028,7 +10118,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 16.0,
+            "width": 16,
             "height": 0.6,
             "depth": 2.8
           },
@@ -10086,7 +10176,7 @@
           },
           "position": [
             4.9,
-            3.0,
+            3,
             0
           ],
           "material": {
@@ -10103,7 +10193,7 @@
           "geometry": "box",
           "dims": {
             "width": 0.06,
-            "height": 1.0,
+            "height": 1,
             "depth": 2.2
           },
           "position": [
@@ -10129,7 +10219,7 @@
             "depth": 2.6
           },
           "position": [
-            7.0,
+            7,
             2.35,
             0
           ],
@@ -10148,7 +10238,7 @@
           "dims": {
             "width": 4.5,
             "height": 0.9,
-            "depth": 2.0
+            "depth": 2
           },
           "position": [
             0.4,
@@ -10570,7 +10660,7 @@
             "from": -0.55,
             "to": 0.2,
             "period": 11,
-            "phase": 0.0,
+            "phase": 0,
             "speedKey": "speed"
           }
         },
@@ -10582,7 +10672,7 @@
           "dims": {
             "width": 4.6,
             "height": 1.6,
-            "depth": 3.0
+            "depth": 3
           },
           "position": [
             0,
@@ -10624,7 +10714,7 @@
           "parentId": "turretGrp",
           "geometry": "box",
           "dims": {
-            "width": 2.0,
+            "width": 2,
             "height": 1.2,
             "depth": 2.6
           },
@@ -10653,7 +10743,7 @@
           "position": [
             1.3,
             3.65,
-            1.0
+            1
           ],
           "material": {
             "color": "@structureGrey",
@@ -10762,14 +10852,14 @@
             "height": 1.9
           },
           "position": [
-            1.0,
+            1,
             0.35,
             0.55
           ],
           "rotation": [
             0,
             0,
-            1.0
+            1
           ],
           "material": {
             "color": "#b0c4d0",
@@ -10878,7 +10968,7 @@
           "kind": "emitter",
           "position": [
             -1.6,
-            5.0,
+            5,
             0.8
           ],
           "emitter": {
@@ -10894,7 +10984,7 @@
           "direction": "in",
           "offset": [
             6.5,
-            1.0,
+            1,
             0
           ]
         },
@@ -10905,7 +10995,7 @@
           "offset": [
             0,
             3.4,
-            2.0
+            2
           ]
         }
       ],
@@ -11162,7 +11252,7 @@
           "geometry": "box",
           "dims": {
             "width": 76,
-            "height": 1.0,
+            "height": 1,
             "depth": 1.4
           },
           "position": [
@@ -11204,8 +11294,8 @@
           "parentId": null,
           "geometry": "cone",
           "dims": {
-            "radius": 5.0,
-            "height": 3.0
+            "radius": 5,
+            "height": 3
           },
           "position": [
             6,
@@ -11919,7 +12009,7 @@
           "direction": "in",
           "offset": [
             -14.5,
-            3.0,
+            3,
             -3
           ]
         }
@@ -12123,7 +12213,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 5.0,
+            "width": 5,
             "height": 3.2,
             "depth": 0.6
           },
@@ -12148,7 +12238,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 5.0,
+            "width": 5,
             "height": 3.2,
             "depth": 0.6
           },
@@ -12198,12 +12288,12 @@
           "parentId": null,
           "geometry": "cone",
           "dims": {
-            "radius": 3.0,
+            "radius": 3,
             "height": 2.6
           },
           "position": [
             0,
-            8.0,
+            8,
             0
           ],
           "rotation": [
@@ -12224,9 +12314,9 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 4.0,
+            "width": 4,
             "height": 2.6,
-            "depth": 4.0
+            "depth": 4
           },
           "position": [
             0,
@@ -12254,7 +12344,7 @@
             "height": 1.8
           },
           "position": [
-            3.0,
+            3,
             5.3,
             0
           ],
@@ -12340,7 +12430,7 @@
           },
           "position": [
             1.2,
-            3.0,
+            3,
             0
           ],
           "rotation": [
@@ -12569,7 +12659,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 2.0,
+            "width": 2,
             "height": 0.5,
             "depth": 6.5
           },
@@ -12590,7 +12680,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 2.0,
+            "width": 2,
             "height": 0.5,
             "depth": 6.5
           },
@@ -12710,7 +12800,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 6.0,
+            "width": 6,
             "height": 4.5,
             "depth": 5.5
           },
@@ -12736,7 +12826,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 13.0,
+            "width": 13,
             "height": 1.4,
             "depth": 1.8
           },
@@ -12768,11 +12858,11 @@
           "geometry": "cone",
           "dims": {
             "radius": 1.7,
-            "height": 2.0
+            "height": 2
           },
           "position": [
             0,
-            7.0,
+            7,
             0
           ],
           "rotation": [
@@ -12797,7 +12887,7 @@
           },
           "position": [
             0,
-            5.0,
+            5,
             0
           ],
           "rotation": [
@@ -12866,7 +12956,7 @@
           "dims": {
             "width": 2.2,
             "height": 2.2,
-            "depth": 2.0
+            "depth": 2
           },
           "position": [
             4.6,
@@ -12908,9 +12998,9 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 8.0,
+            "width": 8,
             "height": 0.12,
-            "depth": 1.0
+            "depth": 1
           },
           "position": [
             1.5,
@@ -12999,7 +13089,7 @@
           "direction": "in",
           "offset": [
             -12.5,
-            1.0,
+            1,
             0
           ]
         },
@@ -13167,11 +13257,11 @@
           "geometry": "box",
           "dims": {
             "width": 0.7,
-            "height": 8.0,
+            "height": 8,
             "depth": 0.7
           },
           "position": [
-            -3.0,
+            -3,
             4.3,
             2.5
           ],
@@ -13193,11 +13283,11 @@
           "geometry": "box",
           "dims": {
             "width": 0.7,
-            "height": 8.0,
+            "height": 8,
             "depth": 0.7
           },
           "position": [
-            3.0,
+            3,
             4.3,
             2.5
           ],
@@ -13219,11 +13309,11 @@
           "geometry": "box",
           "dims": {
             "width": 0.7,
-            "height": 8.0,
+            "height": 8,
             "depth": 0.7
           },
           "position": [
-            -3.0,
+            -3,
             4.3,
             -2.5
           ],
@@ -13245,11 +13335,11 @@
           "geometry": "box",
           "dims": {
             "width": 0.7,
-            "height": 8.0,
+            "height": 8,
             "depth": 0.7
           },
           "position": [
-            3.0,
+            3,
             4.3,
             -2.5
           ],
@@ -13324,7 +13414,7 @@
           "dims": {
             "width": 1.4,
             "height": 0.9,
-            "depth": 18.0
+            "depth": 18
           },
           "position": [
             0,
@@ -13384,7 +13474,7 @@
           },
           "position": [
             0,
-            12.0,
+            12,
             15.2
           ],
           "rotation": [
@@ -13435,7 +13525,7 @@
           "geometry": "box",
           "dims": {
             "width": 2.4,
-            "height": 2.0,
+            "height": 2,
             "depth": 1.6
           },
           "position": [
@@ -13461,7 +13551,7 @@
           "geometry": "cylinder",
           "dims": {
             "radius": 0.08,
-            "height": 13.0
+            "height": 13
           },
           "position": [
             0,
@@ -13509,7 +13599,7 @@
           "direction": "in",
           "offset": [
             -5.5,
-            2.0,
+            2,
             0
           ]
         },
@@ -13924,7 +14014,7 @@
           "position": [
             0,
             0.15,
-            2.0
+            2
           ],
           "material": {
             "color": "@concrete",
@@ -13950,7 +14040,7 @@
           "position": [
             0,
             0.15,
-            -2.0
+            -2
           ],
           "material": {
             "color": "@concrete",
@@ -13971,12 +14061,12 @@
           "dims": {
             "width": 2.4,
             "height": 0.8,
-            "depth": 1.0
+            "depth": 1
           },
           "position": [
             0,
             0.7,
-            2.0
+            2
           ],
           "material": {
             "color": "@darkSteel",
@@ -13993,12 +14083,12 @@
           "dims": {
             "width": 2.4,
             "height": 0.8,
-            "depth": 1.0
+            "depth": 1
           },
           "position": [
             0,
             0.7,
-            -2.0
+            -2
           ],
           "material": {
             "color": "@darkSteel",
@@ -14013,9 +14103,9 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 3.0,
+            "width": 3,
             "height": 0.8,
-            "depth": 5.0
+            "depth": 5
           },
           "position": [
             0,
@@ -14060,9 +14150,9 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 2.0,
+            "width": 2,
             "height": 3.6,
-            "depth": 2.0
+            "depth": 2
           },
           "position": [
             0,
@@ -14088,11 +14178,11 @@
           "dims": {
             "width": 1.2,
             "height": 0.8,
-            "depth": 16.0
+            "depth": 16
           },
           "position": [
             0,
-            5.0,
+            5,
             5.5
           ],
           "material": {
@@ -14163,9 +14253,9 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 1.0,
+            "width": 1,
             "height": 0.6,
-            "depth": 7.0
+            "depth": 7
           },
           "position": [
             0,
@@ -14238,7 +14328,7 @@
           "geometry": "cylinder",
           "dims": {
             "radius": 0.06,
-            "height": 12.0
+            "height": 12
           },
           "position": [
             0,
@@ -14263,7 +14353,7 @@
           "geometry": "cylinder",
           "dims": {
             "radius": 0.06,
-            "height": 8.0
+            "height": 8
           },
           "position": [
             0,
@@ -14310,7 +14400,7 @@
           "type": "conveyor",
           "direction": "in",
           "offset": [
-            -11.0,
+            -11,
             0.8,
             0
           ]
@@ -14320,7 +14410,7 @@
           "type": "conveyor",
           "direction": "out",
           "offset": [
-            11.0,
+            11,
             0.8,
             -1.5
           ]
@@ -14330,7 +14420,7 @@
           "type": "conveyor",
           "direction": "out",
           "offset": [
-            11.0,
+            11,
             0.8,
             1.5
           ]
@@ -14489,7 +14579,7 @@
           },
           "position": [
             0,
-            3.0,
+            3,
             0
           ],
           "material": {
@@ -14511,7 +14601,7 @@
           "parentId": null,
           "geometry": "torus",
           "dims": {
-            "radius": 8.0,
+            "radius": 8,
             "tube": 0.25
           },
           "position": [
@@ -14621,7 +14711,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 15.0,
+            "width": 15,
             "height": 0.25,
             "depth": 0.5
           },
@@ -14646,7 +14736,7 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 15.0,
+            "width": 15,
             "height": 0.25,
             "depth": 0.5
           },
@@ -14701,7 +14791,7 @@
             "height": 0.7
           },
           "position": [
-            4.0,
+            4,
             0.75,
             -7.6
           ],
@@ -15071,7 +15161,7 @@
           "dims": {
             "width": 5.6,
             "height": 0.8,
-            "depth": 3.0
+            "depth": 3
           },
           "position": [
             0,
@@ -15184,12 +15274,12 @@
           "parentId": null,
           "geometry": "box",
           "dims": {
-            "width": 1.0,
+            "width": 1,
             "height": 1.2,
             "depth": 1.4
           },
           "position": [
-            3.0,
+            3,
             2.9,
             0.9
           ],
@@ -15401,11 +15491,11 @@
           "geometry": "cone",
           "dims": {
             "radius": 6.5,
-            "height": 4.0
+            "height": 4
           },
           "position": [
             7,
-            2.0,
+            2,
             4
           ],
           "material": {
@@ -15521,7 +15611,7 @@
           "dims": {
             "width": 1.8,
             "height": 1.1,
-            "depth": 2.0
+            "depth": 2
           },
           "position": [
             0.9,
@@ -15618,12 +15708,12 @@
           "geometry": "box",
           "dims": {
             "width": 1.1,
-            "height": 1.0,
+            "height": 1,
             "depth": 2.6
           },
           "position": [
-            3.0,
-            1.0,
+            3,
+            1,
             0
           ],
           "material": {
@@ -15770,7 +15860,7 @@
             "height": 0.7
           },
           "position": [
-            -2.0,
+            -2,
             2.8,
             0.6
           ],
@@ -15884,7 +15974,7 @@
           "kind": "group",
           "position": [
             0,
-            6.0,
+            6,
             0
           ],
           "animate": {
@@ -15915,7 +16005,7 @@
           ],
           "material": {
             "color": "#ff7a1a",
-            "metalness": 0.0,
+            "metalness": 0,
             "roughness": 0.8
           }
         }

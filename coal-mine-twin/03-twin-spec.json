@@ -4715,12 +4715,12 @@
             "target": "ht01-idle"
           },
           {
-            "at": 2.0,
+            "at": 2,
             "type": "triggerScenario",
             "target": "ht03-tyre"
           },
           {
-            "at": 11.0,
+            "at": 11,
             "type": "clearScenario",
             "target": "ht01-idle"
           },
@@ -4792,7 +4792,7 @@
             "target": "cv01-idler"
           },
           {
-            "at": 2.0,
+            "at": 2,
             "type": "openFeed",
             "target": "cam-2",
             "params": {
@@ -4934,8 +4934,98 @@
         "night": true
       },
       {
+        "title": "Real-Time Worker Monitoring",
+        "subtitle": "AI vision at every gate and walkway \u2014 hard hat, hi-vis, boots, gloves. Any lapse flags in real time.",
+        "position": [
+          13,
+          5,
+          16
+        ],
+        "target": [
+          3,
+          1.3,
+          6.8
+        ],
+        "travel": 2.4,
+        "hold": 13,
+        "tag": "Real-Time Worker Monitoring",
+        "actions": [
+          {
+            "at": 0,
+            "type": "safetyLayer",
+            "params": {
+              "on": true
+            }
+          },
+          {
+            "at": 2,
+            "type": "openFeed",
+            "target": "ppe-cam-4",
+            "params": {
+              "size": 2
+            }
+          },
+          {
+            "at": 4,
+            "type": "patchConfig",
+            "target": "worker-2",
+            "params": {
+              "path": "ppe.helmet",
+              "value": false
+            }
+          },
+          {
+            "at": 10,
+            "type": "patchConfig",
+            "target": "worker-2",
+            "params": {
+              "path": "ppe.helmet",
+              "value": true
+            }
+          },
+          {
+            "at": 11.5,
+            "type": "closeFeed"
+          }
+        ]
+      },
+      {
+        "title": "Collision & Proximity Safety",
+        "subtitle": "RF proximity zones on every machine \u2014 a worker in the blind spot triggers an automatic stop.",
+        "position": [
+          -70,
+          40,
+          60
+        ],
+        "target": [
+          -110,
+          5,
+          -5
+        ],
+        "travel": 2.6,
+        "hold": 13,
+        "tag": "Collision & Proximity Safety",
+        "actions": [
+          {
+            "at": 0,
+            "type": "safetyLayer",
+            "params": {
+              "on": true
+            }
+          },
+          {
+            "at": 1.5,
+            "type": "director",
+            "target": "near-miss",
+            "params": {
+              "holdMs": 8000
+            }
+          }
+        ]
+      },
+      {
         "title": "Blackridge Coal Mine \u2014 Pit to Port",
-        "subtitle": "One living twin \u2014 {assetCount} assets, seven monitoring use cases, end to end.",
+        "subtitle": "One living twin \u2014 {assetCount} assets, nine monitoring use cases, end to end.",
         "position": [
           16,
           56,
