@@ -162,17 +162,25 @@ function stepPTM(o, rec) {
   return { parameters: p, state: changing ? 'changingAnode' : 'travelling' }
 }
 
+// Optional sim tuning knobs (globalThis.__simTuning). All default to 1 → live
+// behaviour is byte-identical when unset. The fixture recorder sets these to
+// re-pace demo-scale trends/event rates to an 8-hour shift (tour sweeps that
+// cross an alert threshold every ~2 min are correct for a 3-minute demo and an
+// alert storm over a shift).
+const TUNE = () => globalThis.__simTuning || {}
+
 // Generic gentle random-walk (beverage machines, pumps, custom types). Preserves
 // the asset's current state — matches the original simulateTick behaviour.
 function stepGeneric(o, customAssetTypes) {
   const schema = getParameterSchema(o.type, customAssetTypes)
   if (!schema.length) return {}
   const p = { ...o.parameters }
+  const wScale = TUNE().walkScale ?? 1
   for (const f of schema) {
     const cur = p[f.key]
     if (typeof cur !== 'number') continue
     const span = (f.max ?? 100) - (f.min ?? 0)
-    let v = cur + (Math.random() - 0.5) * span * 0.02
+    let v = cur + (Math.random() - 0.5) * span * 0.02 * wScale
     if (f.min != null) v = Math.max(f.min, v)
     if (f.max != null) v = Math.min(f.max, v)
     p[f.key] = round2(v)
@@ -205,10 +213,11 @@ function stepSafety(o, rec) {
   if (q.pxTimer > 0) { q.pxTimer -= 1; q.dist = Math.min(q.dist, 6 + Math.random() * 3) }
   q.dist = Math.max(4, Math.min(58, q.dist))
   p.minWorkerVehicleDistance = Math.round(q.dist)
-  // event pacing — rare, non-overlapping-ish
-  if (q.pxTimer <= 0 && Math.random() < 0.006) { q.pxTimer = 7; q.px += 1 }
-  if (q.uaTimer <= 0 && Math.random() < 0.004) { q.uaTimer = 8; q.ua += 1 }
-  if (q.gfTimer <= 0 && Math.random() < 0.003) { q.gfTimer = 8; q.gf += 1 }
+  // event pacing — rare, non-overlapping-ish (scale for long recordings)
+  const sScale = TUNE().safetyEventScale ?? 1
+  if (q.pxTimer <= 0 && Math.random() < 0.006 * sScale) { q.pxTimer = 7; q.px += 1 }
+  if (q.uaTimer <= 0 && Math.random() < 0.004 * sScale) { q.uaTimer = 8; q.ua += 1 }
+  if (q.gfTimer <= 0 && Math.random() < 0.003 * sScale) { q.gfTimer = 8; q.gf += 1 }
   if (q.uaTimer > 0) q.uaTimer -= 1
   if (q.gfTimer > 0) q.gfTimer -= 1
   p.proximityEvent = q.pxTimer > 0 ? 1 : 0
@@ -267,10 +276,13 @@ export function stepSimulation(objects, customAssetTypes = {}) {
           params[tr.param] = def?.default ?? params[tr.param]
           continue
         }
-        const period = Math.max(10, Number(tr.period) || 120)         // one tick ≈ 1 s
+        const period = Math.max(10, (Number(tr.period) || 120) * (TUNE().trendPeriodScale ?? 1))  // one tick ≈ 1 s
         const phase = ((rec.t + (Number(tr.offset) || 0)) % period) / period
         const wave = 0.5 - 0.5 * Math.cos(phase * 2 * Math.PI)        // 0 → 1 → 0
-        const lo = Number(tr.min) || 0, hi = Number(tr.max) || 0
+        const lo0 = Number(tr.min) || 0, hi0 = Number(tr.max) || 0
+        const amp = TUNE().trendAmpScale ?? 1
+        const mid = (lo0 + hi0) / 2, half = ((hi0 - lo0) / 2) * amp
+        const lo = mid - half, hi = mid + half
         params[tr.param] = Math.round((lo + (hi - lo) * wave) * 100) / 100
       }
     }

@@ -1,0 +1,43 @@
+ARBITRATED EVENT LIST — choke window onward (16:52 →)
+
+[16:52–17:47] root: Crushing (CR-01) · bucket crushing · 329 t
+    cause: CR-01 choke — hard down
+    ↳ CHP (SC-01+DMC): starved 55 min · 0 t (consequence)
+    ↳ Haulage (HT-01..03): blocked 24 min · 0 t (consequence)
+
+[17:47–18:15] root: residual (flow texture) · bucket residual · 3 t
+
+[18:23–18:45] root: Face/Loading (EX-02) · bucket faceLoading · 31 t
+    cause: EX-02 fill factor 0.97→0.89 — B-114 fragmentation
+
+[18:45–18:56] root: residual (flow texture) · bucket residual · 1 t
+
+[18:58–19:14] root: residual (flow texture) · bucket residual · 2 t
+
+[19:36–19:44] root: residual (flow texture) · bucket residual · 1 t
+
+[19:56–20:03] root: residual (flow texture) · bucket residual · 1 t
+
+[20:05–20:39] root: Dispatch (TLO-01/SL-01) · bucket dispatch · 57 t
+    cause: Rake 4482 weighbridge queue — loading held
+
+[20:39–20:48] root: residual (flow texture) · bucket residual · 0 t
+
+[20:52–20:59] root: residual (flow texture) · bucket residual · 1 t
+
+[21:05–21:12] root: residual (flow texture) · bucket residual · 0 t
+
+[21:18–21:26] root: residual (flow texture) · bucket residual · 1 t
+
+[21:45–22:00] root: residual (flow texture) · bucket residual · 2 t
+
+ALERT TRANSITIONS in window:
+  16:53 FIRE WARN [Haulage] truck-2: Truck idling 21.7 min (target < 20)
+  16:59 FIRE CRITICAL [Conveyor Vision] cam-2: Idler hotspot / fire risk at 76% span (conf 81.2%)
+  17:04 FIRE CRITICAL [Haulage] truck-2: Over-speed 40.4 km/h on haul road (limit 40)
+  17:15 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 5 m
+  17:44 FIRE WARN [Vibration CBM] crusher-1: Vibration 7.9 mm/s in ISO zone C
+  18:04 FIRE CRITICAL [HEMM PdM] exc-ob-1: HEMM engine fault risk, RUL 279.5 h
+  18:26 FIRE CRITICAL [Conveyor Vision] cam-2: Idler hotspot / fire risk at 76% span (conf 81.2%)
+  18:39 FIRE WARN [Conveyor Vision] cam-7: Foreign object (tramp metal) at 38% span (conf 75.3%)
+  18:43 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 12 m
