@@ -45,14 +45,12 @@ export function cvShiftResidual(minFromOpen) {
    piecewise-continuous: each stage of a param hands over at the value the
    previous stage ended on, so nothing jumps when a scenario clears. ── */
 const M = 60          // seconds per minute (ramp `over` is in seconds)
+// NOTE: cv-01 motorTemp/motorCurrent are NOT scenario ramps — they come from the
+// load-aware motorThermal model (residual × live belt load), written by the
+// simulator each tick. During the choke starvation the absolute temp FALLS while
+// the residual keeps climbing — which is what rules load out as the cause.
 export function goldenScenarioDefs() {
-  const t30 = CV_BASE_TEMP + cvShiftResidual(0)
-  const t150 = CV_BASE_TEMP + cvShiftResidual(150)
-  const t480 = CV_BASE_TEMP + cvShiftResidual(480)
   return {
-    'gs-cv-temp-a': { objId: 'cv-01', ramp: { param: 'motorTemp', from: t30, to: t150, over: 150 * M } },
-    'gs-cv-temp-b': { objId: 'cv-01', ramp: { param: 'motorTemp', from: t150, to: t480, over: 330 * M } },
-    'gs-cv-current': { objId: 'cv-01', ramp: { param: 'motorCurrent', from: 142, to: 153, over: 480 * M } },
     'gs-fill-drop': { objId: 'exc-coal-1', ramp: { param: 'bucketPayload', from: 52.4, to: 46.6, over: 22 * M } },
     'gs-fill-hold': { objId: 'exc-coal-1', set: { bucketPayload: 46.6 } },
     'gs-fill-recover': { objId: 'exc-coal-1', ramp: { param: 'bucketPayload', from: 46.6, to: 51.8, over: 28 * M } },
@@ -78,10 +76,9 @@ export const SIM_TUNING = { safetyEventScale: 0.02, trendPeriodScale: 40, trendA
 
 /* fire/clear times (minutes from shift open) */
 export const SCENARIO_TIMELINE = [
-  { at: 0, fire: ['gs-cv-temp-a', 'gs-cv-current', 'gs-oversize', 'gs-ppe-quiet-1', 'gs-ppe-quiet-2', 'gs-ppe-quiet-3', 'gs-ppe-quiet-4'] },
+  { at: 0, fire: ['gs-oversize', 'gs-ppe-quiet-1', 'gs-ppe-quiet-2', 'gs-ppe-quiet-3', 'gs-ppe-quiet-4'] },
   { at: 70, fire: ['gs-fill-drop'] },
   { at: 92, clear: ['gs-fill-drop'], fire: ['gs-fill-hold'] },
-  { at: 150, clear: ['gs-cv-temp-a'], fire: ['gs-cv-temp-b'] },
   { at: 155, clear: ['gs-oversize'], fire: ['gs-cr-current-up'] },
   { at: 172, clear: ['gs-cr-current-up'], fire: ['gs-cr-choked', 'gs-queue', 'gs-queue2'] },
   { at: 224, clear: ['gs-cr-choked'], fire: ['gs-cr-restart'] },
@@ -101,7 +98,7 @@ export const TIER_A = [
 
 /* ── 30-day history: incident schedule (dayIdx 0..29; 30 = shift day) ── */
 export const HISTORY_INCIDENTS = [
-  { day: 9, stage: 'haul', startMin: 610, durMin: 150, capFactor: 0.66, cause: 'own', label: 'HT-02 hub temp — pulled for 2.5 h' },
+  { day: 9, stage: 'haul', startMin: 610, durMin: 150, capFactor: 0.30, cause: 'own', label: 'HT-02 + HT-05 hub temp — pulled for 2.5 h' },
   { day: 14, stage: 'chp', startMin: 300, durMin: 180, capFactor: 0, cause: 'justified', label: 'CHPP planned liner change (3 h)' },
   { day: 17, stage: 'dispatch', startMin: 820, durMin: 55, capFactor: 0.5, cause: 'own', label: 'Weighbridge software fault' },
   { day: 21, stage: 'crush', startMin: 450, durMin: 35, capFactor: 0, cause: 'own', label: 'CR-01 tramp metal trip' },

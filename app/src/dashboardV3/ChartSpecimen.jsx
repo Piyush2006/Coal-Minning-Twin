@@ -51,7 +51,7 @@ export function ShiftLineSpecimen() {
     xAxis: {
       ...dv3BaseOptions().xAxis,
       plotLines: [
-        annotation(at(14, 20), 'CV-04 drift'),
+        annotation(at(14, 20), 'CV-01 drift'),
         annotation(at(16, 52), 'CR-01 choke'),
         annotation(at(18, 30), 'Re-sequence'),
         annotation(at(20, 5), 'Rake delay'),

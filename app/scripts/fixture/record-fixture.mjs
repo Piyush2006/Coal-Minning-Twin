@@ -22,6 +22,7 @@ fs.mkdirSync(OUT, { recursive: true })
 import { SEED, T0, SHIFT_MIN, HISTORY_DAYS, DAY_MS, CHAIN_EVENTS, SCENARIO_TIMELINE, TIER_A, CV_BASE_TEMP, cvResidual, cvShiftResidual, goldenScenarioDefs, SIM_TUNING, HISTORY_INCIDENTS, BLASTS, oversizeByDay, bucketPayloadByDay } from '../../src/dashboardV3/data/goldenConfig.js'
 import { createChainSim, STAGES, RATED, YIELD, BUFFERS } from '../../src/dashboardV3/data/chainSim.js'
 import { arbitrate } from '../../src/dashboardV3/data/arbitration.js'
+import { createMotorThermal } from '../../src/dashboardV3/data/motorThermal.js'
 
 const HISTORY = process.argv.includes('--history')
 const assertIdx = process.argv.indexOf('--assert-hash')
@@ -88,24 +89,32 @@ function gatedStep(prev) {
 
 /* ── chain → object parameter/state writes (the simulator's own write path) ── */
 const railShare = 0.62
+const COAL_TRUCKS = ['truck-1', 'truck-2', 'truck-4', 'truck-5', 'truck-7']   // crusher circuit
+const OB_TRUCKS = ['truck-3', 'truck-6', 'truck-8']                            // waste circuit — unaffected by a choke
 let trainT = 0
-function writeChain(o, c) {
+function writeChain(o, c, thermal, residual, dt) {
   const set = (id, patch, st) => { const x = o[id]; if (!x) return; x.parameters = { ...x.parameters, ...patch }; if (st) { x.state = st.state ?? x.state; x.status = st.status ?? x.status } }
   const romTph = c.flows.crushIn / YIELD
   set('crusher-1', { throughput: r1(romTph) }, c.state.crush === 'down' ? { state: 'fault', status: 'fault' } : { state: 'crushing', status: 'running' })
   set('screen-1', { feedRate: r1(c.flows.chpIn / YIELD) })
   set('chpp-1', { feedRate: r1(c.flows.chpIn / YIELD), yield: r1(YIELD * 100) })
-  set('cv-01', { load: r1(clamp((c.flows.chpIn / RATED.chp) * 100, 0, 100)) })
+  // CV-01: belt load + LOAD-AWARE drive thermal model. During starvation the
+  // absolute temp falls toward no-load expected while the residual keeps
+  // climbing — load is thereby ruled out as the cause.
+  const cvLoad = clamp(c.flows.chpIn / RATED.chp, 0, 1)
+  const mt = thermal.step(cvLoad, residual, dt)
+  set('cv-01', { load: r1(cvLoad * 100), motorTemp: mt.temp, motorCurrent: mt.current })
   set('pile-1', { stockTonnes: r1(480 + c.buf.chp) })
   const disp = c.flows.dispatched
-  trainT += (disp * railShare) / 3600
+  trainT += (disp * railShare) / 3600 * dt
   set('loadout-1', { loadRate: r1(disp * railShare), trainLoadedT: r1(trainT), wagonsLoaded: Math.floor(trainT / 64) })
-  set('shiploader-1', { loadRate: r1(disp * (1 - railShare)), loadedThisShift: r1((o['shiploader-1']?.parameters?.loadedThisShift ?? 0) + disp * (1 - railShare) / 3600) })
+  set('shiploader-1', { loadRate: r1(disp * (1 - railShare)), loadedThisShift: r1((o['shiploader-1']?.parameters?.loadedThisShift ?? 0) + disp * (1 - railShare) / 3600 * dt) })
   const faceIdle = c.state.face === 'idle'
   set('exc-coal-1', {}, faceIdle ? { status: 'idle' } : { status: 'running' })
   set('loader-1', {}, faceIdle ? { status: 'idle' } : { status: 'running' })
   const queued = c.state.crush === 'down' && c.buf.haul >= BUFFERS.haul.cap - 1
-  for (const t of ['truck-1', 'truck-2', 'truck-3']) set(t, {}, queued ? { status: 'idle' } : { status: 'running' })
+  for (const t of COAL_TRUCKS) set(t, {}, queued ? { status: 'idle' } : { status: 'running' })
+  for (const t of OB_TRUCKS) set(t, {}, { status: 'running' })
 }
 const r1 = v => Math.round(v * 10) / 10
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v)
@@ -140,31 +149,17 @@ function makeRecorder(tierAssets, nA, tierBAssets, nB) {
   return { cols, sample, STATUS_ENUM }
 }
 
-/* ── alert log with the §9 anti-fatigue policy applied at source:
-   fire only after 120 s continuously active · resolve after 180 s continuously
-   inactive · a resolved key is refractory for 900 s (flap = one event). ── */
+/* ── RAW alert transition log. Every fire/resolve is recorded — the §9
+   anti-fatigue policy is applied at READ time (data/alertPolicy.js) so it can
+   be retuned, and K22 alert-precision can be computed, without regenerating
+   the fixture. ── */
 function makeAlertLog() {
-  const st = new Map()   // key -> { activeSince, inactiveSince, fired, lastResolved, meta }
-  const log = []
+  const prev = new Set(); const log = []
   return { log, tick(o, t) {
-    const now = evaluateAlerts(o)
-    const seen = new Map(now.map(a => [a.key, a]))
-    for (const [k, a] of seen) {
-      let s = st.get(k)
-      if (!s) { s = { activeSince: t, inactiveSince: null, fired: false, lastResolved: -1e9 }; st.set(k, s) }
-      if (s.activeSince == null) s.activeSince = t
-      s.inactiveSince = null; s.meta = a
-      if (!s.fired && t - s.activeSince >= 120 && t - s.lastResolved >= 900) {
-        s.fired = true
-        log.push({ t: s.activeSince, type: 'fire', key: k, objId: a.objId, sev: a.severity, useCase: a.useCase, msg: a.message })
-      }
-    }
-    for (const [k, s] of st) {
-      if (seen.has(k)) continue
-      if (s.inactiveSince == null) s.inactiveSince = t
-      s.activeSince = null
-      if (s.fired && t - s.inactiveSince >= 180) { s.fired = false; s.lastResolved = t; log.push({ t, type: 'resolve', key: k }) }
-    }
+    const now = evaluateAlerts(o); const seen = new Set()
+    for (const a of now) { seen.add(a.key); if (!prev.has(a.key)) log.push({ t, type: 'fire', key: a.key, objId: a.objId, sev: a.severity, useCase: a.useCase, msg: a.message }) }
+    for (const k of prev) if (!seen.has(k)) log.push({ t, type: 'resolve', key: k })
+    prev.clear(); for (const k of seen) prev.add(k)
   } }
 }
 
@@ -177,6 +172,7 @@ async function recordGolden() {
   const rec = makeRecorder(TIER_A, nA, tierB, nB)
   const alerts = makeAlertLog()
   const timeline = [...SCENARIO_TIMELINE]
+  const thermal = createMotorThermal()
 
   let c = null
   for (let i = 0; i < nA; i++) {
@@ -189,7 +185,7 @@ async function recordGolden() {
     }
     objects = gatedStep(objects)
     c = chain.step(i, 1)
-    writeChain(objects, c)
+    writeChain(objects, c, thermal, cvShiftResidual(min), 1)
     alerts.tick(objects, i)
     rec.sample(objects, i, [...TIER_A, '_chain'], nA, c)
     if (i % 10 === 0) rec.sample(objects, i / 10, tierB, nB, c)
@@ -228,15 +224,14 @@ async function recordHistory() {
   const daily = Array.from({ length: HISTORY_DAYS }, () => ({ product: 0 }))
 
   let c = null
+  const thermal = createMotorThermal()
   for (let m = 0; m < totalMin; m++) {
     VNOW = CLOCK_START + m * 60000
     const day = m / 1440
     objects = gatedStep(objects)
     c = chain.step(m * 60, 60)
-    writeChain(objects, c)
+    writeChain(objects, c, thermal, cvResidual(day), 60)
     // history runway (the simulator's decorative layer, day-resolution)
-    const cv = objects['cv-01']
-    cv.parameters = { ...cv.parameters, motorTemp: r1(CV_BASE_TEMP + cvResidual(day) + (c.flows.chpIn / RATED.chp - 0.85) * 3), motorCurrent: r1(140 + cvResidual(day) * 0.9) }
     objects['screen-1'].parameters = { ...objects['screen-1'].parameters, oversizeRate: r1(oversizeByDay(day) + (Math.random() - 0.5) * 0.4) }
     objects['exc-coal-1'].parameters = { ...objects['exc-coal-1'].parameters, bucketPayload: r1(bucketPayloadByDay(day) + (Math.random() - 0.5) * 0.8) }
     daily[Math.floor(day)].product += c.dispatchedT
@@ -289,7 +284,10 @@ if (!HISTORY) {
   const stageName = { face: 'Face/Loading (EX-02)', haul: 'Haulage (HT-01..03)', crush: 'Crushing (CR-01)', chp: 'CHP (SC-01+DMC)', dispatch: 'Dispatch (TLO-01/SL-01)' }
   const { hash, bytes } = serialise('golden-shift', rec, {
     dt: 1, dtB: 10, tierA: TIER_A, tierB, shiftMin: SHIFT_MIN,
-    arbitration: { R: arb.R, plan: r1(arb.plan), actual: r1(arb.actual), buckets: Object.fromEntries(Object.entries(arb.buckets).map(([k, v]) => [k, r1(v)])), events: arb.events.map(e => ({ ...e, tonnes: r1(e.tonnes) })), reconciles: arb.reconciles },
+    arbitration: { R: arb.R, plan: r1(arb.plan), actual: r1(arb.actual), buckets: Object.fromEntries(Object.entries(arb.buckets).map(([k, v]) => [k, r1(v)])), events: arb.events.map(e => ({ ...e, tonnes: r1(e.tonnes) })), reconciles: arb.reconciles,
+      // per-minute stream so the waterfall/ribbon/constraint callout rebuild at
+      // any scrub position (loss + binding root per minute; ~20 KB)
+      perMinute: arb.perMinute.map(pm => ({ m: pm.m, loss: r1(pm.loss), root: pm.root, bucket: pm.bucket })) },
     alerts: alerts.log, chainEvents: CHAIN_EVENTS, scenarioTimeline: SCENARIO_TIMELINE, stages: STAGES, ratedPerMin: chain.ratedPerMin,
   })
   console.log('\n═══ GOLDEN SHIFT ═══')

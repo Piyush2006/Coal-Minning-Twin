@@ -65,7 +65,7 @@ export default function Gallery() {
             </Card>
             <Card title="Belt loading · Balanced">
               <Metric value="61" unit="%" comparator="design" delta={-14} good={false} size="sm" />
-              <Reading>CV-04 ran effectively empty for 41 min during the choke clear-out.</Reading>
+              <Reading>CV-01 ran effectively empty for 41 min during the choke clear-out.</Reading>
             </Card>
             <Card density="working" title="Crusher feed · Working">
               <Metric value="780" unit="TPH" comparator="capability" delta={-420} good={false} size="sm" />
@@ -96,7 +96,7 @@ export default function Gallery() {
               <div>
                 <div className="dv3-cardhead" style={{ marginBottom: 4 }}>mono accents</div>
                 <div className="dv3-mono" style={{ fontSize: 13, lineHeight: 1.8, color: 'var(--text-secondary)' }}>
-                  CV-04 · CR-01 · SH-02<br />16:52:14 · 82.4 °C · 1,184 TPH
+                  CV-01 · CR-01 · SH-02<br />16:52:14 · 82.4 °C · 1,184 TPH
                 </div>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function Gallery() {
         {/* ── 6 · alert card ── */}
         <Section id="alerts" title="Alert card (Action Center object)" note="no alert ships without hypothesis · consequence · action · owner · SLA">
           <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16 }}>
-            <AlertCard severity="P2" asset="CV-04 · Overland Conveyor" maturity="stat"
+            <AlertCard severity="P2" asset="CV-01 · Overland Conveyor" maturity="stat"
               hypothesis="Degraded cooling path on drive motor — not a bearing"
               evidence={['ΔT +11 °C vs expected', 'dT/dt 3.1 °C/h', 'vibration flat · ISO Zone B', 'current +9 A']}
               consequence="~3.2 h unplanned stoppage ≈ 2,100 t deferred coal"
@@ -211,7 +211,7 @@ export default function Gallery() {
               <span style={{ width: 96 }}>Health 30 d</span><span style={{ width: 70, textAlign: 'right' }}>AHI</span><span style={{ width: 92, textAlign: 'right' }}>At risk</span>
             </div>
             {[
-              { id: 'CV-04', name: 'Overland Conveyor 4', st: 'degraded', spark: [92, 91, 90, 88, 87, 84, 81, 78, 74, 71], ahi: 71, risk: '2,100 t' },
+              { id: 'CV-01', name: 'Overland Conveyor CV-01', st: 'degraded', spark: [92, 91, 90, 88, 87, 84, 81, 78, 74, 71], ahi: 71, risk: '2,100 t' },
               { id: 'CR-01', name: 'Primary Crusher', st: 'operating', spark: [83, 84, 82, 83, 85, 84, 83, 84, 83, 84], ahi: 84, risk: '—' },
               { id: 'SH-02', name: 'Shovel 2', st: 'idleU', spark: [88, 88, 87, 88, 86, 87, 88, 87, 88, 88], ahi: 88, risk: '—' },
               { id: 'HT-03', name: 'Haul Truck 3', st: 'downP', spark: [79, 78, 80, 79, 77, 78, 79, 78, 77, 78], ahi: 78, risk: '640 t' },

@@ -26,8 +26,9 @@ export const STAGES = [
   { id: 'dispatch', bucket: 'dispatch', assets: ['loadout-1', 'ship-1'] },
 ]
 
-// rated capabilities, product-equivalent t/h
-export const RATED = { face: 585, haul: 718, crush: 936, chp: 660, dispatch: 800 }
+// rated capabilities, product-equivalent t/h (haul = 8-truck fleet; never the
+// chain bottleneck — the reference R stays the face at 585)
+export const RATED = { face: 585, haul: 1650, crush: 936, chp: 660, dispatch: 800 }
 
 // buffers: AFTER the named stage. The shift opens hand-to-mouth — the previous
 // shift's rake drew the ready-to-load stockpile down — so upstream events

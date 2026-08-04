@@ -9,6 +9,7 @@ import Root from './Root'
 // nothing loads for normal users; lazy so Highcharts/fonts stay out of the main
 // bundle. #/design-system → the Step-1 component gallery.
 const DV3Gallery = React.lazy(() => import('./dashboardV3/Gallery'))
+const DV3Screen0 = React.lazy(() => import('./dashboardV3/screen0/Screen0'))
 function HashRouter() {
   const [hash, setHash] = React.useState(window.location.hash)
   React.useEffect(() => {
@@ -16,10 +17,13 @@ function HashRouter() {
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
-  if (hash.startsWith('#/design-system')) {
+  const lazyPage = hash.startsWith('#/design-system') ? <DV3Gallery />
+    : hash.startsWith('#/mine-pulse') ? <DV3Screen0 />
+    : null
+  if (lazyPage) {
     return (
       <React.Suspense fallback={<div style={{ minHeight: '100vh', background: '#EBEEF4' }} />}>
-        <DV3Gallery />
+        {lazyPage}
       </React.Suspense>
     )
   }

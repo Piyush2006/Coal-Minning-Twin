@@ -207,6 +207,11 @@ const GEN = {
     ],
   },
   'truck-2': { same: 'truck-1', dwell: 10, speed: 6.2, phase: 0.5 },
+  'truck-4': { same: 'truck-1', dwell: 12, speed: 6.1, phase: 0.2 },
+  'truck-5': { same: 'truck-1', dwell: 13, speed: 5.9, phase: 0.7 },
+  'truck-6': { same: 'truck-3', dwell: 11, speed: 6.4, phase: 0.55 },
+  'truck-7': { same: 'truck-1', dwell: 14, speed: 6.0, phase: 0.35 },
+  'truck-8': { same: 'truck-3', dwell: 12, speed: 6.3, phase: 0.8 },
   'truck-3': {
     dwell: 12, speed: 6.5, phase: 0.3, loadedSlow: 1.4, dump: [-108.5, -63.5],
     wps: [
@@ -233,12 +238,13 @@ const GEN = {
   'worker-1': { speed: 0.8, loop: true, wps: [[-1, 0, 6.5], [3, 0, 6.2], [4, 0, 8.8], [-1, 0, 8.8]] },
   'worker-6': { speed: 0.8, loop: true, wps: [[20, 0, 9.5], [25, 0, 9.5], [25, 0, 13], [20, 0, 13]] },
 }
-const HALF_W = { 'truck-1': 1.75, 'truck-2': 1.75, 'truck-3': 1.75, 'lv-1': 1.0, 'worker-7': 0.35, 'worker-1': 0.35, 'worker-6': 0.35 }
+const HALF_W = { 'truck-1': 1.75, 'truck-2': 1.75, 'truck-3': 1.75, 'truck-4': 1.75, 'truck-5': 1.75, 'truck-6': 1.75, 'truck-7': 1.75, 'truck-8': 1.75, 'lv-1': 1.0, 'worker-7': 0.35, 'worker-1': 0.35, 'worker-6': 0.35 }
 // a mover may hug the thing it services (its excavator / the crusher bin edge);
 // patrol workers skip their OWN static footprint (they become movers).
 const SKIP = {
   'truck-1': new Set(['exc-coal-1']), 'truck-2': new Set(['exc-coal-1']),
-  'truck-3': new Set(['exc-ob-1']),
+  'truck-4': new Set(['exc-coal-1']), 'truck-5': new Set(['exc-coal-1']), 'truck-7': new Set(['exc-coal-1']),
+  'truck-3': new Set(['exc-ob-1']), 'truck-6': new Set(['exc-ob-1']), 'truck-8': new Set(['exc-ob-1']),
   'worker-1': new Set(['worker-1']), 'worker-6': new Set(['worker-6']),
 }
 

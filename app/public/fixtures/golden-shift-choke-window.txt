@@ -32,12 +32,78 @@ ARBITRATED EVENT LIST — choke window onward (16:52 →)
 [21:45–22:00] root: residual (flow texture) · bucket residual · 2 t
 
 ALERT TRANSITIONS in window:
-  16:53 FIRE WARN [Haulage] truck-2: Truck idling 21.7 min (target < 20)
-  16:59 FIRE CRITICAL [Conveyor Vision] cam-2: Idler hotspot / fire risk at 76% span (conf 81.2%)
-  17:04 FIRE CRITICAL [Haulage] truck-2: Over-speed 40.4 km/h on haul road (limit 40)
-  17:15 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 5 m
-  17:44 FIRE WARN [Vibration CBM] crusher-1: Vibration 7.9 mm/s in ISO zone C
-  18:04 FIRE CRITICAL [HEMM PdM] exc-ob-1: HEMM engine fault risk, RUL 279.5 h
-  18:26 FIRE CRITICAL [Conveyor Vision] cam-2: Idler hotspot / fire risk at 76% span (conf 81.2%)
-  18:39 FIRE WARN [Conveyor Vision] cam-7: Foreign object (tramp metal) at 38% span (conf 75.3%)
-  18:43 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 12 m
+  16:53 FIRE WARN [Haulage] truck-2: Truck idling 20 min (target < 20)
+  16:59 FIRE CRITICAL [Conveyor Vision] cam-2: Idler hotspot / fire risk at 76% span (conf 80%)
+  17:03 FIRE WARN [Geofence] safety-1: Vehicle geofence breach (2 today)
+  17:17 FIRE WARN [Geofence] safety-1: Vehicle geofence breach (4 today)
+  17:29 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.2 degC
+  17:29 FIRE WARN [Geofence] safety-1: Vehicle geofence breach (4 today)
+  17:30 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 13 m
+  17:30 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.3 degC
+  17:30 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85 degC
+  17:31 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85 degC
+  17:31 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.1 degC
+  17:31 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  17:32 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  17:32 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.1 degC
+  17:32 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.1 degC
+  17:34 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.1 degC
+  17:34 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  17:34 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 11 m
+  17:34 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.2 degC
+  17:34 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.1 degC
+  17:35 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.1 degC
+  17:35 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.1 degC
+  17:35 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.1 degC
+  17:37 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  17:43 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  17:43 FIRE CRITICAL [Haulage] truck-8: Over-speed 40 km/h on haul road (limit 40)
+  17:44 FIRE WARN [Vibration CBM] crusher-1: Vibration 7.8 mm/s in ISO zone C
+  17:45 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  17:48 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 13 m
+  17:50 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 12 m
+  17:51 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  17:51 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  17:51 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 12 m
+  17:55 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 13 m
+  17:58 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  17:59 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  18:00 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.2 degC
+  18:03 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.3 degC
+  18:04 FIRE CRITICAL [HEMM PdM] exc-ob-1: HEMM engine fault risk, RUL 261.1 h
+  18:04 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.3 degC
+  18:07 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85.2 degC
+  18:07 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85 degC
+  18:08 FIRE CRITICAL [TPMS] truck-5: Tyre over-temp 85 degC
+  18:10 FIRE WARN [Haulage] truck-4: Truck idling 20.1 min (target < 20)
+  18:10 FIRE WARN [Haulage] truck-4: Truck idling 20 min (target < 20)
+  18:10 FIRE WARN [Haulage] truck-4: Truck idling 20.1 min (target < 20)
+  18:18 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:19 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  18:19 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 12 m
+  18:21 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  18:21 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:22 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  18:22 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 13 m
+  18:22 FIRE CRITICAL [Haulage] truck-8: Over-speed 40 km/h on haul road (limit 40)
+  18:22 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:23 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:23 FIRE CRITICAL [Haulage] truck-8: Over-speed 40 km/h on haul road (limit 40)
+  18:23 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 12 m
+  18:24 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:25 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:26 FIRE CRITICAL [Conveyor Vision] cam-2: Idler hotspot / fire risk at 76% span (conf 80%)
+  18:26 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  18:27 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:27 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:34 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 11 m
+  18:36 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  18:37 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 14 m
+  18:39 FIRE WARN [Worker Safety] safety-1: Worker in restricted zone – Crusher Maintenance Bay
+  18:39 FIRE WARN [Conveyor Vision] cam-7: Foreign object (tramp metal) at 38% span (conf 75%)
+  18:39 FIRE CRITICAL [Proximity] safety-1: Proximity incident — worker within 6 m of a vehicle
+  18:39 FIRE WARN [Proximity] safety-1: Reduced worker–vehicle clearance: 6 m
+  18:46 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:46 FIRE CRITICAL [Haulage] truck-8: Over-speed 40.1 km/h on haul road (limit 40)
+  18:48 FIRE CRITICAL [TPMS] truck-8: Tyre over-temp 85 degC
+  18:57 FIRE CRITICAL [TPMS] truck-8: Tyre over-temp 85.2 degC

@@ -217,7 +217,7 @@ Enforced, checkable in review.
 **R2 — Every card carries one sentence of plain language.** Generated from the data, in the words a shift in-charge would use. Build it as a `<Reading>` component sitting under the hero number, 13px, `--text-secondary`.
 
 > ✅ "Crushing has been the constraint for 41% of this shift — about 310 t."
-> ✅ "CV-04's drive motor is 11 °C above expected but vibration is flat: cooling path, not a bearing."
+> ✅ "CV-01's drive motor is 11 °C above expected but vibration is flat: cooling path, not a bearing."
 > ❌ "This chart shows crusher throughput over time."
 
 **If you can't write a meaningful reading for a card, the card shouldn't exist.** This rule alone will kill three or four cards you were about to build, and the dashboard will be better for it.
@@ -256,13 +256,13 @@ Data is the difference between a beautiful shell and something a mining client b
 | Time | Event |
 |---|---|
 | 14:00 | Shift opens. Plan 4,800 t. On pace. |
-| 14:20 | CV-04 conveyor drive motor begins drifting +0.4 °C/h above its load-and-ambient baseline. Vibration flat. |
+| 14:20 | CV-01 conveyor drive motor begins drifting +0.4 °C/h above its load-and-ambient baseline. Vibration flat. |
 | 15:10 | Shovel 2 fill factor falls 0.97 → 0.89. Source: Bench 4, fed by blast B-114, fragmentation P80 up 34%. |
 | 16:35 | Oversize reaches the primary crusher. Feed rate destabilises, power draw goes erratic. |
 | 16:52 | **Crusher 1 chokes.** 52-minute clear-out. |
-| 16:55–17:44 | Cascade: surge bin empties, CV-04 runs effectively empty 41 min, six trucks queue at the tip, Shovel 1 hangs 28 min. |
+| 16:55–17:44 | Cascade: surge bin empties, CV-01 runs effectively empty 41 min, six trucks queue at the tip, Shovel 1 hangs 28 min. |
 | 18:30 | Recovery. Fleet re-sequenced to Shovel 1. |
-| 19:15 | CV-04 now +11 °C, drifting 3.1 °C/h. Diagnosis fires: degraded cooling path, not a bearing. Recommended window 22:00 changeover. |
+| 19:15 | CV-01 now +11 °C, drifting 3.1 °C/h. Diagnosis fires: degraded cooling path, not a bearing. Recommended window 22:00 changeover. |
 | 20:05 | Rake placed. Weighbridge queue delays release 34 min → demurrage. |
 | 22:00 | Close: **4,180 t vs 4,800 t plan (87%)**. |
 
@@ -285,7 +285,7 @@ Conveyor starvation and truck queueing are recorded as **consequences of the cru
 
 - **Physical consistency holds.** Energy tracks throughput. Motor temperature tracks load and ambient. A queued truck is not simultaneously recorded as hauling. Belt tonnage reconciles to summed truck payloads within a stated tolerance.
 - **Realistic magnitudes.** Haul trucks 100–240 t. Overland conveyor 1,000–4,000 TPH. Primary crusher ~1,200 TPH. Conveyor drive motors 400–1,600 kW. GCV 3,400–4,200 kcal/kg. Ambient 28–44 °C.
-- **Realistic naming.** `SH-02`, `DT-214`, `CV-04`, `CR-01`, `P-07`, `Bench-4`, `B-114`. Never "Asset 1".
+- **Realistic naming.** `SH-02`, `DT-214`, `CV-01`, `CR-01`, `P-07`, `Bench-4`, `B-114`. Never "Asset 1".
 - **Signals look human, not synthetic.** No smooth sine waves. Real data has plateaus, spikes, shift-change discontinuities, and occasional dropouts.
 - **Include one deliberate data-quality defect** — a stuck sensor on a named asset — so the partial-data and confidence-badge states are demonstrable rather than theoretical.
 - **Scale:** 40 haul trucks, 4 shovels, 2 surface miners, 1 primary crusher, 6 conveyors, 3 dewatering pumps, 12 health-scored assets, ~14 alerts across four severities, 3 rakes, and **30 days of trailing history** so every baseline, delta and comparator is real.
@@ -313,7 +313,7 @@ Conveyor starvation and truck queueing are recorded as **consequences of the cru
 
 **Step 6 — Screen 2: Fleet**, including the what-if allocation slider (T5).
 
-**Step 7 — Screen 4: Asset Health**, driven end-to-end by the CV-04 story, including the deferral-impact toggle (T5).
+**Step 7 — Screen 4: Asset Health**, driven end-to-end by the CV-01 story, including the deferral-impact toggle (T5).
 *Gate: the diagnosis correctly distinguishes cooling-path from bearing, and shows flat vibration as the visible evidence for why.*
 
 **Step 8 — Remaining screens**, one at a time.

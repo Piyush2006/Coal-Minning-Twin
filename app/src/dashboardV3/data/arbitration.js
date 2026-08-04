@@ -134,6 +134,25 @@ export function arbitrate(shift) {
   return { R, plan, actual, buckets, events, perMinute, reconciles }
 }
 
+/* ── display rounding: largest-remainder allocation ─────────────────────────
+   Rounding each bucket independently can make the displayed waterfall miss the
+   displayed total by ±1–2 t (and shares miss 100%). Allocate integer units so
+   the parts ALWAYS sum to the rounded total; components must render THESE
+   values and assert the sum (rendered-value assertion, not just internal). */
+export function largestRemainder(values, total = null) {
+  const T = Math.round(total ?? values.reduce((a, b) => a + b, 0))
+  const floors = values.map(v => Math.floor(v))
+  let left = T - floors.reduce((a, b) => a + b, 0)
+  const order = values.map((v, i) => [v - floors[i], i]).sort((a, b) => b[0] - a[0])
+  const out = floors.slice()
+  for (let k = 0; k < order.length && left > 0; k++, left--) out[order[k][1]]++
+  return { parts: out, total: T, sums: out.reduce((a, b) => a + b, 0) === T }
+}
+export function largestRemainderPct(values) {
+  const sum = values.reduce((a, b) => a + b, 0) || 1
+  return largestRemainder(values.map(v => (v / sum) * 100), 100).parts
+}
+
 /* helper for building per-minute tables in tests and in the recorder */
 export function minuteRow(stages, rated, over = {}) {
   const cap = {}, state = {}, cause = {}, buf = {}, bufCap = {}
