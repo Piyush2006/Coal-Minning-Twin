@@ -26,7 +26,7 @@ export const CFG = {
   truckFuelLh: 210,        // nominal per running truck
   cycleMin: 21,            // nominal haul cycle (minutes)
   utilNom: 88,             // % target utilisation
-  dieselKgPerL: 2.68, gridKgPerKwh: 0.82, secKwhPerT: 1.05,
+  dieselKgPerL: 2.68, gridKgPerKwh: 0.82, gridCo2KgPerKwh: 0.71, secKwhPerT: 1.05,
   shipBerthed: true,
 }
 
@@ -148,6 +148,7 @@ function recordDashSeries(objects, r) {
   recordParam('dash', 'workers', Number(objects['safety-1']?.parameters?.workersOnSite) || 0, true)
   recordParam('dash', 'prox', Number(objects['safety-1']?.parameters?.minWorkerVehicleDistance) || 0)
   recordParam('dash', 'fleetFuel', fleetRunning(objects).run, true)
+  recordParam('dash', 'dieselLh', fleetDieselLh(objects))
   recordParam('dash', 'rul', lowestRul(objects).h ?? 0)
   recordParam('dash', 'vib', worstVibration(objects).v)
   recordParam('dash', 'pm10', Number(objects['pm-1']?.parameters?.pm10) || 0)
@@ -168,7 +169,7 @@ export function getModel(objects) {
   const runTrucks = trucks.filter(o => o.status === 'running').length
   const cycleMin = Math.round(drift(CFG.cycleMin, 7, tH, 0.07))
   const utilPct = Math.round(Math.min(96, Math.max(78, drift(CFG.utilNom, 3, tH, 0.06))))
-  const fuelLh = Math.round(runTrucks * drift(CFG.truckFuelLh, 4, tH, 0.05))
+  const fuelLh = fleetDieselLh(objects)                    // single fuel truth (client per-machine rates)
   const elapsedFrac = tH / CFG.shiftHours
   const planToNow = planCumulative(CFG.shiftStartH + tH) - planCumulative(CFG.shiftStartH)
   const productionToday = S.today.rom
@@ -177,9 +178,20 @@ export function getModel(objects) {
   const offtakeTPerDay = Math.max(1, (r.rail + r.ship) * 24)
   const daysSupply = stockTotal / offtakeTPerDay
   const sec = CFG.secKwhPerT                             // kWh/t
-  const kwh = Math.round(r.product * sec)
-  const co2Today = (S.today.rom * 0 + fuelLh * CFG.dieselKgPerL + kwh * CFG.gridKgPerKwh) / 1000  // t/h basis → we report today below
-  const co2TodayT = (dieselTodayL(objects) * CFG.dieselKgPerL + S.today.product * sec * CFG.gridKgPerKwh) / 1000
+  const kwh = Math.round(r.product * sec)                // instantaneous kWh (plant)
+  // Diesel today = mobile-fleet burn over the utilised shift so far.
+  const dieselTodayL = fuelLh * (utilPct / 100) * tH
+  const dieselIntensity = productionToday > 0 ? dieselTodayL / productionToday : 0   // L/t (target 0.40)
+  // CO2 today is ARITHMETICALLY TIED to diesel + grid energy (one number).
+  const gridKWhToday = S.today.product * sec
+  const co2TodayT = (dieselTodayL * CFG.dieselKgPerL + gridKWhToday * CFG.gridCo2KgPerKwh) / 1000
+  // Safety / compliance (deterministic, from safety-1 sim + seeded PPE drift).
+  const sp = objects['safety-1']?.parameters || {}
+  const ppeCompliance = Math.min(100, Math.max(95, 98.2 + 1.6 * (vnoise(tH * 0.25 + 3, 41) * 2 - 1)))
+  const vehicleHoursToday = mobileCount(objects) * tH * (utilPct / 100)
+  const geofenceViol = Number(sp.geofenceViolationsToday) || 0
+  const geofenceRate = vehicleHoursToday > 0 ? geofenceViol / (vehicleHoursToday / 100) : 0
+  if (import.meta.env.DEV) console.assert(Math.abs(co2TodayT - (dieselTodayL * CFG.dieselKgPerL + gridKWhToday * CFG.gridCo2KgPerKwh) / 1000) < 1e-9, '[mineModel] co2 not tied to diesel')
 
   const stages = [
     { id: 'pit',   zone: 'pit',   label: 'Pit',       rate: r.rom,      nominal: NOM.romExPit },
@@ -204,15 +216,33 @@ export function getModel(objects) {
     today: { production: productionToday, product: S.today.product, rail: S.today.rail, ship: S.today.ship, rejects: S.today.rejects },
     stock: { A: S.stock.A, B: S.stock.B, total: stockTotal, trend: S.trend, daysSupply },
     fleet: { running: fleet.run, total: fleet.total, runTrucks, totalTrucks: trucks.length, cycleMin, utilPct, fuelLh },
-    energy: { kwh, sec, co2TodayT, dieselLh: fuelLh },
+    energy: { kwh, sec, co2TodayT, dieselLh: fuelLh, dieselTodayL, dieselIntensity, gridKWhToday },
+    tcs: {
+      unauthorizedEntriesToday: Number(sp.unauthorizedEntriesToday) || 0,
+      proximityAlertsToday: Number(sp.proximityAlertsToday) || 0,
+      geofenceViolationsToday: geofenceViol,
+      geofenceRate,
+      closestApproach: Number(sp.minWorkerVehicleDistance) || 0,
+      ppeCompliance,
+      workersInRestrictedNow: (Number(sp.unauthorizedEvent) || 0) > 0.5 ? 1 : 0,
+      vehiclesInInteraction: (Number(sp.proximityEvent) || 0) > 0.5 ? 1 : 0,
+      vehicleHoursToday,
+    },
     yield: NOM.yield * 100,
   }
 }
 
-function dieselTodayL(objects) {
-  // running trucks × nominal L/h × elapsed hours (coherent single fuel figure)
-  const run = Object.values(objects).filter(o => o.type === 'haul_truck' && o.status === 'running').length
-  return run * CFG.truckFuelLh * (S ? elapsedH() : CFG.shiftStartH)
+// Single fuel truth: per-machine diesel burn for the mobile fleet (client rates).
+const MOBILE_DIESEL_LH = { haul_truck: 45, mining_excavator: 65, wheel_loader: 35, blasthole_drill_rig: 30, light_vehicle: 8 }
+export function fleetDieselLh(objects) {
+  let lh = 0
+  for (const id in objects) { const o = objects[id]; if (o.status === 'running' && MOBILE_DIESEL_LH[o.type]) lh += MOBILE_DIESEL_LH[o.type] }
+  return lh
+}
+function mobileCount(objects) {
+  let n = 0
+  for (const id in objects) if (MOBILE_DIESEL_LH[objects[id].type]) n++
+  return n
 }
 
 // cumulative production S-curve for the hero: plan = 24h-profile integral over
@@ -271,6 +301,7 @@ function backfillDash(objects) {
     recordParam('dash', 'vib', anchor('crusher-1', 'vibration', 7.4) + walks[11]() * 0.8)
     recordParam('dash', 'pm10', anchor('pm-1', 'pm10', 205) + walks[12]() * 16)
     recordParam('dash', 'sec', anchor('screen-1', 'kwhPerTonne', 1.12) + walks[13]() * 0.05)
+    recordParam('dash', 'dieselLh', 300 + (r.rom / NOM.romExPit) * 60 + walks[9]() * 20)
   }
 }
 

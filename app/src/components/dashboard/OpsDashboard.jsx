@@ -4,7 +4,8 @@ import { useMemo, useState, useEffect, useRef, Fragment } from 'react'
 import { useSceneStore } from '../../store/sceneStore'
 import { useDashboard } from '../../lib/dashboardStore'
 import { productionCurve } from '../../lib/mineModel'
-import { TILES, overallStatus, rowAlertsFor } from '../../lib/dashboardConfig'
+import { TILES, overallStatus, rowAlertsFor, tileKpis, KPI_BANDS } from '../../lib/dashboardConfig'
+import { kpiBand, worst as worstStatus } from '../../lib/kpiStatus'
 import { getParamHistory } from '../../lib/paramHistory'
 import { assetHealthModel } from '../../lib/assetHealth'
 import { assetHeadlineParam } from '../../lib/zones'
@@ -138,21 +139,45 @@ function FlowStrip({ m, openZone }) {
 // ── use-case LEDGER (table) — no fixed heights, no absolute, no clipping ──
 const LEDGER = {
   ops:     { full: 'Mine Operations Optimization', ctx: 'production vs plan' },
-  workers: { full: 'Real-Time Worker Monitoring',   ctx: 'personnel on site', step: true },
-  prox:    { full: 'Collision & Proximity Safety',  ctx: 'closest approach' },
+  workers: { full: 'Real-Time Worker Monitoring',   ctx: (m) => ({ text: `${m.tcs.unauthorizedEntriesToday} unauthorized zone entries today`, st: kpiBand(m.tcs.unauthorizedEntriesToday, KPI_BANDS.unauthorized) }), step: true },
+  prox:    { full: 'Collision & Proximity Safety',  ctx: (m) => ({ text: `closest ${Math.round(m.tcs.closestApproach)} m · geofence ${m.tcs.geofenceRate.toFixed(1)}/100 veh-h`, st: worstStatus([kpiBand(m.tcs.closestApproach, KPI_BANDS.closest), kpiBand(m.tcs.geofenceRate, KPI_BANDS.geofenceRate)]) }), valSt: (m) => kpiBand(m.tcs.proximityAlertsToday, KPI_BANDS.proximity) },
   fleet:   { full: 'Fleet & Equipment Management',  ctx: 'units running', step: true },
   pdm:     { full: 'Predictive Maintenance',        ctx: 'lowest asset RUL' },
   asset:   { full: 'Asset Performance Management',  ctx: 'worst vibration' },
   prod:    { full: 'Production & Productivity',      ctx: (m) => `${m.plan.deltaPct >= 0 ? '+' : ''}${m.plan.deltaPct.toFixed(1)}% vs plan` },
-  energy:  { full: 'Energy & Sustainability',       ctx: 'specific energy' },
+  energy:  { full: 'Energy & Sustainability',       ctx: (m) => ({ text: `${m.energy.dieselIntensity.toFixed(2)} L/t · ${m.energy.co2TodayT.toFixed(1)} t CO₂ today`, st: kpiBand(m.energy.dieselIntensity, KPI_BANDS.dieselIntensity) }) },
   env:     { full: 'Environmental Compliance',      ctx: 'PM10 now' },
   supply:  { full: 'Supply Chain & Logistics',      ctx: 'stock on ground' },
 }
 
+// Traffic-light KPI value: good = normal ink (no green paint, no dot);
+// warn = amber value + 6px dot; bad = red value + 6px dot.
+function KpiVal({ children, st, size = 20 }) {
+  const color = st === 'red' ? T.bad : st === 'amber' ? T.warn : T.ink
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      {st && st !== 'green' && <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: color }} />}
+      <span style={{ fontSize: size, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color }}>{children}</span>
+    </span>
+  )
+}
+
 function Drawer({ tile, m, objects, spark }) {
   const rows = tile.detail(m, objects)
+  const kpis = tileKpis(tile, m, objects, getParamHistory('dash', 'pm10'))
   return (
     <div style={{ padding: '4px 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {kpis.length > 0 && (
+        <div className="kpi-grid">
+          {kpis.map((k, i) => (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: T.ink2 }}>{k.label}</span>
+              <span><KpiVal st={k.st}>{k.value}</KpiVal>{k.unit ? <span style={{ fontSize: 12, fontWeight: 500, color: T.ink2, marginLeft: 4 }}>{k.unit}</span> : null}</span>
+              {k.cap && <span style={{ fontSize: 11, color: '#98A2B3' }}>{k.cap}</span>}
+            </div>
+          ))}
+        </div>
+      )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
         {rows.map((r, i) => (
           <div key={i} style={{ ...card, padding: 12 }}>
@@ -169,10 +194,14 @@ function Drawer({ tile, m, objects, spark }) {
 
 function LedgerRow({ tile, m, objects, alerts, expanded, onToggle, onView, first }) {
   const rowAlerts = rowAlertsFor(tile.id, alerts)
-  const st = rowAlerts.some(a => a.severity === 'critical') ? 'red' : rowAlerts.length ? 'amber' : 'green'
+  const alertSt = rowAlerts.some(a => a.severity === 'critical') ? 'red' : rowAlerts.length ? 'amber' : 'green'
+  // ROW STATUS = worst of (alert-derived, the row's own KPI statuses)
+  const st = worstStatus([alertSt, tile.status ? tile.status(m, objects, alerts) : 'green'])
   const val = tile.value(m, objects)
   const meta = LEDGER[tile.id] || { full: tile.title, ctx: '' }
-  const ctx = typeof meta.ctx === 'function' ? meta.ctx(m, objects) : meta.ctx
+  const ctxRaw = typeof meta.ctx === 'function' ? meta.ctx(m, objects) : meta.ctx
+  const ctx = (ctxRaw && typeof ctxRaw === 'object') ? ctxRaw : { text: ctxRaw, st: null }
+  const valSt = meta.valSt ? meta.valSt(m, objects) : null
   const n = rowAlerts.length
   const last = rowAlerts.map(a => a.since).sort((a, b) => b - a)[0]
   const spark = tile.spark ? getParamHistory('dash', tile.spark) : []
@@ -186,9 +215,14 @@ function LedgerRow({ tile, m, objects, alerts, expanded, onToggle, onView, first
           <span style={{ fontSize: 14, fontWeight: 550, color: T.ink }}>{meta.full}</span>
           {tile.vision && <VisionChip />}
         </span>
-        <span style={{ width: 150, flexShrink: 0, textAlign: 'right' }}>
-          <span style={ty.kpiM}>{Number.isFinite(Number(String(val).replace(/,/g, ''))) ? <NumberFlow value={Number(String(val).replace(/,/g, ''))} /> : val}{tile.unit ? <Unit>{tile.unit}</Unit> : null}</span>
-          <span style={{ display: 'block', ...ty.label }}>{ctx}</span>
+        <span style={{ width: 168, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            {valSt && valSt !== 'green' && <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: STATUS[valSt] }} />}
+            <span style={{ ...ty.kpiM, color: valSt && valSt !== 'green' ? STATUS[valSt] : T.ink }}>{Number.isFinite(Number(String(val).replace(/,/g, ''))) ? <NumberFlow value={Number(String(val).replace(/,/g, ''))} /> : val}{tile.unit ? <Unit>{tile.unit}</Unit> : null}</span>
+          </span>
+          <span style={{ ...ty.label, color: ctx.st && ctx.st !== 'green' ? STATUS[ctx.st] : T.ink2, display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+            {ctx.st && ctx.st !== 'green' && <span style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: STATUS[ctx.st] }} />}{ctx.text}
+          </span>
         </span>
         <span style={{ width: 84, flexShrink: 0, display: 'flex', justifyContent: 'center' }}><MiniSpark data={spark} w={80} h={24} step={meta.step} /></span>
         <span style={{ width: 96, flexShrink: 0, ...ty.label }}>{n > 0 ? `${n} alert${n > 1 ? 's' : ''}${last ? ` · ${rel(last)}` : ''}` : '—'}</span>
@@ -373,6 +407,7 @@ export function OpsDashboard() {
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 40, height: '100dvh', background: activeTab === 'overview' ? 'transparent' : T.bg, fontFamily: T.font, fontVariantNumeric: 'tabular-nums', display: 'grid', gridTemplateRows: 'auto auto auto minmax(0,1fr)', overflow: 'hidden' }}>
       <style>{`
+        .kpi-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px} @media (min-width:1200px){.kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
         .dash-scroll{scrollbar-width:thin;scrollbar-color:#D0D5DD transparent} .dash-scroll::-webkit-scrollbar{width:6px} .dash-scroll::-webkit-scrollbar-thumb{background:#D0D5DD;border-radius:3px} .dash-scroll::-webkit-scrollbar-track{background:transparent}
         .link-twin:hover{text-decoration:underline}
         .row-hover{transition:background 150ms ease} .row-hover:hover{background:#F7F8FA}

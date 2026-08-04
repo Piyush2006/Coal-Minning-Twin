@@ -59,5 +59,21 @@ export function bandStatus(v, band) {
   return 'green'
 }
 
+// Exact-band traffic light (no NEAR fuzz) for the client's named KPI thresholds.
+// warn = value reaches the warn edge; bad = value reaches the bad edge.
+// dir 'high' → higher is worse; dir 'low' → lower is worse.
+export function kpiBand(v, { warn, bad, dir = 'high' }) {
+  v = Number(v)
+  if (!Number.isFinite(v)) return 'green'
+  if (dir === 'high') {
+    if (bad != null && v >= bad) return 'red'
+    if (warn != null && v >= warn) return 'amber'
+  } else {
+    if (bad != null && v <= bad) return 'red'
+    if (warn != null && v <= warn) return 'amber'
+  }
+  return 'green'
+}
+
 export const worst = (statuses) => statuses.reduce((a, b) => (STATUS_RANK[b] > STATUS_RANK[a] ? b : a), 'green')
 export const statusLabel = (s) => (s === 'red' ? 'Critical' : s === 'amber' ? 'Attention' : 'Healthy')

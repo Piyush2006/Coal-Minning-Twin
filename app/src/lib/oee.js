@@ -221,6 +221,7 @@ function stepSafety(o, rec) {
   if (p.geofenceEvent && q.gf < 1) q.gf = 1
   p.proximityAlertsToday = q.px
   p.unauthorizedEntriesToday = q.ua
+  p.restrictedZone = ['Active Blast Area', 'Crusher Maintenance Bay', 'Rail Corridor'][q.ua % 3]
   p.geofenceViolationsToday = q.gf
   return { parameters: p, state: q.pxTimer > 0 ? 'fault' : 'running' }
 }

@@ -4127,7 +4127,8 @@
         "unauthorizedEntriesToday": 1,
         "proximityEvent": 0,
         "unauthorizedEvent": 0,
-        "geofenceEvent": 0
+        "geofenceEvent": 0,
+        "restrictedZone": "Active Blast Area"
       },
       "config": {
         "hidden": true,
@@ -4157,8 +4158,8 @@
             "op": ">",
             "threshold": 0.5,
             "severity": "warn",
-            "useCase": "Worker Safety",
-            "message": "Geofence violation logged ({geofenceViolationsToday} today)"
+            "useCase": "Geofence",
+            "message": "Vehicle geofence breach ({geofenceViolationsToday} today)"
           },
           {
             "id": "unauth",
@@ -4167,7 +4168,7 @@
             "threshold": 0.5,
             "severity": "warn",
             "useCase": "Worker Safety",
-            "message": "Unauthorized zone entry ({unauthorizedEntriesToday} today)"
+            "message": "Worker in restricted zone \u2013 {restrictedZone}"
           }
         ]
       }

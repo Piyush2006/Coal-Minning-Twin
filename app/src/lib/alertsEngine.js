@@ -38,6 +38,7 @@ function fires(rule, v) {
 function interpolate(msg, obj) {
   return String(msg || '').replace(/\{(\w+)\}/g, (_, k) => {
     const v = obj.parameters?.[k]
+    if (typeof v === 'string') return v                                  // string params (e.g. restrictedZone) pass through
     return Number.isFinite(Number(v)) ? String(Math.round(Number(v) * 10) / 10) : `{${k}}`
   })
 }
