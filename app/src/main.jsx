@@ -5,6 +5,27 @@ import '@xyflow/react/dist/style.css'
 import './index.css'
 import Root from './Root'
 
+// Dashboard v3 surface (design system + screens) lives behind a hash route so
+// nothing loads for normal users; lazy so Highcharts/fonts stay out of the main
+// bundle. #/design-system → the Step-1 component gallery.
+const DV3Gallery = React.lazy(() => import('./dashboardV3/Gallery'))
+function HashRouter() {
+  const [hash, setHash] = React.useState(window.location.hash)
+  React.useEffect(() => {
+    const onHash = () => setHash(window.location.hash)
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+  if (hash.startsWith('#/design-system')) {
+    return (
+      <React.Suspense fallback={<div style={{ minHeight: '100vh', background: '#EBEEF4' }} />}>
+        <DV3Gallery />
+      </React.Suspense>
+    )
+  }
+  return <Root />
+}
+
 // ── Recover from STALE MODULES (the "blank screen that only a hard refresh fixed") ──
 // On the Vite dev server, when deps are re-optimized the old hashed module URLs go
 // 504/404 and the page can white-screen before React mounts. We force a one-time,
@@ -55,7 +76,7 @@ class RootBoundary extends React.Component {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <RootBoundary>
-      <Root />
+      <HashRouter />
     </RootBoundary>
   </React.StrictMode>
 )

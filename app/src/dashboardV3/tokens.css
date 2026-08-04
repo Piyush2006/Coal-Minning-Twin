@@ -1,0 +1,213 @@
+/* ── Dashboard v3 design tokens (brief §3) ─────────────────────────────────
+   Scoped to .dv3 — NEVER :root. The existing app (theme.js / OpsDashboard)
+   is untouched; these tokens exist only inside the new surface. */
+
+@font-face {
+  font-family: 'Inter Var';
+  src: url('/fonts/inter-var.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono Var';
+  src: url('/fonts/jetbrains-mono-var.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+.dv3 {
+  /* surfaces */
+  --canvas: #EBEEF4;
+  --surface: #FFFFFF;
+  --surface-2: #F6F8FB;
+  --hairline: rgba(16, 24, 40, 0.06);
+
+  /* card treatment — the single most important visual decision */
+  --card-shadow: 0 1px 3px rgba(16, 24, 40, 0.04), 0 12px 32px -12px rgba(16, 24, 40, 0.10);
+
+  /* text */
+  --text-primary: #0D1117;
+  --text-secondary: #525C6B;
+  --text-tertiary: #8A94A6;
+
+  /* accent — exactly one */
+  --accent: #2B5CE7;
+  --accent-soft: #E9EFFE;
+
+  /* chart series — max 5, never a rainbow */
+  --series-1: #2B5CE7;
+  --series-2: #12A594;
+  --series-3: #E5871F;
+  --series-4: #7B5EA7;
+  --series-5: #5B6B7F;
+  --baseline: #A9B2C1;   /* plan/target — ALWAYS this, ALWAYS dashed, ALWAYS behind */
+  --gridline: #EDF0F5;
+
+  /* status — locked semantics, never decorative */
+  --st-operating: #12A16E;
+  --st-idle-j: #E0A32E;
+  --st-idle-u: #EC7C30;
+  --st-down-u: #E04B4B;
+  --st-down-p: #9AA4B4;
+  --st-degraded: #F0913A;
+  --st-nodata: #DCE1E9;
+
+  /* severity (Action Center) */
+  --sev-p1: #E04B4B;
+  --sev-p2: #E5871F;
+  --sev-p3: #E0A32E;
+  --sev-p4: #5B6B7F;
+
+  /* shape — 4px base */
+  --r-card: 16px;
+  --r-inner: 12px;
+  --r-control: 10px;
+  --r-chip: 6px;
+
+  /* motion */
+  --ease: 150ms ease-out;
+
+  /* type */
+  --font-ui: 'Inter Var', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono Var', 'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+  background: var(--canvas);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* high-contrast light variant (kept from blueprint Appendix B — pit-side tablets,
+   direct sun). Darkens the mid tiers and strengthens structure; hues unchanged. */
+.dv3[data-contrast='high'] {
+  --canvas: #E2E6EE;
+  --text-secondary: #313A47;
+  --text-tertiary: #5A6474;
+  --hairline: rgba(16, 24, 40, 0.14);
+  --gridline: #D8DDE6;
+  --card-shadow: 0 1px 3px rgba(16, 24, 40, 0.10), 0 12px 32px -12px rgba(16, 24, 40, 0.18);
+}
+
+/* every numeral: tabular + lining. Non-negotiable (§3.1). */
+.dv3, .dv3 * { font-variant-numeric: tabular-nums lining-nums; }
+
+/* ── type utilities ── */
+.dv3-cardhead {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+.dv3-hero {
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  line-height: 1.05;
+}
+.dv3-hero--xl { font-size: 64px; }
+.dv3-hero--md { font-size: 40px; }
+.dv3-support { font-size: 13px; color: var(--text-secondary); }
+.dv3-mono { font-family: var(--font-mono); }
+.dv3-tert { color: var(--text-tertiary); }
+
+/* ── card ── */
+.dv3-card {
+  background: var(--surface);
+  border-radius: var(--r-card);
+  box-shadow: var(--card-shadow);
+  border: none;
+  padding: 20px;                 /* balanced default */
+}
+.dv3-card--airy { padding: 28px; }
+.dv3-card--working { padding: 16px; }
+
+.dv3-well {
+  background: var(--surface-2);
+  border-radius: var(--r-inner);
+}
+
+/* ── controls ── */
+.dv3-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2);
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--ease);
+}
+.dv3-pill:hover { background: #EEF1F6; }
+.dv3-pill[data-active='true'] { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+
+.dv3-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--r-control);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  border: none;
+  transition: opacity var(--ease), background var(--ease);
+}
+.dv3-btn--primary { background: var(--accent); color: #fff; }
+.dv3-btn--primary:hover { opacity: 0.92; }
+.dv3-btn--ghost { background: transparent; color: var(--text-secondary); box-shadow: inset 0 0 0 1px var(--hairline); }
+.dv3-btn--ghost:hover { background: var(--surface-2); }
+
+.dv3-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: var(--r-chip);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ── black-pill tooltip (§3.3, adopt exactly) ── */
+.dv3-tooltip {
+  background: #0D1117;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  padding: 8px 12px;
+  font-family: var(--font-ui);
+  box-shadow: 0 4px 16px rgba(16, 24, 40, 0.25);
+}
+
+/* ── table rows (density ladder) ── */
+.dv3-row { display: flex; align-items: center; height: 40px; border-bottom: 1px solid var(--hairline); font-size: 13px; }
+.dv3-row--working { height: 36px; }
+.dv3-thead { display: flex; align-items: center; height: 34px; background: var(--surface-2); border-radius: 8px; }
+
+/* ── R6 states ── */
+@keyframes dv3-shimmer { 0% { opacity: 0.55; } 50% { opacity: 1; } 100% { opacity: 0.55; } }
+.dv3-skel {
+  background: var(--surface-2);
+  border-radius: 6px;
+  animation: dv3-shimmer 1.6s ease-in-out infinite;
+}
+/* data gap — vertical stripe, rendered wherever data is missing; never interpolate */
+.dv3-gap {
+  background: repeating-linear-gradient(90deg, var(--st-nodata) 0 3px, #fff 3px 6px);
+  border-radius: 4px;
+}
+.dv3-muted { opacity: 0.38; }
+
+/* gallery-only helpers */
+.dv3-squint { filter: blur(6px); }
+.dv3-grey { filter: grayscale(1); }
