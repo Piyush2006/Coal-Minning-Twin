@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { throttledStorage } from '../lib/persistThrottle'
 import { persist }  from 'zustand/middleware'
 import { nanoid }   from 'nanoid'
 import { getDefaultConfig, withConfigDefaults } from '../lib/assetSchemas'
@@ -743,7 +744,12 @@ const store = (set, get) => ({
         if (now - (times[k] ?? 0) >= ms) times[k] = now                            // due → keep stepped value
         else params[k] = po.parameters[k]                                          // not due → hold previous
       }
-      objects[id] = { ...so, parameters: params, paramTimes: times }
+      // Identity preservation: if no param was due this tick and state/status
+      // didn't change, the new object is value-identical to the previous one —
+      // reuse the old reference so memoized consumers skip re-rendering.
+      let changed = so.state !== po.state || so.status !== po.status
+      if (!changed) for (const k in params) { if (params[k] !== po.parameters?.[k]) { changed = true; break } }
+      objects[id] = changed ? { ...so, parameters: params, paramTimes: times } : po
     }
     return { objects }
   }),
@@ -976,12 +982,24 @@ export const useSceneStore = create(
   persist(store, {
     name: 'faclon-dt-scene',
     version: 4,
-    partialize: (state) => ({
-      objects: state.objects,
-      groups: state.groups,
-      customAssetTypes: state.customAssetTypes,
-      flowLayout: state.flowLayout,
-    }),
+    // Write-behind storage: at most one serialize+write per 5 s (flushed on
+    // pagehide/tab-hide) instead of one per set() — the 1 Hz simulator was
+    // paying a ~250 KB synchronous localStorage write every tick.
+    storage: throttledStorage({ key: 'faclon-dt-scene' }),
+    partialize: (state) => {
+      // Persist only USER-LOCAL custom types — the shared component library
+      // (~195 KB) is code, re-merged by loadScene on every load (same
+      // exclusion getSceneSnapshot uses).
+      const lib = getLibraryComponents()
+      const customAssetTypes = {}
+      for (const id in state.customAssetTypes) if (!lib[id]) customAssetTypes[id] = state.customAssetTypes[id]
+      return {
+        objects: state.objects,
+        groups: state.groups,
+        customAssetTypes,
+        flowLayout: state.flowLayout,
+      }
+    },
     // Idempotent back-fill: v1 added `config`; v2 added `parameters`, `rules`,
     // connection-record fields; v3 added per-type `state`; v4 adds the UNS
     // hierarchy — `groups` + per-node `parentId`/`order`, converting any legacy
