@@ -1,6 +1,6 @@
 // Operations Dashboard — presentation rebuilt to the exact design spec.
 // Data comes from mineModel via a 5-second snapshot (no per-second jitter).
-import { useState, useEffect, useRef, Fragment } from 'react'
+import { useMemo, useState, useEffect, useRef, Fragment } from 'react'
 import { useSceneStore } from '../../store/sceneStore'
 import { useDashboard } from '../../lib/dashboardStore'
 import { productionCurve } from '../../lib/mineModel'
@@ -346,7 +346,7 @@ function TabRow({ tab, setTab }) {
 }
 
 export function OpsDashboard() {
-  const dash = useDashboard()
+  const dash = useDashboard.getState()   // actions only (stable refs) — no store-wide subscription
   const activeTab = useDashboard(s => s.activeTab)
   const snap = useDashSnapshot()
   const { objects, model: m, alerts } = snap
@@ -368,7 +368,7 @@ export function OpsDashboard() {
     })
     return () => cancelAnimationFrame(id)
   }, [activeTab])
-  const curve = productionCurve(objects)
+  const curve = useMemo(() => productionCurve(objects), [snap])   // pinned to the 5 s snapshot
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 40, height: '100dvh', background: activeTab === 'overview' ? 'transparent' : T.bg, fontFamily: T.font, fontVariantNumeric: 'tabular-nums', display: 'grid', gridTemplateRows: 'auto auto auto minmax(0,1fr)', overflow: 'hidden' }}>

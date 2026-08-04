@@ -59,11 +59,20 @@ export function dayRate(h) {
   if (h >= 18.5 && h < 19) return ramp(18.5, 19, 0.35, 1)
   return 1
 }
+// Prefix-sum cache on the fixed 0.05 grid — arithmetic-order-identical to the
+// original loop (sequential full steps + the same half-step partial term), so
+// results match to FP-accumulation noise. ~18k iterations per hero-curve build
+// become ~50 O(1) lookups.
+const _intStep = 0.05
+const _intCum = [0]                    // _intCum[n] = integral over [0, n*step]
 function dayIntegralRaw(h) {
-  const step = 0.05
-  let a = 0
-  for (let t = 0; t < h; t += step) a += dayRate(t + step / 2) * Math.min(step, h - t)
-  return a
+  const n = Math.max(0, Math.min(480, Math.floor(h / _intStep + 1e-9)))
+  while (_intCum.length <= n) {
+    const i = _intCum.length
+    _intCum.push(_intCum[i - 1] + dayRate((i - 1) * _intStep + _intStep / 2) * _intStep)
+  }
+  const t = n * _intStep
+  return _intCum[n] + (h > t + 1e-12 ? dayRate(t + _intStep / 2) * (h - t) : 0)
 }
 let _dayTotal = null
 export function planCumulative(hClock) {
