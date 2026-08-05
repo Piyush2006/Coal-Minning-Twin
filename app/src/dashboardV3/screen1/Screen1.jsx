@@ -3,7 +3,7 @@
 // the fixture/derive layer, the arbitration buckets, plus two new shared viz
 // primitives (ProcessChain, SiteMap). Every card carries a Reading.
 import { useMemo } from 'react'
-import { Card, Reading, Thesis } from '../ui'
+import { Card, Thesis } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { SiteMap, MiniSeries } from '../viz'
 import { YIELD, RATED } from '../data/chainSim'
@@ -47,7 +47,6 @@ function FlowMain({ fx, derived, m }) {
       </Thesis>
       <Card title={`Production chain — live at ${derived.fmt(m)}`} density="airy">
         <ProcessChain fx={fx} derived={derived} m={m} />
-        <Reading more={bound ? `${STAGE_LABEL[bindingRoot]} sets chain speed; downstream stages are starved, not faulted.` : 'All stages above the reference rate; the chain is unconstrained.'}>{bound ? `${STAGE_LABEL[bindingRoot]} binds · downstream starved` : 'Unconstrained · all stages above rate'}</Reading>
       </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
@@ -60,12 +59,10 @@ function FlowMain({ fx, derived, m }) {
               </div>
             ))}
           </div>
-          <Reading more="Each stage against its own capability line. Crushing collapses to zero at 16:52 (the choke); Face runs near capability throughout but its ceiling is the lowest, so it sets the plan.">Face's ceiling is lowest — it sets the plan</Reading>
         </Card>
 
         <Card title="Where the tonnes went — cumulative loss">
           <LossArea derived={derived} m={m} />
-          <Reading more="Loss accrues by attributed cause. Crushing dominates from the choke; Face/Loading is a steady drip from the B-114 fragmentation; the small residual is honest flow texture.">Crushing dominates; Face a steady drip</Reading>
         </Card>
       </div>
 
@@ -78,10 +75,8 @@ function FlowMain({ fx, derived, m }) {
    CR-01's core turns red at the choke. Screen 6 uses the same map as its base. */
 function SiteViewCard({ fx, derived, m }) {
   return (
-    <Card title="Pit-to-port site view" density="working" style={{ marginTop: 16 }}
-      right={<span className="dv3-support" style={{ fontSize: 11 }}>markers = live status at {derived.fmt(m)}</span>}>
+    <Card title="Pit-to-port site view" density="working" style={{ marginTop: 16 }}>
       <SiteMap fx={fx} derived={derived} m={m} height={320} />
-      <Reading more="Top-down plan of the operation: pit and benches, haul road, overland conveyor, rail and port. Marker cores show live status — CR-01 turns red at the choke. Click any marker to select it across every screen.">Markers by live status — click to select anywhere</Reading>
     </Card>
   )
 }

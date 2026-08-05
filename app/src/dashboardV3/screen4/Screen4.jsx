@@ -4,7 +4,7 @@
 // the visible rule-out, predictive horizons with maturity badges (never a raw
 // RUL above L4), and the act-now-vs-defer decision with a transparent trip calc.
 import { useMemo, useState } from 'react'
-import { Card, CollapsibleCard, Reading, Thesis, MaturityBadge, ConfidenceBadge, Sparkline } from '../ui'
+import { Card, CollapsibleCard, Thesis, MaturityBadge, ConfidenceBadge, Sparkline } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { useScrub } from '../screen0/store'
 import { rankAssets, assetHealth, cvExpectedTemp, ASSET_LABEL } from './assetHealth'
@@ -75,7 +75,6 @@ function HealthMain({ fx, derived, m }) {
             )
           })}
         </div>
-        <Reading more="Risk ranks by (100 − health) × criticality, so a mildly degraded critical asset outranks a badly degraded spare.">CV-01 leads on thermal residual</Reading>
       </CollapsibleCard>
 
       {focus.id === 'cv-01'
@@ -130,7 +129,6 @@ function CVDetail({ fx, hist, derived, m }) {
       <CollapsibleCard id="health-thermal" title="Drive motor — temperature vs load-aware expected"
         headline={`+${resid.toFixed(1)} °C`} caption="deviation rose on an empty belt — not load">
         <ThermalChart tempS={tempS} loadS={loadS} m={m} N={derived.N} fmt={derived.fmt} chainEvents={derived.chainEvents} />
-        <Reading more="During the 16:52–17:47 starvation the absolute temperature fell toward the no-load expectation, yet the gap to expected kept widening at ~3.1 °C/h — ruling out load, pointing to a degrading cooling path.">Deviation widened as the belt emptied — not load</Reading>
       </CollapsibleCard>
       <CollapsibleCard id="health-vib" title="Rule-out — vibration flat"
         headline={`${(vib ?? 2.1).toFixed(1)} mm/s`} caption="steady — rules out the bearing">
@@ -140,12 +138,10 @@ function CVDetail({ fx, hist, derived, m }) {
           <Metric2 label="Drift" v={`${dTdt >= 0 ? '+' : ''}${dTdt.toFixed(1)} °C/h`} col="var(--text-primary)" />
           <Metric2 label="Vibration" v={`${(vib ?? 2.1).toFixed(1)} mm/s`} col="#12A16E" sub="steady" />
         </div>
-        <Reading more="Steady vibration removes the bearing hypothesis: a spalling bearing would climb here. Thermal-only drift is consistent with fouled cooling fins / airflow.">Flat vibration rules out the bearing</Reading>
       </CollapsibleCard>
       <CollapsibleCard id="health-runway" title="30-day residual runway"
         headline={`${dTdt >= 0 ? '+' : ''}${dTdt.toFixed(1)} °C/h`} caption="flat to day 16, then 14 days of drift">
         <HistoryTrend hist={hist} />
-        <Reading more="The residual was flat until ~day 16, then drifted monotonically over the trailing two weeks — a slow-developing fault with 14 days of warning, not a step change.">Flat to day 16, then 14 days of drift</Reading>
       </CollapsibleCard>
       <CollapsibleCard id="health-decision" title="Decision — act now or defer"
         headline="act 22:00" caption="fits the changeover — zero production cost" defaultOpen>
@@ -239,7 +235,6 @@ function DeferralBody({ temp, dTdt, hoursToTrip, derived, m }) {
             <Metric2 label="Duration" v="~25 min" col="var(--text-primary)" />
             <Metric2 label="Production cost" v="0 t" col="#12A16E" sub="buffered by changeover" />
           </div>
-          <Reading more="Clean the cooling fins at the scheduled 22:00 shift changeover. It fits inside the handover gap, so the production cost is zero — the residual resets and the runway clears.">Fits the changeover gap — zero production cost</Reading>
         </div>
       ) : (
         <div>
@@ -248,7 +243,6 @@ function DeferralBody({ temp, dTdt, hoursToTrip, derived, m }) {
             <Metric2 label="Hours to 95 °C trip" v={Number.isFinite(hoursToTrip) ? `${hoursToTrip.toFixed(1)} h` : '—'} col="#E04B4B" sub={`at ${dTdt.toFixed(1)} °C/h`} />
             <Metric2 label="P(trip before Thu B)" v={`${Math.round(pTrip * 100)}%`} col="#E04B4B" />
           </div>
-          <Reading more={`Defer past 22:00 and the drive reaches its 95 °C trip in ${Number.isFinite(hoursToTrip) ? hoursToTrip.toFixed(1) : '—'} h at the current rate. An unplanned mid-shift trip costs ~${stoppageT.toLocaleString()} t — far more than the free changeover clean.`}>Deferring risks a ~{stoppageT.toLocaleString()} t unplanned trip</Reading>
         </div>
       )}
       <div style={{ marginTop: 8 }}><MaturityBadge level="stat" /></div>
@@ -276,7 +270,6 @@ function GenericHorizon({ focus, snap }) {
           </>
         ) : <div className="dv3-support">No predictive model matured for this asset yet — condition-monitored only.</div>}
       </div>
-      <Reading more="Horizons are shown as bands with a maturity badge, never as a false-precision hours figure. The raw hours estimate appears only in the L4 parameter list for reliability engineers.">Bands, not false-precision hours</Reading>
     </Card>
   )
 }

@@ -3,7 +3,7 @@
 // crusher feed-stability control chart with the choke marked. Assembly of the
 // ControlChart primitive + fixture reads. Every card carries a Reading.
 import { useMemo } from 'react'
-import { Card, CollapsibleCard, Reading, Thesis, SensorValue } from '../ui'
+import { Card, CollapsibleCard, Thesis, SensorValue } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { ControlChart } from '../viz'
 import { dedupeEpisodes, presentAlertMsg } from '../data/alertPolicy'
@@ -64,23 +64,19 @@ function PlantMain({ fx, derived, m }) {
             })}
           </svg>
         </div>
-        <Reading more="The pit-to-CHP train left to right with live throughput against design. When CR-01 faults, the amber links show the starvation propagating downstream.">Amber links show starvation propagating downstream</Reading>
       </Card>
 
       <CollapsibleCard id="plant-feed" title="CR-01 feed stability — control chart"
         headline={`${Math.round(snap['crusher-1']?.parameters?.throughput ?? 0)} t/h`} caption="±2σ · choke marked 16:52">
         <ControlChart series={throS} m={m} N={derived.N} k={2} unit=" t/h" markFrom={chokeFrom} markTo={chokeTo} markLabel="choke 16:52–17:47" color="#E5871F" />
-        <Reading more="Feed throughput with ±2σ control limits. Instability builds from 16:35 (oversize destabilising the feed) before the hard choke — motor-current variance and throughput swing are the corroborated cause.">Instability builds from 16:35, before the choke</Reading>
       </CollapsibleCard>
       <CollapsibleCard id="plant-oversize" title="Oversize rate — SC-01"
         headline={`${(snap['screen-1']?.parameters?.oversizeRate ?? 0).toFixed(1)} %`} caption="B-114 fragmentation corroboration">
         <ControlChart series={oversizeS} m={m} N={derived.N} k={2} unit=" %" color="#7B5EA7" />
-        <Reading more="Oversize climbs through the shift as B-114 fragmented material works through — corroborating evidence for the choke, not its trigger. Feed-rate control at the tip is the durable fix.">Corroborates the choke; not its trigger</Reading>
       </CollapsibleCard>
       <CollapsibleCard id="plant-conveyor" title="CV-01 conveyor strip"
         headline={`${Math.round(snap['cv-01']?.parameters?.load ?? 0)}% load`} caption="empty-run windows shaded">
         <ConveyorStrip loadS={loadS} speedS={speedS} tempS={tempS} m={m} N={derived.N} fmt={derived.fmt} />
-        <Reading more="Belt load vs the shaded empty-run windows (line speed > 0 but load < 5%): the belt ran nearly empty for ~41 min during the choke clear-out — motor energy spent moving nothing, and the thermal residual Screen 4 diagnoses.">~41 min run empty — energy moving nothing</Reading>
       </CollapsibleCard>
       <CollapsibleCard id="plant-detections" title="Conveyor-vision detections"
         headline={`${camEps.length} episode${camEps.length === 1 ? '' : 's'}`} caption="idler hotspots · tramp metal · tracking">
@@ -95,7 +91,6 @@ function PlantMain({ fx, derived, m }) {
             </div>
           ))}
         </div>
-        <Reading more="Belt-vision episodes (idler hotspots, tramp metal, tracking) after the anti-fatigue policy — raw detections filtered on read, so precision stays computable.">Filtered on read — precision stays computable</Reading>
       </CollapsibleCard>
     </>
   )

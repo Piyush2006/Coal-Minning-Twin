@@ -3,7 +3,7 @@
 // signal), and the idle-energy panel ranked with empty-belt hours leading — the
 // fastest win on the screen. Assembly + one new hand-rolled Sankey.
 import { useMemo } from 'react'
-import { Card, CollapsibleCard, Reading, Thesis } from '../ui'
+import { Card, CollapsibleCard, Thesis } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { ControlChart } from '../viz'
 
@@ -43,8 +43,7 @@ function EnergyMain({ fx, derived, m }) {
         The empty-belt drive is the fastest win at {derived.fmt(m)} — the same starvation that cost tonnes also burned {emptyKWh.toLocaleString()} kWh moving an empty belt. One belt-load interlock fixes tonnes, SEC drift and thermal residual at once.
       </Thesis>
       {/* hero: the fastest win — idle & waste energy ranked */}
-      <Card title="Idle & waste energy — ranked" density="airy"
-        right={<span className="dv3-support" style={{ fontSize: 11 }}>fastest win first</span>}>
+      <Card title="Idle & waste energy — ranked" density="airy">
         <div style={{ display: 'grid', gap: 8 }}>
           {wasters.map(w => (
             <div key={w.name} style={{ display: 'grid', gridTemplateColumns: '210px 100px 1fr', alignItems: 'center', gap: 12 }}>
@@ -59,20 +58,18 @@ function EnergyMain({ fx, derived, m }) {
             </div>
           ))}
         </div>
-        <Reading more={`The empty-belt drive leads: the same starvation that cost tonnes also burned ${emptyKWh.toLocaleString()} kWh. A belt-load interlock is the single fastest energy-and-wear win.`}>Empty-belt drive leads — one interlock fixes three problems</Reading>
       </Card>
 
       <CollapsibleCard id="energy-sankey" title={`Energy flow — grid + diesel`}
         headline={`${emptyKWh.toLocaleString()} kWh idle`} caption="conveyor + crusher lead grid; haulage leads diesel">
         <EnergySankey snap={snap} />
-        <Reading more="Grid feeds the fixed plant; diesel feeds the mobile fleet. The overland conveyor and crusher are the two largest electrical draws; haulage dominates diesel.">Conveyor + crusher lead grid; haulage leads diesel</Reading>
       </CollapsibleCard>
       <CollapsibleCard id="energy-sec" title="Specific energy — CR-01 · SC-01 · CHPP"
         headline={`${(snap['crusher-1']?.parameters?.kwhPerTonne ?? 0).toFixed(1)} kWh/t`} caption="SEC drift = wear signal">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16 }}>
-          <div><div className="dv3-cardhead" style={{ marginBottom: 6 }}>CR-01</div><ControlChart series={secCr} m={m} N={derived.N} k={2} unit=" kWh/t" color="#E5871F" h={110} /><Reading more="kWh/t rises when the crusher runs starved or on oversize — SEC drift is an early wear signal.">Drift is an early wear signal</Reading></div>
-          <div><div className="dv3-cardhead" style={{ marginBottom: 6 }}>SC-01</div><ControlChart series={secSc} m={m} N={derived.N} k={2} unit=" kWh/t" color="#7B5EA7" h={110} /><Reading more="Screen SEC tracks oversize load; the mid-shift climb mirrors the B-114 fragmentation.">Mirrors B-114 fragmentation</Reading></div>
-          <div><div className="dv3-cardhead" style={{ marginBottom: 6 }}>CHPP</div><ControlChart series={secCh} m={m} N={derived.N} k={2} unit=" kWh/t" color="#2B5CE7" h={110} /><Reading more="DMC energy per tonne is steady — the plant is efficient when fed; the loss is upstream.">Steady — loss is upstream</Reading></div>
+          <div><div className="dv3-cardhead" style={{ marginBottom: 6 }}>CR-01</div><ControlChart series={secCr} m={m} N={derived.N} k={2} unit=" kWh/t" color="#E5871F" h={110} /></div>
+          <div><div className="dv3-cardhead" style={{ marginBottom: 6 }}>SC-01</div><ControlChart series={secSc} m={m} N={derived.N} k={2} unit=" kWh/t" color="#7B5EA7" h={110} /></div>
+          <div><div className="dv3-cardhead" style={{ marginBottom: 6 }}>CHPP</div><ControlChart series={secCh} m={m} N={derived.N} k={2} unit=" kWh/t" color="#2B5CE7" h={110} /></div>
         </div>
       </CollapsibleCard>
     </>

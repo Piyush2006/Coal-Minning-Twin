@@ -4,7 +4,7 @@
 // limits, and per-zone PPE coverage — never a single mine-wide % that hides the
 // one bad area. Assembly of existing primitives.
 import { useMemo } from 'react'
-import { Card, CollapsibleCard, Reading, Thesis } from '../ui'
+import { Card, CollapsibleCard, Thesis } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { SiteMap } from '../viz'
 import { dedupeEpisodes, presentAlertMsg } from '../data/alertPolicy'
@@ -53,7 +53,6 @@ function SafetyMain({ fx, derived, m }) {
           <Big label="Proximity events" v={Math.round(s.proximityAlertsToday ?? 0)} sub="today" />
           <Big label="Auto-stops" v={autoStops} sub="triggered" />
         </div>
-        <Reading more="A proximity breach under 6 m triggers a real vehicle auto-stop — a prevented incident, counted as a leading win, not waited on as a lagging statistic.">Breach under 6 m → real vehicle auto-stop</Reading>
         <div style={{ marginTop: 8, display: 'grid', gap: 5, maxHeight: 160, overflowY: 'auto' }}>
           {safetyEps.slice(0, 6).map(e => (
             <div key={e.key + e.firstT} style={{ display: 'flex', gap: 8, fontSize: 12, alignItems: 'baseline' }}>
@@ -70,7 +69,6 @@ function SafetyMain({ fx, derived, m }) {
       <CollapsibleCard id="safety-map" title="Site safety map"
         headline={`${Math.round(s.minWorkerVehicleDistance ?? 0)} m closest`} caption={`${ZONES.length} restricted zones · live event pins`}>
         <SiteMap fx={fx} derived={derived} m={m} height={230} zones={ZONES} events={pins} showLabels={false} />
-        <Reading more={`Restricted zones with live worker–vehicle events. ${s.workersOnSite ? Math.round(s.workersOnSite) : 'Crew'} workers across pit, plant, rail and port — where exposure is right now, not a site-wide average.`}>Where exposure is now, not a site average</Reading>
       </CollapsibleCard>
 
       <CollapsibleCard id="safety-env" title="Environmental — vs statutory limits"
@@ -93,7 +91,6 @@ function SafetyMain({ fx, derived, m }) {
               )
             })}
           </div>
-          <Reading more={`${(pm.pm10 ?? 0) >= 200 ? 'PM10 is riding near the exceedance limit — dust suppression should be active on the haul roads.' : 'Dust and noise within limits.'} Suppression ${pm.suppressionActive ? 'on' : 'off'}.`}>{(pm.pm10 ?? 0) >= 200 ? 'PM10 near limit · suppression on' : 'Within limits · suppression on'}</Reading>
       </CollapsibleCard>
 
       <CollapsibleCard id="safety-ppe" title="PPE compliance — per zone"
@@ -131,7 +128,6 @@ function SafetyMain({ fx, derived, m }) {
               </div>
             )
           })()}
-          <Reading more="Coverage per zone, never a single site-wide number — a 99% average would hide the one walkway that needs attention. Exceptions surface as bars; a compliant site collapses to one chip.">Per zone — a site average hides the bad walkway</Reading>
       </CollapsibleCard>
     </>
   )

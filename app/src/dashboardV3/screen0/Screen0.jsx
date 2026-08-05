@@ -6,7 +6,7 @@
 // unification (pre-Screen-4 gate).
 import { useEffect, useMemo, useState } from 'react'
 import '../tokens.css'
-import { Card, Reading, Thesis, ConfidenceBadge, MaturityBadge, AlertCard } from '../ui'
+import { Card, Thesis, ConfidenceBadge, MaturityBadge, AlertCard } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { useScrub } from './store'
 import { BUCKET_LABEL, STAGE_LABEL } from './derive'
@@ -42,7 +42,6 @@ function PulseMain({ fx, derived, m }) {
         <Card title="Shift constraint — bottleneck of record">
           <Ribbon derived={derived} m={m} width={430} />
           <ConstraintShares derived={derived} m={m} />
-          <ConstraintReading derived={derived} snap={snap} m={m} />
         </Card>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16, marginTop: 16 }}>
@@ -127,13 +126,6 @@ function PaceChart({ derived, snap }) {
   )
 }
 
-function ConstraintReading({ derived, snap, m }) {
-  const cs = derived.constraintShares(m)
-  if (!cs.top) return <Reading>The chain has run at reference rate so far.</Reading>
-  const t = Math.round(snap.buckets[{ crush: 'crushing', face: 'faceLoading', dispatch: 'dispatch', haul: 'haulage', chp: 'chp' }[cs.top.root]] ?? 0)
-  return <Reading more={`${STAGE_LABEL[cs.top.root] ?? cs.top.root} bound the chain for ${Math.round(cs.top.share * 100)}% of the shift, costing about ${t} t of the total loss.`}>{STAGE_LABEL[cs.top.root] ?? cs.top.root} bound {Math.round(cs.top.share * 100)}% of the shift · {t} t</Reading>
-}
-
 /* ── row-2 cards ── */
 function SafetyCard({ fx, derived, m }) {
   const p = fx.snapshot(derived.t0 + m * 60000, ['safety-1'])['safety-1']?.parameters ?? {}
@@ -144,9 +136,6 @@ function SafetyCard({ fx, derived, m }) {
         <div className="dv3-hero dv3-hero--md">{Math.round(p.proximityAlertsToday ?? 0) + Math.round(p.unauthorizedEntriesToday ?? 0)}</div>
         <div className="dv3-support">events today · closest approach <b>{Math.round(p.minWorkerVehicleDistance ?? 0)} m</b></div>
       </div>
-      <Reading more={prox ? `Latest proximity breach at ${derived.fmt(Math.floor(prox.firstT / 60))}: ${prox.msg}. PPE zones quiet, ${Math.round(p.workersOnSite ?? 0)} workers on site.` : `No proximity incidents this shift. ${Math.round(p.workersOnSite ?? 0)} workers on site.`}>
-        {prox ? `Last breach ${derived.fmt(Math.floor(prox.firstT / 60))} · PPE quiet` : 'No incidents · PPE quiet'}
-      </Reading>
     </Card>
   )
 }
@@ -168,7 +157,6 @@ function RiskCard({ fx, derived, m }) {
         <MaturityBadge level="stat" />
       </div>
       <MiniDual a={series.slice(0, shownIdx)} b={loadS.slice(0, shownIdx)} />
-      <Reading more="Temperature deviation kept climbing while the belt ran empty — the rise isn't load. Degraded cooling path; clean fins at the 22:00 changeover.">Deviation rose on an empty belt — not load</Reading>
     </Card>
   )
 }
@@ -197,11 +185,8 @@ function StrippingCard({ fx, derived, m }) {
     <Card title="Overburden & stripping">
       <div style={{ display: 'flex', gap: 20, alignItems: 'baseline' }}>
         <div className="dv3-hero dv3-hero--md">{sr?.toFixed(2) ?? '—'}</div>
-        <div className="dv3-support">realised SR · plan 3.10</div>
+        <div className="dv3-support">realised SR · plan 3.10 · {Math.round(exposed ?? 0)} kt exposed</div>
       </div>
-      <Reading more={sr != null && sr < 3.1 ? `Under-stripping vs plan — overburden is being borrowed from next quarter. Coal exposed ${Math.round(exposed ?? 0)} kt.` : `Stripping on plan. Coal exposed ${Math.round(exposed ?? 0)} kt.`}>
-        {sr != null && sr < 3.1 ? `Under-stripping · ${Math.round(exposed ?? 0)} kt exposed` : `On plan · ${Math.round(exposed ?? 0)} kt exposed`}
-      </Reading>
       <ConfidenceBadge level="partial" note="Survey reconciliation monthly — sensor-derived" />
     </Card>
   )
@@ -275,7 +260,6 @@ function Diagnosis({ derived, ev, m, back }) {
           ))}
         </div>
       </Card>
-      <Reading>Buffered minutes cost nothing; the loss began when the product stockpile ran out. Sum of nested consequences is 0 t by rule.</Reading>
     </div>
   )
 }

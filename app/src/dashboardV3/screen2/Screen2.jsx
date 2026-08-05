@@ -4,7 +4,7 @@
 // recompute, with the current allocation shown as a ghost so the delta is
 // visible. Reuses the Gantt (truck rows) and MiniSeries.
 import { useMemo, useState } from 'react'
-import { Card, Reading, Thesis, Sparkline } from '../ui'
+import { Card, Thesis, Sparkline } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { MiniSeries } from '../viz'
 import { Gantt } from '../screen0/Gantt'
@@ -89,7 +89,6 @@ function FleetMain({ fx, derived, m }) {
           <span><b style={{ color: dSaleable < 0 ? 'var(--st-down-u)' : dSaleable > 0 ? 'var(--st-operating)' : 'var(--text-secondary)' }}>{dSaleable >= 0 ? '+' : ''}{dSaleable.toLocaleString()} t</b> <span className="dv3-tert">coal</span></span>
           <span><b style={{ color: dOB > 0 ? 'var(--st-operating)' : dOB < 0 ? 'var(--st-down-u)' : 'var(--text-secondary)' }}>{dOB >= 0 ? '+' : ''}{dOB.toLocaleString()} t</b> <span className="dv3-tert">overburden</span></span>
         </div>
-        <Reading more={`At ${nCoal} coal trucks the shovel still digs only ${CEIL.coal} ROM t/h; extra trucks queue rather than add tonnes. Match point ~3 trucks/shovel.`}>{nCoal >= 3 ? 'Extra trucks queue — they don’t add tonnes' : 'Below 3 trucks the coal circuit is truck-limited'}</Reading>
       </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
@@ -104,16 +103,13 @@ function FleetMain({ fx, derived, m }) {
               </div>
             )
           })()}
-          <Reading more="Utilisation dips through the choke window (16:52–17:47) as the coal trucks queue behind the full ROM pad — visible waiting, not a fleet shortage.">Dips at the choke — queuing, not a shortage</Reading>
         </Card>
         <Card title="Cycle decomposition" density="working">
           <CycleBars />
-          <Reading more="Approximate cycle split (spot / load / haul / dump / queue) from the planning model — queue is the swing term the allocation control moves. Field cycle times run 16–26 min in the fixture.">Queue is the swing term you move</Reading>
         </Card>
       </div>
 
-      <Card title="Equipment state timeline" density="working" style={{ marginTop: 16 }}
-        right={<span className="dv3-support" style={{ fontSize: 11 }}>haul fleet + fixed plant</span>}>
+      <Card title="Equipment state timeline" density="working" style={{ marginTop: 16 }}>
         <Gantt rows={fullGantt} derived={derived} m={m} width={1020} />
       </Card>
     </>
