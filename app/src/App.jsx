@@ -24,6 +24,7 @@ import { CameraFeedRenderer, CameraFeedPanel } from './components/CameraFeed'
 import { RestrictedZones } from './components/safety/RestrictedZones'
 import { ProximityLayer, NearMissActor } from './components/safety/ProximityLayer'
 import { DetectionBoxLayer } from './components/safety/DetectionBoxLayer'
+import { CameraFovLayer } from './components/safety/CameraFovLayer'
 import { proximityState, workerBreachInfo as _workerBreachInfo } from './lib/proximity'
 import { startNearMiss, stopNearMiss, nearMissActive, phantom as _phantom } from './lib/nearMissDirector'
 import { ShopFloorEnvironment } from './components/ShopFloorEnvironment'
@@ -1563,6 +1564,7 @@ export default function App() {
                 <RestrictedZones />
                 <ProximityLayer />
                 <DetectionBoxLayer />
+                <CameraFovLayer />
                 <NearMissActor />
                 <CameraController orbitRef={orbitRef} />
                 <TourDriver orbitRef={orbitRef} />
