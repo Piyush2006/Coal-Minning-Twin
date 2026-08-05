@@ -47,20 +47,33 @@ export function Ribbon({ derived, m, width = 420, height = 20 }) {
   )
 }
 
+const ROOT_NAME = { ...STAGE_LABEL, '·external': 'External (blast)', '·residual': 'Residual' }
+
 export function ConstraintShares({ derived, m }) {
   const { list } = derived.constraintShares(m)
   if (!list.length) return <div className="dv3-support">No binding constraint yet — chain on pace.</div>
+  // rows sum to the constrained fraction; add the unconstrained remainder so the
+  // arithmetic visibly reaches 100% (26 + 11 + 7 + … + unconstrained = 100).
+  const constrained = list.reduce((a, x) => a + x.share, 0)
+  const unconstrained = Math.max(0, 1 - constrained)
   return (
     <div style={{ display: 'grid', gap: 6, marginTop: 10 }}>
-      {list.slice(0, 3).map(({ root, mins, share }) => (
-        <div key={root} style={{ display: 'grid', gridTemplateColumns: '92px 1fr 68px', gap: 10, alignItems: 'center', fontSize: 12.5 }}>
-          <span style={{ color: 'var(--text-secondary)' }}>{STAGE_LABEL[root] ?? root}</span>
+      {list.slice(0, 4).map(({ root, mins, share }) => (
+        <div key={root} style={{ display: 'grid', gridTemplateColumns: '110px 1fr 72px', gap: 10, alignItems: 'center', fontSize: 12.5 }}>
+          <span style={{ color: 'var(--text-secondary)' }}>{ROOT_NAME[root] ?? root}</span>
           <div className="dv3-well" style={{ height: 10, borderRadius: 4, overflow: 'hidden' }}>
             <div style={{ width: `${Math.min(100, share * 100)}%`, height: '100%', background: COLOR[root] ?? '#C6CDD8', borderRadius: 4 }} />
           </div>
           <span className="dv3-mono" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{mins} min · {Math.round(share * 100)}%</span>
         </div>
       ))}
+      <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr 72px', gap: 10, alignItems: 'center', fontSize: 12.5, borderTop: '1px solid var(--hairline)', paddingTop: 6 }}>
+        <span style={{ color: 'var(--text-tertiary)' }}>Unconstrained</span>
+        <div className="dv3-well" style={{ height: 10, borderRadius: 4, overflow: 'hidden' }}>
+          <div style={{ width: `${Math.min(100, unconstrained * 100)}%`, height: '100%', background: '#DCE1E9', borderRadius: 4 }} />
+        </div>
+        <span className="dv3-mono" style={{ textAlign: 'right', color: 'var(--text-tertiary)' }}>{Math.round(unconstrained * 100)}%</span>
+      </div>
     </div>
   )
 }

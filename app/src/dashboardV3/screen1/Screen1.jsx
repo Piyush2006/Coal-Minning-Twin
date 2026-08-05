@@ -3,7 +3,7 @@
 // the fixture/derive layer, the arbitration buckets, plus two new shared viz
 // primitives (ProcessChain, SiteMap). Every card carries a Reading.
 import { useMemo } from 'react'
-import { Card, Reading } from '../ui'
+import { Card, Reading, Thesis } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { SiteMap, MiniSeries } from '../viz'
 import { YIELD, RATED } from '../data/chainSim'
@@ -37,15 +37,17 @@ function FlowMain({ fx, derived, m }) {
   const snap = derived.atMinute(m)
   const bindingRoot = derived.rootAtMin[Math.min(m, derived.N - 1)]
 
+  const bound = bindingRoot && bindingRoot !== '·residual' && bindingRoot !== '·external'
   return (
     <>
+      <Thesis>
+        {bound
+          ? <>{STAGE_LABEL[bindingRoot] ?? bindingRoot} is the binding constraint at {derived.fmt(m)} — the chain moves at its rate, and everything downstream of it is starved by construction.</>
+          : <>Chain running at reference rate at {derived.fmt(m)} — no single stage is holding the line back.</>}
+      </Thesis>
       <Card title={`Production chain — live at ${derived.fmt(m)}`} density="airy">
         <ProcessChain fx={fx} derived={derived} m={m} />
-        <Reading>
-          {bindingRoot && bindingRoot !== '·residual' && bindingRoot !== '·external'
-            ? `${STAGE_LABEL[bindingRoot] ?? bindingRoot} is the binding constraint right now — the chain moves at its rate, and everything downstream of it is starved by construction.`
-            : 'Chain running at reference rate — no single stage is holding the line back at this moment.'}
-        </Reading>
+        <Reading more={bound ? `${STAGE_LABEL[bindingRoot]} sets chain speed; downstream stages are starved, not faulted.` : 'All stages above the reference rate; the chain is unconstrained.'}>{bound ? `${STAGE_LABEL[bindingRoot]} binds · downstream starved` : 'Unconstrained · all stages above rate'}</Reading>
       </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
@@ -58,19 +60,19 @@ function FlowMain({ fx, derived, m }) {
               </div>
             ))}
           </div>
-          <Reading>Each stage against its own capability line. Crushing collapses to zero at 16:52 (the choke); Face runs near capability throughout but its ceiling is the lowest, so it sets the plan.</Reading>
+          <Reading more="Each stage against its own capability line. Crushing collapses to zero at 16:52 (the choke); Face runs near capability throughout but its ceiling is the lowest, so it sets the plan.">Face's ceiling is lowest — it sets the plan</Reading>
         </Card>
 
         <Card title="Where the tonnes went — cumulative loss">
           <LossArea derived={derived} m={m} />
-          <Reading>Loss accrues by attributed cause. Crushing dominates from the choke; Face/Loading is a steady drip from the B-114 fragmentation; the small residual is honest flow texture.</Reading>
+          <Reading more="Loss accrues by attributed cause. Crushing dominates from the choke; Face/Loading is a steady drip from the B-114 fragmentation; the small residual is honest flow texture.">Crushing dominates; Face a steady drip</Reading>
         </Card>
       </div>
 
       <Card title="Pit-to-port site view" density="working" style={{ marginTop: 16 }}
         right={<span className="dv3-support" style={{ fontSize: 11 }}>2D plan · dots = live status at {derived.fmt(m)}</span>}>
         <SiteMap fx={fx} derived={derived} m={m} height={300} />
-        <Reading>Top-down plan of the operation. Click any asset to select it across every screen. (3D pit view deferred — the 2D plan carries the spatial story for now.)</Reading>
+        <Reading more="Top-down plan of the operation. Click any asset to select it across every screen. 3D pit view deferred — the 2D plan carries the spatial story for now.">Click any asset to select it everywhere</Reading>
       </Card>
     </>
   )

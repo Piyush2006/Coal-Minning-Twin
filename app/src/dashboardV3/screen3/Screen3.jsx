@@ -3,9 +3,10 @@
 // crusher feed-stability control chart with the choke marked. Assembly of the
 // ControlChart primitive + fixture reads. Every card carries a Reading.
 import { useMemo } from 'react'
-import { Card, Reading, SensorValue } from '../ui'
+import { Card, Reading, Thesis, SensorValue } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { ControlChart } from '../viz'
+import { dedupeEpisodes, presentAlertMsg } from '../data/alertPolicy'
 import { useScrub } from '../screen0/store'
 
 export default function Screen3() {
@@ -31,10 +32,16 @@ function PlantMain({ fx, derived, m }) {
   const choke = derived.chainEvents.find(e => e.stage === 'crush' && e.state === 'down')
   const chokeFrom = choke ? Math.floor(choke.start / derived.N * throS.length) : null
   const chokeTo = choke ? Math.floor((choke.end + 22) / derived.N * throS.length) : null
-  const camEps = useMemo(() => derived.episodes(m).filter(e => e.useCase === 'Conveyor Vision'), [derived, m])
+  const camEps = useMemo(() => dedupeEpisodes(derived.episodes(m).filter(e => e.useCase === 'Conveyor Vision')), [derived, m])
 
+  const crFault = snap['crusher-1']?.status === 'fault'
   return (
     <>
+      <Thesis>
+        {crFault
+          ? <>CR-01 is down at {derived.fmt(m)} and the whole CHP train has starved behind it — the plant is feed-limited, not plant-limited.</>
+          : <>The CHP train is running to feed at {derived.fmt(m)} — every stage moves only as fast as CR-01 feeds it, so the plant is feed-limited, not plant-limited.</>}
+      </Thesis>
       <Card title={`CHP train — live at ${derived.fmt(m)}`} density="airy">
         <div style={{ overflowX: 'auto' }}>
           <svg viewBox="0 0 1000 130" width="100%" style={{ display: 'block', minWidth: 720 }}>
@@ -57,24 +64,24 @@ function PlantMain({ fx, derived, m }) {
             })}
           </svg>
         </div>
-        <Reading>The pit-to-CHP train left to right with live throughput against design. When CR-01 faults, the amber links show the starvation propagating downstream — the plant is feed-limited, not plant-limited.</Reading>
+        <Reading more="The pit-to-CHP train left to right with live throughput against design. When CR-01 faults, the amber links show the starvation propagating downstream.">Amber links show starvation propagating downstream</Reading>
       </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.3fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
         <Card title="CR-01 feed stability — control chart" density="working">
           <ControlChart series={throS} m={m} N={derived.N} k={2} unit=" t/h" markFrom={chokeFrom} markTo={chokeTo} markLabel="choke 16:52–17:47" color="#E5871F" />
-          <Reading>Feed throughput with ±2σ control limits. The instability builds from 16:35 (oversize destabilising the feed) before the hard choke — the motor-current variance and throughput swing are the corroborated cause, with oversize as after-the-fact evidence.</Reading>
+          <Reading more="Feed throughput with ±2σ control limits. Instability builds from 16:35 (oversize destabilising the feed) before the hard choke — motor-current variance and throughput swing are the corroborated cause.">Instability builds from 16:35, before the choke</Reading>
         </Card>
         <Card title="Oversize rate — SC-01" density="working">
           <ControlChart series={oversizeS} m={m} N={derived.N} k={2} unit=" %" color="#7B5EA7" />
-          <Reading>Oversize climbs through the shift as B-114 fragmented material works through — the corroborating evidence for the choke, not its trigger. Feed-rate control at the tip is the durable fix.</Reading>
+          <Reading more="Oversize climbs through the shift as B-114 fragmented material works through — corroborating evidence for the choke, not its trigger. Feed-rate control at the tip is the durable fix.">Corroborates the choke; not its trigger</Reading>
         </Card>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
         <Card title="CV-01 conveyor strip" density="working">
           <ConveyorStrip loadS={loadS} speedS={speedS} tempS={tempS} m={m} N={derived.N} fmt={derived.fmt} />
-          <Reading>Belt load vs the shaded empty-run windows (line speed &gt; 0 but load &lt; 5%): the belt ran nearly empty for ~41 min during the choke clear-out — motor energy spent moving nothing, and the thermal residual that Screen 4 diagnoses.</Reading>
+          <Reading more="Belt load vs the shaded empty-run windows (line speed > 0 but load < 5%): the belt ran nearly empty for ~41 min during the choke clear-out — motor energy spent moving nothing, and the thermal residual Screen 4 diagnoses.">~41 min run empty — energy moving nothing</Reading>
         </Card>
         <Card title="Conveyor-vision detections" density="working">
           <div style={{ display: 'grid', gap: 6 }}>
@@ -83,11 +90,12 @@ function PlantMain({ fx, derived, m }) {
               <div key={e.key + e.firstT} style={{ display: 'flex', gap: 8, fontSize: 12, alignItems: 'baseline' }}>
                 <span className="dv3-mono dv3-tert">{derived.fmt(Math.floor(e.firstT / 60))}</span>
                 <span className="dv3-chip" style={{ background: e.sev === 'critical' ? '#FDECEC' : 'var(--surface-2)', color: e.sev === 'critical' ? '#B42318' : 'var(--text-secondary)' }}>{e.sev === 'critical' ? 'CRIT' : 'WARN'}</span>
-                <span style={{ color: 'var(--text-secondary)' }}>{e.msg}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{presentAlertMsg(e.msg)}</span>
+                {e.count > 1 && <span className="dv3-mono dv3-tert" style={{ marginLeft: 'auto' }}>×{e.count}</span>}
               </div>
             ))}
           </div>
-          <Reading>Belt-vision episodes (idler hotspots, tramp metal, tracking) after the anti-fatigue policy — raw detections filtered on read, so precision stays computable.</Reading>
+          <Reading more="Belt-vision episodes (idler hotspots, tramp metal, tracking) after the anti-fatigue policy — raw detections filtered on read, so precision stays computable.">Filtered on read — precision stays computable</Reading>
         </Card>
       </div>
     </>

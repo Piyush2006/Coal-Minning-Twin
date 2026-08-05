@@ -45,8 +45,23 @@ export function Metric({ value, unit, comparator, delta, deltaPct, size = 'md', 
 }
 
 /* ── R2: one sentence of plain language under the hero number. ── */
-export function Reading({ children }) {
-  return <div className="dv3-support" style={{ marginTop: 10, lineHeight: 1.5, maxWidth: 520 }}>{children}</div>
+// The screen's single thesis — what this screen concludes right now. One per
+// screen, at the top, with presence. This is the only paragraph of prose that
+// should be visible on a screen.
+export function Thesis({ children }) {
+  return <div style={{ fontSize: 15, fontWeight: 550, color: 'var(--text-primary)', lineHeight: 1.45, margin: '2px 0 16px', maxWidth: 940 }}>{children}</div>
+}
+
+// Card reading, demoted to a caption: one clause, ≤12 words, tertiary, one line.
+// The long explanation (if any) lives in `more` and surfaces on hover only —
+// never on the surface. Keeps R2 (every card has a reading) without the wall.
+export function Reading({ children, more }) {
+  return (
+    <div className="dv3-cap" title={typeof more === 'string' ? more : undefined}
+      style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 8, lineHeight: 1.4, cursor: more ? 'help' : 'default' }}>
+      {children}{more && <span style={{ marginLeft: 4, opacity: 0.55, fontSize: 10 }}>ⓘ</span>}
+    </div>
+  )
 }
 
 /* ── R5: raw sensor values never appear alone. deviation is REQUIRED. ── */

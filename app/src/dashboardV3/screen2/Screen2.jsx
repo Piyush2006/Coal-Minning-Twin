@@ -4,7 +4,7 @@
 // recompute, with the current allocation shown as a ghost so the delta is
 // visible. Reuses the Gantt (truck rows) and MiniSeries.
 import { useMemo, useState } from 'react'
-import { Card, Reading, Metric } from '../ui'
+import { Card, Reading, Thesis, Sparkline } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { MiniSeries } from '../viz'
 import { Gantt } from '../screen0/Gantt'
@@ -58,35 +58,57 @@ function FleetMain({ fx, derived, m }) {
   const dSaleable = Math.round((what.coal.saleable - cur.coal.saleable) * 8)
   const dOB = Math.round((what.ob.tph - cur.ob.tph) * 8)
 
+  // headroom: coal trucks removable with saleable coal unchanged (the primary output)
+  let minKeep = CURRENT.coal
+  for (let n = CURRENT.coal; n >= 1; n--) { if (circuit('coal', n).saleable >= cur.coal.saleable - 0.5) minKeep = n; else break }
+  const headroom = CURRENT.coal - minKeep
+
   return (
     <>
+      <Thesis>
+        The coal circuit is over-trucked — {headroom} truck{headroom === 1 ? '' : 's'} can move to overburden at zero coal cost. The constraint is dig rate at the face, not the number of trucks.
+      </Thesis>
       <Card title="Fleet allocation — what-if" density="airy"
         right={<span className="dv3-support" style={{ fontSize: 11 }}>planning model · ROM basis · ghost = current 5 / 3</span>}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <CircuitPanel c={what.coal} ghost={cur.coal} title="Coal circuit · EX-02" onInc={() => setNCoal(v => Math.min(7, v + 1))} onDec={() => setNCoal(v => Math.max(1, v - 1))} accent="#2B5CE7" />
           <CircuitPanel c={what.ob} ghost={cur.ob} title="OB circuit · EX-01" onInc={() => setNCoal(v => Math.max(1, v - 1))} onDec={() => setNCoal(v => Math.min(7, v + 1))} accent="#7B5EA7" invert />
         </div>
-        <div style={{ display: 'flex', gap: 24, marginTop: 14, flexWrap: 'wrap', alignItems: 'baseline' }}>
-          <div className="dv3-support">Projected shift vs current allocation:</div>
-          <div><b style={{ color: dSaleable < 0 ? 'var(--st-down-u)' : dSaleable > 0 ? 'var(--st-operating)' : 'var(--text-tertiary)' }}>{dSaleable >= 0 ? '+' : ''}{dSaleable.toLocaleString()} t</b> <span className="dv3-tert">saleable coal</span></div>
-          <div><b style={{ color: dOB > 0 ? 'var(--st-operating)' : dOB < 0 ? 'var(--st-down-u)' : 'var(--text-tertiary)' }}>{dOB >= 0 ? '+' : ''}{dOB.toLocaleString()} t</b> <span className="dv3-tert">overburden moved</span></div>
+        {/* primary output: headroom */}
+        <div style={{ display: 'flex', gap: 12, marginTop: 14, alignItems: 'baseline', flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 17, fontWeight: 650, color: 'var(--text-primary)' }}>
+            {headroom > 0
+              ? <><span style={{ color: 'var(--accent)' }}>{headroom} coal truck{headroom === 1 ? '' : 's'}</span> can move to OB at zero coal cost</>
+              : <>No coal headroom — moving a truck now costs saleable tonnes</>}
+          </div>
           <button className="dv3-btn dv3-btn--ghost" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setNCoal(CURRENT.coal)}>reset to current</button>
         </div>
-        <Reading>
-          {nCoal >= 3
-            ? `Both circuits are over-trucked: at ${nCoal} coal trucks the shovel still can't dig faster than ${CEIL.coal} ROM t/h, so extra trucks queue rather than add tonnes. You can lend up to two coal trucks to overburden for free — the coal constraint is the face dig rate, not the fleet.`
-            : `Below three coal trucks the coal circuit becomes truck-limited — saleable coal now falls ${Math.abs(dSaleable).toLocaleString()} t. The match point is ~3 trucks per shovel.`}
-        </Reading>
+        {/* secondary: the delta of the current what-if setting */}
+        <div style={{ display: 'flex', gap: 20, marginTop: 6, flexWrap: 'wrap', alignItems: 'baseline', fontSize: 12.5 }}>
+          <span className="dv3-tert">this setting vs current:</span>
+          <span><b style={{ color: dSaleable < 0 ? 'var(--st-down-u)' : dSaleable > 0 ? 'var(--st-operating)' : 'var(--text-secondary)' }}>{dSaleable >= 0 ? '+' : ''}{dSaleable.toLocaleString()} t</b> <span className="dv3-tert">coal</span></span>
+          <span><b style={{ color: dOB > 0 ? 'var(--st-operating)' : dOB < 0 ? 'var(--st-down-u)' : 'var(--text-secondary)' }}>{dOB >= 0 ? '+' : ''}{dOB.toLocaleString()} t</b> <span className="dv3-tert">overburden</span></span>
+        </div>
+        <Reading more={`At ${nCoal} coal trucks the shovel still digs only ${CEIL.coal} ROM t/h; extra trucks queue rather than add tonnes. Match point ~3 trucks/shovel.`}>{nCoal >= 3 ? 'Extra trucks queue — they don’t add tonnes' : 'Below 3 trucks the coal circuit is truck-limited'}</Reading>
       </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
         <Card title="Fleet utilisation over shift" density="working">
-          <MiniSeries series={util} cap={100} m={m} N={derived.N} label="% trucks running" unit="%" color="var(--series-1)" h={96} />
-          <Reading>Utilisation dips through the choke window (16:52–17:47) as the coal trucks queue behind the full ROM pad — visible waiting, not a fleet shortage.</Reading>
+          {(() => {
+            const shown = util.slice(0, Math.max(2, Math.floor((m / derived.N) * util.length)))
+            const nowPct = Math.round(shown[shown.length - 1] ?? 0)
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div><div className="dv3-hero dv3-hero--md">{nowPct}%</div><div className="dv3-tert" style={{ fontSize: 10.5 }}>trucks running</div></div>
+                <Sparkline points={shown.length ? shown : [0]} w={220} h={40} color="var(--series-1)" />
+              </div>
+            )
+          })()}
+          <Reading more="Utilisation dips through the choke window (16:52–17:47) as the coal trucks queue behind the full ROM pad — visible waiting, not a fleet shortage.">Dips at the choke — queuing, not a shortage</Reading>
         </Card>
         <Card title="Cycle decomposition" density="working">
           <CycleBars />
-          <Reading>Approximate cycle split (spot / load / haul / dump / queue) from the planning model — queue is the swing term the allocation control moves. Field cycle times run 16–26 min in the fixture.</Reading>
+          <Reading more="Approximate cycle split (spot / load / haul / dump / queue) from the planning model — queue is the swing term the allocation control moves. Field cycle times run 16–26 min in the fixture.">Queue is the swing term you move</Reading>
         </Card>
       </div>
 

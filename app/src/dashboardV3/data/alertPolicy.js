@@ -57,3 +57,28 @@ export function alertStats(raw, policy = DEFAULT_POLICY) {
   const surviving = applyAlertPolicy(raw, Infinity, policy).length
   return { rawFires: fires, surviving, suppressed: fires - surviving }
 }
+
+// Never display a raw RUL figure. Map any "RUL N h" tail to a horizon-bounded,
+// maturity-tagged phrase so the surface never shows false-precision hours.
+export function presentAlertMsg(msg = '') {
+  if (!msg || !/RUL/i.test(msg)) return msg
+  const h = parseFloat((msg.match(/RUL\s*([\d.]+)\s*h/i) || [])[1])
+  const horizon = !isFinite(h) ? 'soon' : h < 150 ? 'within days' : h < 400 ? 'within 7 days' : 'within weeks'
+  const base = msg.replace(/,?\s*RUL\s*[\d.]+\s*h/i, '').replace(/\bHEMM\b/i, 'Elevated').trim()
+  return `${base} ${horizon} · rule-based`
+}
+
+// Collapse near-duplicate episodes (flap of the same rule on the same asset)
+// into one entry with an occurrence count. Signature = asset + use-case + the
+// message with all numbers normalised, so "20 min" and "20.1 min" group.
+export function dedupeEpisodes(eps) {
+  const groups = new Map()
+  for (const e of eps) {
+    const sig = `${e.objId}|${e.useCase}|${(e.msg || '').replace(/[\d.]+/g, '#')}`
+    let g = groups.get(sig)
+    if (!g) { g = { ...e, count: 0 }; groups.set(sig, g) }
+    g.count++
+    if (e.firstT >= g.firstT) { g.firstT = e.firstT; g.lastT = e.lastT; g.msg = e.msg; g.sev = e.sev; g.active = e.active }
+  }
+  return [...groups.values()]
+}

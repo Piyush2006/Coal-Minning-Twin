@@ -8,6 +8,7 @@ import { StatusPatternDefs } from './patterns'
 import { Card, AlertCard } from './ui'
 import { useScrub, useFixtures, ensureFixtures, startReplayDriver, SHIFT_MIN } from './screen0/store'
 import { deriveShift, NAV_TREE } from './screen0/derive'
+import { dedupeEpisodes, presentAlertMsg } from './data/alertPolicy'
 
 export const STATUS_DOT = { running: '#12A16E', idle: '#E0A32E', fault: '#E04B4B', off: '#DCE1E9' }
 export const OWNER = {
@@ -16,6 +17,11 @@ export const OWNER = {
   'Vibration CBM': ['Reliability', '7 d'], 'Conveyor Vision': ['CHP Control', '2 h'], 'CHP SEC': ['Energy', '7 d'], 'Dust & Env': ['Environment', '1 h'],
 }
 export const sevOf = (e) => (e.sev === 'critical' ? (e.useCase === 'Proximity' || e.useCase === 'Worker Safety' ? 'P1' : 'P2') : e.sev === 'warn' ? 'P3' : 'P4')
+
+// short asset tag so two different trucks with the same rule don't read as a
+// duplicate card (e.g. HT-01 vs HT-02 both idling)
+const ASSET_TAG = { 'truck-1': 'HT-01', 'truck-2': 'HT-02', 'truck-3': 'HT-03', 'truck-4': 'HT-04', 'truck-5': 'HT-05', 'truck-6': 'HT-06', 'truck-7': 'HT-07', 'truck-8': 'HT-08', 'crusher-1': 'CR-01', 'cv-01': 'CV-01', 'exc-coal-1': 'EX-02', 'exc-ob-1': 'EX-01', 'chpp-1': 'CHPP', 'screen-1': 'SC-01', 'safety-1': 'Site' }
+const assetTag = (id) => ASSET_TAG[id] ?? id?.replace(/-/g, '').toUpperCase() ?? ''
 
 // screen switcher — Report (Screen 8) intentionally absent
 const SCREENS = [
@@ -141,7 +147,7 @@ export function NavRail({ fx, m, derived }) {
 }
 
 export function ActionRail({ derived, m }) {
-  const eps = useMemo(() => derived.episodes(m).slice().sort((a, b) => b.firstT - a.firstT), [derived, m])
+  const eps = useMemo(() => dedupeEpisodes(derived.episodes(m)).sort((a, b) => b.firstT - a.firstT), [derived, m])
   const activeish = eps.filter(e => e.active || m * 60 - e.lastT < 1800).slice(0, 7)
   return (
     <aside style={{ width: 296, flexShrink: 0, overflowY: 'auto', padding: '14px 16px 24px 10px', borderLeft: '1px solid var(--hairline)' }}>
@@ -154,8 +160,9 @@ export function ActionRail({ derived, m }) {
         {activeish.map(e => {
           const [owner, sla] = OWNER[e.useCase] ?? ['—', '—']
           return (
-            <AlertCard key={e.key + e.firstT} compact severity={sevOf(e)} asset={`${derived.fmt(Math.floor(e.firstT / 60))} · ${e.useCase}`}
-              hypothesis={e.msg} owner={owner} sla={sla} />
+            <AlertCard key={e.key + e.firstT} compact severity={sevOf(e)}
+              asset={`${derived.fmt(Math.floor(e.firstT / 60))} · ${assetTag(e.objId)}${e.count > 1 ? `  ×${e.count}` : ''}`}
+              hypothesis={presentAlertMsg(e.msg)} owner={owner} sla={sla} />
           )
         })}
       </div>

@@ -4,7 +4,7 @@
 // the visible rule-out, predictive horizons with maturity badges (never a raw
 // RUL above L4), and the act-now-vs-defer decision with a transparent trip calc.
 import { useMemo, useState } from 'react'
-import { Card, Reading, MaturityBadge, ConfidenceBadge } from '../ui'
+import { Card, Reading, Thesis, MaturityBadge, ConfidenceBadge, Sparkline } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { useScrub } from '../screen0/store'
 import { rankAssets, assetHealth, cvExpectedTemp, ASSET_LABEL } from './assetHealth'
@@ -24,9 +24,15 @@ function HealthMain({ fx, derived, m }) {
   const ranked = useMemo(() => rankAssets(snap), [snap])
   const focusId = ranked.some(r => r.id === selection) ? selection : 'cv-01'
   const focus = ranked.find(r => r.id === focusId) ?? ranked[0]
+  const cvResid = (() => { const p = snap['cv-01']?.parameters ?? {}; return (p.motorTemp ?? 0) - cvExpectedTemp(p.load ?? 0) })()
 
   return (
     <>
+      <Thesis>
+        {focus.id === 'cv-01'
+          ? <>Temperature deviation increased while the belt ran empty — the rise isn't load. CV-01 is the highest-risk asset (+{cvResid.toFixed(1)} °C residual, vibration flat); clean the cooling fins at the 22:00 changeover for zero production cost.</>
+          : <>{ASSET_LABEL[focus.id]} is at AHI {focus.ahi}; CV-01 remains the site's highest-risk asset on thermal residual.</>}
+      </Thesis>
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.95fr) minmax(0,1.4fr)', gap: 16 }}>
         <Card title="Fleet health — ranked by risk" density="working">
           <div style={{ display: 'grid', gap: 3 }}>
@@ -50,7 +56,7 @@ function HealthMain({ fx, derived, m }) {
               )
             })}
           </div>
-          <Reading>Risk ranks by (100 − health) × criticality, so a mildly degraded critical asset outranks a badly degraded spare. CV-01 leads — its thermal residual is the single largest contributor on site.</Reading>
+          <Reading more="Risk ranks by (100 − health) × criticality, so a mildly degraded critical asset outranks a badly degraded spare. CV-01 leads — its thermal residual is the single largest contributor on site.">Risk = (100 − health) × criticality</Reading>
         </Card>
 
         <Card title={`${ASSET_LABEL[focus.id]} — health breakdown`} density="working"
@@ -66,6 +72,7 @@ function HealthMain({ fx, derived, m }) {
               </div>
             ))}
           </div>
+          {focus.id === 'cv-01' && <FactorTrends fx={fx} derived={derived} m={m} />}
           <div style={{ marginTop: 10 }}><ConfidenceBadge level="full" note={`weighted composite · criticality ${focus.crit.toFixed(2)}`} /></div>
         </Card>
       </div>
@@ -74,6 +81,30 @@ function HealthMain({ fx, derived, m }) {
         ? <CVDetail fx={fx} hist={hist} derived={derived} m={m} />
         : <GenericHorizon focus={focus} snap={snap} />}
     </>
+  )
+}
+
+/* contributing-parameter trends — fills the breakdown card's dead space with
+   the actual signals behind each factor bar (residual, vibration, current). */
+function FactorTrends({ fx, derived, m }) {
+  const shown = (arr) => arr.slice(0, Math.max(2, Math.floor((m / derived.N) * arr.length)))
+  const series = (key) => fx.series(`cv-01·${key}`, derived.t0, derived.t0 + derived.N * 60000, 90).map(p => p[1])
+  const tempS = series('motorTemp'), loadS = series('load'), vibS = series('vibration'), curS = series('motorCurrent')
+  const residS = tempS.map((t, i) => t - cvExpectedTemp(loadS[i] ?? 0))
+  const rows = [
+    ['Thermal residual', shown(residS), '#E04B4B'],
+    ['Drive vibration', shown(vibS), '#12A16E'],
+    ['Motor current', shown(curS), '#7B5EA7'],
+  ]
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--hairline)' }}>
+      {rows.map(([label, s, col]) => (
+        <div key={label}>
+          <div className="dv3-tert" style={{ fontSize: 10.5, marginBottom: 2 }}>{label}</div>
+          <Sparkline points={s} w={150} h={30} color={col} />
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -98,7 +129,7 @@ function CVDetail({ fx, hist, derived, m }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
         <Card title="Drive motor — temperature vs load-aware expected" density="working">
           <ThermalChart tempS={tempS} loadS={loadS} m={m} N={derived.N} fmt={derived.fmt} chainEvents={derived.chainEvents} />
-          <Reading><b>Temperature deviation increased while the belt ran empty — the rise isn't load.</b> During the 16:52–17:47 starvation the absolute temperature fell toward the no-load expectation, yet the gap to expected kept widening at ~3.1 °C/h. That rules out load and points to a degrading cooling path.</Reading>
+          <Reading more="During the 16:52–17:47 starvation the absolute temperature fell toward the no-load expectation, yet the gap to expected kept widening at ~3.1 °C/h — ruling out load, pointing to a degrading cooling path.">Deviation widened as the belt emptied — not load</Reading>
         </Card>
         <Card title="Rule-out — vibration flat">
           <VibChart vibS={vibS} m={m} N={derived.N} fmt={derived.fmt} />
@@ -107,14 +138,14 @@ function CVDetail({ fx, hist, derived, m }) {
             <Metric2 label="Drift" v={`${dTdt >= 0 ? '+' : ''}${dTdt.toFixed(1)} °C/h`} col="var(--text-primary)" />
             <Metric2 label="Vibration" v={`${(vib ?? 2.1).toFixed(1)} mm/s`} col="#12A16E" sub="steady" />
           </div>
-          <Reading>Steady vibration removes the bearing hypothesis: a spalling bearing would climb here. Thermal-only drift is consistent with fouled cooling fins / airflow.</Reading>
+          <Reading more="Steady vibration removes the bearing hypothesis: a spalling bearing would climb here. Thermal-only drift is consistent with fouled cooling fins / airflow.">Flat vibration rules out the bearing</Reading>
         </Card>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.2fr)', gap: 16, marginTop: 16 }}>
         <Card title="30-day residual runway">
           <HistoryTrend hist={hist} />
-          <Reading>The residual was flat until ~day 16, then drifted monotonically over the trailing two weeks — a slow-developing fault with 14 days of warning, not a step change.</Reading>
+          <Reading more="The residual was flat until ~day 16, then drifted monotonically over the trailing two weeks — a slow-developing fault with 14 days of warning, not a step change.">Flat to day 16, then 14 days of drift</Reading>
         </Card>
         <DeferralCard temp={temp} dTdt={dTdt} hoursToTrip={hoursToTrip} derived={derived} m={m} />
       </div>
@@ -204,7 +235,7 @@ function DeferralCard({ temp, dTdt, hoursToTrip, derived, m }) {
             <Metric2 label="Duration" v="~25 min" col="var(--text-primary)" />
             <Metric2 label="Production cost" v="0 t" col="#12A16E" sub="buffered by changeover" />
           </div>
-          <Reading>Clean the cooling fins at the scheduled 22:00 shift changeover. It fits inside the handover gap, so the production cost is zero — the residual resets and the runway clears.</Reading>
+          <Reading more="Clean the cooling fins at the scheduled 22:00 shift changeover. It fits inside the handover gap, so the production cost is zero — the residual resets and the runway clears.">Fits the changeover gap — zero production cost</Reading>
         </div>
       ) : (
         <div>
@@ -213,7 +244,7 @@ function DeferralCard({ temp, dTdt, hoursToTrip, derived, m }) {
             <Metric2 label="Hours to 95 °C trip" v={Number.isFinite(hoursToTrip) ? `${hoursToTrip.toFixed(1)} h` : '—'} col="#E04B4B" sub={`at ${dTdt.toFixed(1)} °C/h`} />
             <Metric2 label="P(trip before Thu B)" v={`${Math.round(pTrip * 100)}%`} col="#E04B4B" />
           </div>
-          <Reading>Defer past 22:00 and the drive is projected to reach its 95 °C trip in {Number.isFinite(hoursToTrip) ? hoursToTrip.toFixed(1) : '—'} h at the current rate. An unplanned mid-shift trip would cost about {stoppageT.toLocaleString()} t at the reference rate — far more than the free changeover clean. <b>Act now.</b></Reading>
+          <Reading more={`Defer past 22:00 and the drive reaches its 95 °C trip in ${Number.isFinite(hoursToTrip) ? hoursToTrip.toFixed(1) : '—'} h at the current rate. An unplanned mid-shift trip costs ~${stoppageT.toLocaleString()} t — far more than the free changeover clean.`}>Deferring risks a ~{stoppageT.toLocaleString()} t unplanned trip</Reading>
         </div>
       )}
       <div style={{ marginTop: 8 }}><MaturityBadge level="stat" /></div>
@@ -241,7 +272,7 @@ function GenericHorizon({ focus, snap }) {
           </>
         ) : <div className="dv3-support">No predictive model matured for this asset yet — condition-monitored only.</div>}
       </div>
-      <Reading>Horizons are shown as bands with a maturity badge, never as a false-precision hours figure. The raw RUL estimate appears only in the L4 parameter list for reliability engineers.</Reading>
+      <Reading more="Horizons are shown as bands with a maturity badge, never as a false-precision hours figure. The raw hours estimate appears only in the L4 parameter list for reliability engineers.">Bands, not false-precision hours</Reading>
     </Card>
   )
 }

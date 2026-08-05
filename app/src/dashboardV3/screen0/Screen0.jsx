@@ -6,13 +6,14 @@
 // unification (pre-Screen-4 gate).
 import { useEffect, useMemo, useState } from 'react'
 import '../tokens.css'
-import { Card, Reading, ConfidenceBadge, MaturityBadge, AlertCard } from '../ui'
+import { Card, Reading, Thesis, ConfidenceBadge, MaturityBadge, AlertCard } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { useScrub } from './store'
 import { deriveGantt, BUCKET_LABEL, STAGE_LABEL } from './derive'
 import { Waterfall } from './Waterfall'
 import { Ribbon, ConstraintShares } from './Ribbon'
 import { Gantt } from './Gantt'
+import { presentAlertMsg } from '../data/alertPolicy'
 
 const mono = 'var(--font-mono)'
 
@@ -24,8 +25,16 @@ function PulseMain({ fx, derived, m }) {
   const gantt = useMemo(() => deriveGantt(fx), [fx])
   const snap = useMemo(() => derived.atMinute(m), [derived, m])
   const drill = useScrub(s => s.drill)
+  const cs = derived.constraintShares(m)
+  const worst = Object.entries(snap.buckets).sort((a, b) => b[1] - a[1])[0]
+  const att = Math.round(snap.attain * 100), behind = Math.round(snap.planTo - snap.actual)
   return (
     <>
+      <Thesis>
+        {worst && worst[1] >= 5
+          ? <>{Math.round(snap.actual).toLocaleString()} t at {derived.fmt(m)} — {att}% of plan, {behind.toLocaleString()} t behind. {BUCKET_LABEL[worst[0]]} is the biggest loss ({Math.round(worst[1])} t){cs.top ? <>; {STAGE_LABEL[cs.top.root] ?? cs.top.root} set the pace {Math.round(cs.top.share * 100)}% of the shift</> : ''}.</>
+          : <>{Math.round(snap.actual).toLocaleString()} t at {derived.fmt(m)} — on pace at {att}% of plan, no material loss yet.</>}
+      </Thesis>
       <K1 derived={derived} snap={snap} />
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.65fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
         <Card title={`Production loss attribution — to ${derived.fmt(m)}`} density="airy">
@@ -71,25 +80,12 @@ function K1({ derived, snap }) {
               : <>Projected close <b style={{ color: 'var(--text-primary)' }}>{lr.proj.toLocaleString()} t</b>
                 <span className="dv3-tert"> · P10–P90 {lr.lo.toLocaleString()}–{lr.hi.toLocaleString()} · plan {Math.round(derived.plan).toLocaleString()}</span></>}
           </div>
-          <K1Reading derived={derived} snap={snap} />
         </div>
         <div style={{ flex: 1, minWidth: 420 }}>
           <PaceChart derived={derived} snap={snap} />
         </div>
       </div>
     </Card>
-  )
-}
-
-function K1Reading({ derived, snap }) {
-  const cs = derived.constraintShares(snap.m)
-  const worst = Object.entries(snap.buckets).sort((a, b) => b[1] - a[1])[0]
-  if (!worst || worst[1] < 5) return <Reading>On pace — no material loss accrued yet.</Reading>
-  return (
-    <Reading>
-      {BUCKET_LABEL[worst[0]]} is the biggest loss so far — about {Math.round(worst[1])} t
-      {cs.top ? ` · ${STAGE_LABEL[cs.top.root] ?? cs.top.root} has been the constraint for ${Math.round(cs.top.share * 100)}% of the shift` : ''}.
-    </Reading>
   )
 }
 
@@ -138,7 +134,7 @@ function ConstraintReading({ derived, snap, m }) {
   const cs = derived.constraintShares(m)
   if (!cs.top) return <Reading>The chain has run at reference rate so far.</Reading>
   const t = Math.round(snap.buckets[{ crush: 'crushing', face: 'faceLoading', dispatch: 'dispatch', haul: 'haulage', chp: 'chp' }[cs.top.root]] ?? 0)
-  return <Reading>{STAGE_LABEL[cs.top.root] ?? cs.top.root} has been the constraint for {Math.round(cs.top.share * 100)}% of this shift — about {t} t.</Reading>
+  return <Reading more={`${STAGE_LABEL[cs.top.root] ?? cs.top.root} bound the chain for ${Math.round(cs.top.share * 100)}% of the shift, costing about ${t} t of the total loss.`}>{STAGE_LABEL[cs.top.root] ?? cs.top.root} bound {Math.round(cs.top.share * 100)}% of the shift · {t} t</Reading>
 }
 
 /* ── row-2 cards ── */
@@ -151,9 +147,8 @@ function SafetyCard({ fx, derived, m }) {
         <div className="dv3-hero dv3-hero--md">{Math.round(p.proximityAlertsToday ?? 0) + Math.round(p.unauthorizedEntriesToday ?? 0)}</div>
         <div className="dv3-support">events today · closest approach <b>{Math.round(p.minWorkerVehicleDistance ?? 0)} m</b></div>
       </div>
-      <Reading>
-        {prox ? `${derived.fmt(Math.floor(prox.firstT / 60))} — ${prox.msg}.` : 'No proximity incidents this shift.'}
-        {' '}PPE zones quiet ({Math.round(p.workersOnSite ?? 0)} workers on site).
+      <Reading more={prox ? `Latest proximity breach at ${derived.fmt(Math.floor(prox.firstT / 60))}: ${prox.msg}. PPE zones quiet, ${Math.round(p.workersOnSite ?? 0)} workers on site.` : `No proximity incidents this shift. ${Math.round(p.workersOnSite ?? 0)} workers on site.`}>
+        {prox ? `Last breach ${derived.fmt(Math.floor(prox.firstT / 60))} · PPE quiet` : 'No incidents · PPE quiet'}
       </Reading>
     </Card>
   )
@@ -176,7 +171,7 @@ function RiskCard({ fx, derived, m }) {
         <MaturityBadge level="stat" />
       </div>
       <MiniDual a={series.slice(0, shownIdx)} b={loadS.slice(0, shownIdx)} />
-      <Reading>Temperature deviation kept climbing while the belt ran empty — the rise isn't load. Degraded cooling path; clean fins at the 22:00 changeover.</Reading>
+      <Reading more="Temperature deviation kept climbing while the belt ran empty — the rise isn't load. Degraded cooling path; clean fins at the 22:00 changeover.">Deviation rose on an empty belt — not load</Reading>
     </Card>
   )
 }
@@ -207,10 +202,8 @@ function StrippingCard({ fx, derived, m }) {
         <div className="dv3-hero dv3-hero--md">{sr?.toFixed(2) ?? '—'}</div>
         <div className="dv3-support">realised SR · plan 3.10</div>
       </div>
-      <Reading>
-        {sr != null && sr < 3.1
-          ? `Under-stripping vs plan — OB is being borrowed from next quarter (coal exposed ${Math.round(exposed ?? 0)} kt).`
-          : `Stripping on plan · coal exposed ${Math.round(exposed ?? 0)} kt.`}
+      <Reading more={sr != null && sr < 3.1 ? `Under-stripping vs plan — overburden is being borrowed from next quarter. Coal exposed ${Math.round(exposed ?? 0)} kt.` : `Stripping on plan. Coal exposed ${Math.round(exposed ?? 0)} kt.`}>
+        {sr != null && sr < 3.1 ? `Under-stripping · ${Math.round(exposed ?? 0)} kt exposed` : `On plan · ${Math.round(exposed ?? 0)} kt exposed`}
       </Reading>
       <ConfidenceBadge level="partial" note="Survey reconciliation monthly — sensor-derived" />
     </Card>
@@ -280,7 +273,7 @@ function Diagnosis({ derived, ev, m, back }) {
             <div key={a.key + a.firstT} style={{ display: 'flex', gap: 8, fontSize: 12.5, alignItems: 'baseline' }}>
               <span className="dv3-mono" style={{ color: 'var(--text-tertiary)' }}>{derived.fmt(Math.floor(a.firstT / 60))}</span>
               <span className="dv3-chip" style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}>{a.useCase}</span>
-              <span style={{ color: 'var(--text-secondary)' }}>{a.msg}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>{presentAlertMsg(a.msg)}</span>
             </div>
           ))}
         </div>

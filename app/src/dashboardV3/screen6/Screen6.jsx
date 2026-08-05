@@ -4,9 +4,10 @@
 // limits, and per-zone PPE coverage — never a single mine-wide % that hides the
 // one bad area. Assembly of existing primitives.
 import { useMemo } from 'react'
-import { Card, Reading } from '../ui'
+import { Card, Reading, Thesis } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { SiteMap } from '../viz'
+import { dedupeEpisodes, presentAlertMsg } from '../data/alertPolicy'
 
 export default function Screen6() {
   return <ScreenFrame title="Safety" renderMain={(ctx) => <SafetyMain {...ctx} />} />
@@ -26,7 +27,7 @@ function SafetyMain({ fx, derived, m }) {
   const s = snap['safety-1']?.parameters ?? {}
   const pm = snap['pm-1']?.parameters ?? {}
   const eps = useMemo(() => derived.episodes(m), [derived, m])
-  const safetyEps = eps.filter(e => ['Proximity', 'Worker Safety', 'Geofence'].includes(e.useCase)).sort((a, b) => b.firstT - a.firstT)
+  const safetyEps = dedupeEpisodes(eps.filter(e => ['Proximity', 'Worker Safety', 'Geofence'].includes(e.useCase))).sort((a, b) => b.firstT - a.firstT)
   // live event pins near their zone
   const activeProx = eps.find(e => e.useCase === 'Proximity' && e.active)
   const pins = []
@@ -39,27 +40,32 @@ function SafetyMain({ fx, derived, m }) {
     { name: 'Noise', v: pm.noise ?? 0, unit: 'dBA', limit: 85, warn: 80 },
   ]
 
+  const autoStops = Math.round((s.proximityAlertsToday ?? 0) * 0.4)
   return (
     <>
+      <Thesis>
+        Exposure is being caught live at {derived.fmt(m)} — closest approach {Math.round(s.minWorkerVehicleDistance ?? 0)} m, {Math.round(s.proximityAlertsToday ?? 0)} proximity breaches triggering {autoStops} vehicle auto-stops. Leading signals, not a lagging incident tally.
+      </Thesis>
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 16 }}>
         <Card title="Site safety map" density="working"
           right={<span className="dv3-support" style={{ fontSize: 11 }}>zones + live events at {derived.fmt(m)}</span>}>
-          <SiteMap fx={fx} derived={derived} m={m} height={280} zones={ZONES} events={pins} showLabels={false} />
-          <Reading>Restricted zones with live worker–vehicle events. {s.workersOnSite ? `${Math.round(s.workersOnSite)} workers on site` : 'Crew'} across pit, plant, rail and port — the map shows where exposure is right now, not a site-wide average.</Reading>
+          <SiteMap fx={fx} derived={derived} m={m} height={210} zones={ZONES} events={pins} showLabels={false} />
+          <Reading more={`Restricted zones with live worker–vehicle events. ${s.workersOnSite ? Math.round(s.workersOnSite) : 'Crew'} workers across pit, plant, rail and port — where exposure is right now, not a site-wide average.`}>Where exposure is now, not a site average</Reading>
         </Card>
         <Card title="Leading safety signals">
           <div style={{ display: 'flex', gap: 22, marginBottom: 6 }}>
             <Big label="Closest approach" v={`${Math.round(s.minWorkerVehicleDistance ?? 0)} m`} col={(s.minWorkerVehicleDistance ?? 99) < 8 ? '#E04B4B' : '#12A16E'} />
             <Big label="Proximity events" v={Math.round(s.proximityAlertsToday ?? 0)} sub="today" />
-            <Big label="Auto-stops" v={Math.round((s.proximityAlertsToday ?? 0) * 0.4)} sub="triggered" />
+            <Big label="Auto-stops" v={autoStops} sub="triggered" />
           </div>
-          <Reading>The promoted signal: a proximity breach under 6 m triggers a real vehicle auto-stop — a prevented incident, counted as a leading win, not waited on as a lagging statistic.</Reading>
+          <Reading more="A proximity breach under 6 m triggers a real vehicle auto-stop — a prevented incident, counted as a leading win, not waited on as a lagging statistic.">Breach under 6 m → real vehicle auto-stop</Reading>
           <div style={{ marginTop: 8, display: 'grid', gap: 5, maxHeight: 150, overflowY: 'auto' }}>
             {safetyEps.slice(0, 6).map(e => (
               <div key={e.key + e.firstT} style={{ display: 'flex', gap: 8, fontSize: 12, alignItems: 'baseline' }}>
                 <span className="dv3-mono dv3-tert">{derived.fmt(Math.floor(e.firstT / 60))}</span>
                 <span className="dv3-chip" style={{ background: e.sev === 'critical' ? '#FDECEC' : 'var(--surface-2)', color: e.sev === 'critical' ? '#B42318' : 'var(--text-secondary)' }}>{e.useCase}</span>
-                <span style={{ color: 'var(--text-secondary)' }}>{e.msg}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{presentAlertMsg(e.msg)}</span>
+                {e.count > 1 && <span className="dv3-mono dv3-tert" style={{ marginLeft: 'auto' }}>×{e.count}</span>}
               </div>
             ))}
             {safetyEps.length === 0 && <div className="dv3-support">No safety episodes by {derived.fmt(m)}.</div>}
@@ -87,27 +93,44 @@ function SafetyMain({ fx, derived, m }) {
               )
             })}
           </div>
-          <Reading>{(pm.pm10 ?? 0) >= 200 ? 'PM10 is riding near the exceedance limit — dust suppression should be active on the haul roads.' : 'Dust and noise within limits.'} {pm.suppressionActive ? 'Suppression on.' : 'Suppression off.'}</Reading>
+          <Reading more={`${(pm.pm10 ?? 0) >= 200 ? 'PM10 is riding near the exceedance limit — dust suppression should be active on the haul roads.' : 'Dust and noise within limits.'} Suppression ${pm.suppressionActive ? 'on' : 'off'}.`}>{(pm.pm10 ?? 0) >= 200 ? 'PM10 near limit · suppression on' : 'Within limits · suppression on'}</Reading>
         </Card>
 
         <Card title="PPE compliance — per zone" density="working">
-          <div style={{ display: 'grid', gap: 9 }}>
-            {PPE_ZONES.map(([zone, cam]) => {
-              const cp = snap[cam]?.parameters ?? {}
-              const rate = cp.complianceRate ?? 100
-              const col = rate >= 98 ? '#12A16E' : rate >= 92 ? '#E0A32E' : '#E04B4B'
-              return (
-                <div key={zone} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 46px', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 12.5 }}>{zone}</span>
-                  <div className="dv3-well" style={{ height: 9, borderRadius: 5, overflow: 'hidden' }}>
-                    <div style={{ width: `${rate}%`, height: '100%', background: col, borderRadius: 5 }} />
-                  </div>
-                  <span className="dv3-mono" style={{ textAlign: 'right', fontWeight: 700, color: col, fontSize: 12 }}>{Math.round(rate)}%</span>
+          {(() => {
+            const zones = PPE_ZONES.map(([zone, cam]) => ({ zone, rate: snap[cam]?.parameters?.complianceRate ?? 100 }))
+            const flagged = zones.filter(z => z.rate < 98)
+            // all compliant → one chip + coverage note, not a row of identical 100%s
+            if (flagged.length === 0) return (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                  <span className="dv3-chip" style={{ background: '#E7F6EF', color: '#0E7A54', fontWeight: 700, fontSize: 13, padding: '5px 12px' }}>✓ All {zones.length} zones compliant</span>
+                  <span className="dv3-mono dv3-tert" style={{ fontSize: 12 }}>100% · {zones.length} of 6 mandated zones instrumented</span>
                 </div>
-              )
-            })}
-          </div>
-          <Reading>Coverage per zone, never a single site-wide number — a 99% average would hide the one walkway that needs attention. Each zone is one PPE camera's compliance rate.</Reading>
+                <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                  {zones.map(z => <span key={z.zone} className="dv3-chip" style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)', fontSize: 11 }}>{z.zone}</span>)}
+                </div>
+              </div>
+            )
+            // exceptions surface as bars — the one walkway that needs attention
+            return (
+              <div style={{ display: 'grid', gap: 9 }}>
+                {zones.map(({ zone, rate }) => {
+                  const col = rate >= 98 ? '#12A16E' : rate >= 92 ? '#E0A32E' : '#E04B4B'
+                  return (
+                    <div key={zone} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 46px', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 12.5 }}>{zone}</span>
+                      <div className="dv3-well" style={{ height: 9, borderRadius: 5, overflow: 'hidden' }}>
+                        <div style={{ width: `${rate}%`, height: '100%', background: col, borderRadius: 5 }} />
+                      </div>
+                      <span className="dv3-mono" style={{ textAlign: 'right', fontWeight: 700, color: col, fontSize: 12 }}>{Math.round(rate)}%</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })()}
+          <Reading more="Coverage per zone, never a single site-wide number — a 99% average would hide the one walkway that needs attention. Exceptions surface as bars; a compliant site collapses to one chip.">Per zone — a site average hides the bad walkway</Reading>
         </Card>
       </div>
     </>

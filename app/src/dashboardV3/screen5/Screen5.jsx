@@ -3,7 +3,7 @@
 // signal), and the idle-energy panel ranked with empty-belt hours leading — the
 // fastest win on the screen. Assembly + one new hand-rolled Sankey.
 import { useMemo } from 'react'
-import { Card, Reading } from '../ui'
+import { Card, Reading, Thesis } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { ControlChart } from '../viz'
 
@@ -39,23 +39,26 @@ function EnergyMain({ fx, derived, m }) {
 
   return (
     <>
+      <Thesis>
+        The empty-belt drive is the fastest win at {derived.fmt(m)} — the same starvation that cost tonnes also burned {emptyKWh.toLocaleString()} kWh moving an empty belt. One belt-load interlock fixes tonnes, SEC drift and thermal residual at once.
+      </Thesis>
       <Card title={`Energy flow — live at ${derived.fmt(m)}`} density="airy">
         <EnergySankey snap={snap} />
-        <Reading>Grid feeds the fixed plant; diesel feeds the mobile fleet. The overland conveyor and the crusher are the two largest electrical draws; haulage dominates diesel. Sized to live throughput at the scrub time.</Reading>
+        <Reading more="Grid feeds the fixed plant; diesel feeds the mobile fleet. The overland conveyor and crusher are the two largest electrical draws; haulage dominates diesel. Sized to live throughput at the scrub time.">Conveyor + crusher lead grid; haulage leads diesel</Reading>
       </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16, marginTop: 16 }}>
         <Card title="CR-01 specific energy" density="working">
           <ControlChart series={secCr} m={m} N={derived.N} k={2} unit=" kWh/t" color="#E5871F" h={120} />
-          <Reading>kWh/t rises when the crusher runs starved or on oversize — SEC drift is an early wear signal as much as an energy line.</Reading>
+          <Reading more="kWh/t rises when the crusher runs starved or on oversize — SEC drift is an early wear signal as much as an energy line.">SEC drift is an early wear signal</Reading>
         </Card>
         <Card title="SC-01 specific energy" density="working">
           <ControlChart series={secSc} m={m} N={derived.N} k={2} unit=" kWh/t" color="#7B5EA7" h={120} />
-          <Reading>Screen SEC tracks oversize load; the mid-shift climb mirrors the B-114 fragmentation.</Reading>
+          <Reading more="Screen SEC tracks oversize load; the mid-shift climb mirrors the B-114 fragmentation.">Climb mirrors the B-114 fragmentation</Reading>
         </Card>
         <Card title="CHPP specific energy" density="working">
           <ControlChart series={secCh} m={m} N={derived.N} k={2} unit=" kWh/t" color="#2B5CE7" h={120} />
-          <Reading>DMC energy per tonne is steady — the plant is efficient when fed; the loss is upstream, not here.</Reading>
+          <Reading more="DMC energy per tonne is steady — the plant is efficient when fed; the loss is upstream, not here.">Steady — the loss is upstream, not here</Reading>
         </Card>
       </div>
 
@@ -75,7 +78,7 @@ function EnergyMain({ fx, derived, m }) {
             </div>
           ))}
         </div>
-        <Reading>The empty-belt drive leads: the same starvation that cost tonnes also burned {emptyKWh.toLocaleString()} kWh moving an empty belt. A belt-load interlock is the single fastest energy-and-wear win — it addresses the tonnes, the SEC drift and the thermal residual at once.</Reading>
+        <Reading more={`The empty-belt drive leads: the same starvation that cost tonnes also burned ${emptyKWh.toLocaleString()} kWh. A belt-load interlock is the single fastest energy-and-wear win.`}>Empty-belt drive leads — one interlock fixes three problems</Reading>
       </Card>
     </>
   )
