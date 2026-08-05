@@ -5,21 +5,15 @@ import '@xyflow/react/dist/style.css'
 import './index.css'
 import Root from './Root'
 
-// Dashboard v3 surface (design system + screens) lives behind a hash route so
-// nothing loads for normal users; lazy so Highcharts/fonts stay out of the main
-// bundle. #/design-system → the Step-1 component gallery.
+// Dashboard surface behind hash routes (lazy, so nothing loads for normal
+// users). The v4 operations dashboard (#/dashboard) is the live one; the v3
+// seven-screen surface is retired (kept in the codebase, no longer routed). The
+// #/design-system component gallery stays available.
+const DV4Dashboard = React.lazy(() => import('./dashboardV4/Dashboard'))
 const DV3Gallery = React.lazy(() => import('./dashboardV3/Gallery'))
-const DV3Screen0 = React.lazy(() => import('./dashboardV3/screen0/Screen0'))
-const DV3Screen1 = React.lazy(() => import('./dashboardV3/screen1/Screen1'))
-const DV3Screen2 = React.lazy(() => import('./dashboardV3/screen2/Screen2'))
-const DV3Screen3 = React.lazy(() => import('./dashboardV3/screen3/Screen3'))
-const DV3Screen4 = React.lazy(() => import('./dashboardV3/screen4/Screen4'))
-const DV3Screen5 = React.lazy(() => import('./dashboardV3/screen5/Screen5'))
-const DV3Screen6 = React.lazy(() => import('./dashboardV3/screen6/Screen6'))
 const DV3_ROUTES = [
-  ['#/design-system', DV3Gallery], ['#/dashboard', DV3Screen0], ['#/mine-pulse', DV3Screen0], ['#/production', DV3Screen1],
-  ['#/fleet', DV3Screen2], ['#/plant', DV3Screen3], ['#/health', DV3Screen4],
-  ['#/energy', DV3Screen5], ['#/safety', DV3Screen6],
+  ['#/design-system', DV3Gallery],
+  ['#/dashboard', DV4Dashboard], ['#/coal-mining', DV4Dashboard], ['#/coal-processing', DV4Dashboard],
 ]
 function HashRouter() {
   const [hash, setHash] = React.useState(window.location.hash)
