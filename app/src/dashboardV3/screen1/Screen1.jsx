@@ -2,17 +2,14 @@
 // hero, plus the 2D pit view. Assembly of existing pieces: ScreenFrame chrome,
 // the fixture/derive layer, the arbitration buckets, plus two new shared viz
 // primitives (ProcessChain, SiteMap). Every card carries a Reading.
-import { useMemo, useState, lazy, Suspense } from 'react'
+import { useMemo } from 'react'
 import { Card, Reading, Thesis } from '../ui'
-import { ScreenFrame, Segmented } from '../chrome'
+import { ScreenFrame } from '../chrome'
 import { SiteMap, MiniSeries } from '../viz'
 import { YIELD, RATED } from '../data/chainSim'
 import { BUCKET_LABEL, STAGE_LABEL } from '../screen0/derive'
 import { BUCKETS } from '../data/arbitration'
 import { ProcessChain } from './ProcessChain'
-
-// 3D pit view lazy-loaded so the three/drei bundle never loads for 2D-only use
-const Pit3D = lazy(() => import('./Pit3D'))
 
 export default function Screen1() {
   return <ScreenFrame title="Production Flow" renderMain={(ctx) => <FlowMain {...ctx} />} />
@@ -77,22 +74,14 @@ function FlowMain({ fx, derived, m }) {
   )
 }
 
-/* site view — 3D pit (default) or 2D plan, toggle; 3D falls back to 2D if WebGL
-   is unavailable. Screen 6 keeps using the 2D SiteMap as its base. */
+/* site view — the 2D cartographic plan (SiteMap). Markers carry live status;
+   CR-01's core turns red at the choke. Screen 6 uses the same map as its base. */
 function SiteViewCard({ fx, derived, m }) {
-  const [view, setView] = useState('3D')
   return (
     <Card title="Pit-to-port site view" density="working" style={{ marginTop: 16 }}
-      right={<div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span className="dv3-support" style={{ fontSize: 11 }}>markers = live status at {derived.fmt(m)}</span>
-        <Segmented options={['3D', '2D']} value={view} onChange={setView} />
-      </div>}>
-      {view === '3D'
-        ? <Suspense fallback={<SiteMap fx={fx} derived={derived} m={m} height={300} />}>
-            <Pit3D fx={fx} derived={derived} m={m} height={340} />
-          </Suspense>
-        : <SiteMap fx={fx} derived={derived} m={m} height={300} />}
-      <Reading more="Stylised clay pit — concentric benches, haul-road spiral, CHP block. The only colour is the equipment markers, by live status; CR-01 turns red at the choke. Click any marker to select it everywhere.">Markers by live status — click to select anywhere</Reading>
+      right={<span className="dv3-support" style={{ fontSize: 11 }}>markers = live status at {derived.fmt(m)}</span>}>
+      <SiteMap fx={fx} derived={derived} m={m} height={320} />
+      <Reading more="Top-down plan of the operation: pit and benches, haul road, overland conveyor, rail and port. Marker cores show live status — CR-01 turns red at the choke. Click any marker to select it across every screen.">Markers by live status — click to select anywhere</Reading>
     </Card>
   )
 }
