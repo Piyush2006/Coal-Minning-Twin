@@ -42,7 +42,7 @@ function FleetMain({ fx, derived, m }) {
   const what = { coal: circuit('coal', nCoal), ob: circuit('ob', nOB) }
   const cur = { coal: circuit('coal', CURRENT.coal), ob: circuit('ob', CURRENT.ob) }
 
-  const trucksGantt = useMemo(() => deriveGantt(fx).filter(r => r.id.startsWith('truck-')), [fx])
+  const fullGantt = useMemo(() => deriveGantt(fx), [fx])
   // fleet utilisation series (fraction of trucks running per minute)
   const util = useMemo(() => {
     const arr = []
@@ -112,8 +112,9 @@ function FleetMain({ fx, derived, m }) {
         </Card>
       </div>
 
-      <Card title="Haul fleet state timeline" density="working" style={{ marginTop: 16 }}>
-        <Gantt rows={trucksGantt} derived={derived} m={m} width={1020} />
+      <Card title="Equipment state timeline" density="working" style={{ marginTop: 16 }}
+        right={<span className="dv3-support" style={{ fontSize: 11 }}>haul fleet + fixed plant</span>}>
+        <Gantt rows={fullGantt} derived={derived} m={m} width={1020} />
       </Card>
     </>
   )

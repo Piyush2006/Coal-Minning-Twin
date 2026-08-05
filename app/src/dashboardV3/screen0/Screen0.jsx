@@ -9,10 +9,10 @@ import '../tokens.css'
 import { Card, Reading, Thesis, ConfidenceBadge, MaturityBadge, AlertCard } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { useScrub } from './store'
-import { deriveGantt, BUCKET_LABEL, STAGE_LABEL } from './derive'
+import { BUCKET_LABEL, STAGE_LABEL } from './derive'
 import { Waterfall } from './Waterfall'
 import { Ribbon, ConstraintShares } from './Ribbon'
-import { Gantt } from './Gantt'
+import { Coach } from './Coach'
 import { presentAlertMsg } from '../data/alertPolicy'
 
 const mono = 'var(--font-mono)'
@@ -22,7 +22,6 @@ export default function Screen0() {
 }
 
 function PulseMain({ fx, derived, m }) {
-  const gantt = useMemo(() => deriveGantt(fx), [fx])
   const snap = useMemo(() => derived.atMinute(m), [derived, m])
   const drill = useScrub(s => s.drill)
   const cs = derived.constraintShares(m)
@@ -35,9 +34,9 @@ function PulseMain({ fx, derived, m }) {
           ? <>{Math.round(snap.actual).toLocaleString()} t at {derived.fmt(m)} — {att}% of plan, {behind.toLocaleString()} t behind. {BUCKET_LABEL[worst[0]]} is the biggest loss ({Math.round(worst[1])} t){cs.top ? <>; {STAGE_LABEL[cs.top.root] ?? cs.top.root} set the pace {Math.round(cs.top.share * 100)}% of the shift</> : ''}.</>
           : <>{Math.round(snap.actual).toLocaleString()} t at {derived.fmt(m)} — on pace at {att}% of plan, no material loss yet.</>}
       </Thesis>
-      <K1 derived={derived} snap={snap} />
+      <div data-coach="headline"><K1 derived={derived} snap={snap} /></div>
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.65fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
-        <Card title={`Production loss attribution — to ${derived.fmt(m)}`} density="airy">
+        <Card title={`Production loss attribution — to ${derived.fmt(m)}`} density="airy" coach="waterfall">
           <Waterfall snap={snap} width={660} />
         </Card>
         <Card title="Shift constraint — bottleneck of record">
@@ -46,15 +45,13 @@ function PulseMain({ fx, derived, m }) {
           <ConstraintReading derived={derived} snap={snap} m={m} />
         </Card>
       </div>
-      <Card title="Equipment state timeline" density="working" style={{ marginTop: 16 }}>
-        <Gantt rows={gantt} derived={derived} m={m} width={1020} />
-      </Card>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16, marginTop: 16 }}>
         <SafetyCard fx={fx} derived={derived} m={m} />
         <RiskCard fx={fx} derived={derived} m={m} />
         <StrippingCard fx={fx} derived={derived} m={m} />
       </div>
       {drill && <DrillOverlay derived={derived} m={m} />}
+      <Coach />
     </>
   )
 }

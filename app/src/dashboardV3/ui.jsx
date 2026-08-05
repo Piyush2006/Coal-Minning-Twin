@@ -6,10 +6,10 @@
 import { useEffect, useRef, useState } from 'react'
 
 /* ── layout ── */
-export function Card({ title, density = '', style, children, right }) {
+export function Card({ title, density = '', style, children, right, coach }) {
   const cls = density === 'airy' ? 'dv3-card dv3-card--airy' : density === 'working' ? 'dv3-card dv3-card--working' : 'dv3-card'
   return (
-    <div className={cls} style={style}>
+    <div className={cls} style={style} data-coach={coach}>
       {(title || right) && (
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
           {title && <div className="dv3-cardhead">{title}</div>}
@@ -17,6 +17,29 @@ export function Card({ title, density = '', style, children, right }) {
         </div>
       )}
       {children}
+    </div>
+  )
+}
+
+// Progressive disclosure: collapsed = one titled row (title · caption · headline
+// number · chevron); expanded shows the full card body. Open/closed is
+// remembered per user in localStorage keyed by `id`, so a specialist's expanded
+// layout persists and a manager's stays lean.
+export function CollapsibleCard({ id, title, headline, caption, defaultOpen = false, right, children }) {
+  const key = `dv3.open.${id}`
+  const [open, setOpen] = useState(() => { try { const v = localStorage.getItem(key); return v == null ? defaultOpen : v === '1' } catch { return defaultOpen } })
+  const toggle = () => setOpen(o => { const n = !o; try { localStorage.setItem(key, n ? '1' : '0') } catch {} return n })
+  return (
+    <div className="dv3-card dv3-card--working" style={{ marginTop: 12 }}>
+      <button onClick={toggle} aria-expanded={open} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', padding: 0, fontFamily: 'var(--font-ui)' }}>
+        <span style={{ display: 'inline-block', width: 14, color: 'var(--text-tertiary)', transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 120ms' }}>▸</span>
+        <span className="dv3-cardhead" style={{ marginBottom: 0 }}>{title}</span>
+        {!open && caption && <span className="dv3-tert" style={{ fontSize: 12, fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caption}</span>}
+        <span style={{ flex: 1 }} />
+        {!open && headline != null && <span className="dv3-mono" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{headline}</span>}
+        {open && right}
+      </button>
+      {open && <div style={{ marginTop: 14 }}>{children}</div>}
     </div>
   )
 }

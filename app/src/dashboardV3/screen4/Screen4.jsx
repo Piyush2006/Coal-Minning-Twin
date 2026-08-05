@@ -4,7 +4,7 @@
 // the visible rule-out, predictive horizons with maturity badges (never a raw
 // RUL above L4), and the act-now-vs-defer decision with a transparent trip calc.
 import { useMemo, useState } from 'react'
-import { Card, Reading, Thesis, MaturityBadge, ConfidenceBadge, Sparkline } from '../ui'
+import { Card, CollapsibleCard, Reading, Thesis, MaturityBadge, ConfidenceBadge, Sparkline } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { useScrub } from '../screen0/store'
 import { rankAssets, assetHealth, cvExpectedTemp, ASSET_LABEL } from './assetHealth'
@@ -33,49 +33,50 @@ function HealthMain({ fx, derived, m }) {
           ? <>Temperature deviation increased while the belt ran empty — the rise isn't load. CV-01 is the highest-risk asset (+{cvResid.toFixed(1)} °C residual, vibration flat); clean the cooling fins at the 22:00 changeover for zero production cost.</>
           : <>{ASSET_LABEL[focus.id]} is at AHI {focus.ahi}; CV-01 remains the site's highest-risk asset on thermal residual.</>}
       </Thesis>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.95fr) minmax(0,1.4fr)', gap: 16 }}>
-        <Card title="Fleet health — ranked by risk" density="working">
-          <div style={{ display: 'grid', gap: 3 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 44px 70px', fontSize: 10.5, color: 'var(--text-tertiary)', padding: '0 8px 4px' }}>
-              <span>Asset</span><span style={{ textAlign: 'right' }}>AHI</span><span style={{ textAlign: 'right' }}>risk×crit</span>
-            </div>
-            {ranked.slice(0, 11).map(r => {
-              const sel = r.id === focusId
-              return (
-                <button key={r.id} onClick={() => select(r.id)}
-                  style={{ display: 'grid', gridTemplateColumns: '1fr 44px 70px', alignItems: 'center', gap: 4, border: 'none', cursor: 'pointer', textAlign: 'left',
-                    background: sel ? 'var(--accent-soft)' : 'transparent', borderRadius: 7, padding: '5px 8px', fontFamily: 'var(--font-ui)' }}>
-                  <span style={{ fontSize: 12, fontWeight: sel ? 700 : 500, color: sel ? 'var(--accent)' : 'var(--text-primary)' }}>{ASSET_LABEL[r.id] ?? r.id}</span>
-                  <span className="dv3-mono" style={{ textAlign: 'right', fontWeight: 700, color: ahiColor(r.ahi) }}>{r.ahi}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
-                    <div style={{ width: 40, height: 5, borderRadius: 3, background: 'var(--surface-2)', overflow: 'hidden' }}>
-                      <div style={{ width: `${Math.min(100, r.riskScore * 200)}%`, height: '100%', background: ahiColor(r.ahi) }} />
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-          <Reading more="Risk ranks by (100 − health) × criticality, so a mildly degraded critical asset outranks a badly degraded spare. CV-01 leads — its thermal residual is the single largest contributor on site.">Risk = (100 − health) × criticality</Reading>
-        </Card>
-
-        <Card title={`${ASSET_LABEL[focus.id]} — health breakdown`} density="working"
-          right={<span className="dv3-mono" style={{ fontSize: 20, fontWeight: 700, color: ahiColor(focus.ahi) }}>AHI {focus.ahi}</span>}>
-          <div style={{ display: 'grid', gap: 8 }}>
-            {focus.factors.map(f => (
-              <div key={f.name} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 150px', alignItems: 'center', gap: 10, fontSize: 12 }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{f.name}</span>
-                <div className="dv3-well" style={{ height: 9, borderRadius: 5, overflow: 'hidden' }}>
-                  <div style={{ width: `${f.sev * 100}%`, height: '100%', background: f.sev > 0.66 ? '#E04B4B' : f.sev > 0.33 ? '#E0A32E' : '#12A16E', borderRadius: 5 }} />
-                </div>
-                <span className="dv3-mono dv3-tert" style={{ fontSize: 11, textAlign: 'right' }}>{f.detail}</span>
+      {/* hero: the focused asset's health breakdown */}
+      <Card title={`${ASSET_LABEL[focus.id]} — health breakdown`} density="airy"
+        right={<span className="dv3-mono" style={{ fontSize: 20, fontWeight: 700, color: ahiColor(focus.ahi) }}>AHI {focus.ahi}</span>}>
+        <div style={{ display: 'grid', gap: 8 }}>
+          {focus.factors.map(f => (
+            <div key={f.name} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 150px', alignItems: 'center', gap: 10, fontSize: 12 }}>
+              <span style={{ color: 'var(--text-secondary)' }}>{f.name}</span>
+              <div className="dv3-well" style={{ height: 9, borderRadius: 5, overflow: 'hidden' }}>
+                <div style={{ width: `${f.sev * 100}%`, height: '100%', background: f.sev > 0.66 ? '#E04B4B' : f.sev > 0.33 ? '#E0A32E' : '#12A16E', borderRadius: 5 }} />
               </div>
-            ))}
+              <span className="dv3-mono dv3-tert" style={{ fontSize: 11, textAlign: 'right' }}>{f.detail}</span>
+            </div>
+          ))}
+        </div>
+        {focus.id === 'cv-01' && <FactorTrends fx={fx} derived={derived} m={m} />}
+        <div style={{ marginTop: 10 }}><ConfidenceBadge level="full" note={`weighted composite · criticality ${focus.crit.toFixed(2)}`} /></div>
+      </Card>
+
+      {/* fleet ranking collapses to a row — expand to browse / re-focus */}
+      <CollapsibleCard id="health-rank" title="Fleet health — ranked by risk"
+        headline={`worst AHI ${ranked[0]?.ahi ?? '—'}`} caption={`${ranked.length} assets · (100 − health) × criticality`}>
+        <div style={{ display: 'grid', gap: 3 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 44px 70px', fontSize: 10.5, color: 'var(--text-tertiary)', padding: '0 8px 4px' }}>
+            <span>Asset</span><span style={{ textAlign: 'right' }}>AHI</span><span style={{ textAlign: 'right' }}>risk×crit</span>
           </div>
-          {focus.id === 'cv-01' && <FactorTrends fx={fx} derived={derived} m={m} />}
-          <div style={{ marginTop: 10 }}><ConfidenceBadge level="full" note={`weighted composite · criticality ${focus.crit.toFixed(2)}`} /></div>
-        </Card>
-      </div>
+          {ranked.slice(0, 11).map(r => {
+            const sel = r.id === focusId
+            return (
+              <button key={r.id} onClick={() => select(r.id)}
+                style={{ display: 'grid', gridTemplateColumns: '1fr 44px 70px', alignItems: 'center', gap: 4, border: 'none', cursor: 'pointer', textAlign: 'left',
+                  background: sel ? 'var(--accent-soft)' : 'transparent', borderRadius: 7, padding: '5px 8px', fontFamily: 'var(--font-ui)' }}>
+                <span style={{ fontSize: 12, fontWeight: sel ? 700 : 500, color: sel ? 'var(--accent)' : 'var(--text-primary)' }}>{ASSET_LABEL[r.id] ?? r.id}</span>
+                <span className="dv3-mono" style={{ textAlign: 'right', fontWeight: 700, color: ahiColor(r.ahi) }}>{r.ahi}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+                  <div style={{ width: 40, height: 5, borderRadius: 3, background: 'var(--surface-2)', overflow: 'hidden' }}>
+                    <div style={{ width: `${Math.min(100, r.riskScore * 200)}%`, height: '100%', background: ahiColor(r.ahi) }} />
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+        <Reading more="Risk ranks by (100 − health) × criticality, so a mildly degraded critical asset outranks a badly degraded spare.">CV-01 leads on thermal residual</Reading>
+      </CollapsibleCard>
 
       {focus.id === 'cv-01'
         ? <CVDetail fx={fx} hist={hist} derived={derived} m={m} />
@@ -126,29 +127,30 @@ function CVDetail({ fx, hist, derived, m }) {
 
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
-        <Card title="Drive motor — temperature vs load-aware expected" density="working">
-          <ThermalChart tempS={tempS} loadS={loadS} m={m} N={derived.N} fmt={derived.fmt} chainEvents={derived.chainEvents} />
-          <Reading more="During the 16:52–17:47 starvation the absolute temperature fell toward the no-load expectation, yet the gap to expected kept widening at ~3.1 °C/h — ruling out load, pointing to a degrading cooling path.">Deviation widened as the belt emptied — not load</Reading>
-        </Card>
-        <Card title="Rule-out — vibration flat">
-          <VibChart vibS={vibS} m={m} N={derived.N} fmt={derived.fmt} />
-          <div style={{ display: 'flex', gap: 20, marginTop: 6 }}>
-            <Metric2 label="Residual now" v={`+${resid.toFixed(1)} °C`} col={resid > 8 ? '#E04B4B' : '#E0A32E'} />
-            <Metric2 label="Drift" v={`${dTdt >= 0 ? '+' : ''}${dTdt.toFixed(1)} °C/h`} col="var(--text-primary)" />
-            <Metric2 label="Vibration" v={`${(vib ?? 2.1).toFixed(1)} mm/s`} col="#12A16E" sub="steady" />
-          </div>
-          <Reading more="Steady vibration removes the bearing hypothesis: a spalling bearing would climb here. Thermal-only drift is consistent with fouled cooling fins / airflow.">Flat vibration rules out the bearing</Reading>
-        </Card>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.2fr)', gap: 16, marginTop: 16 }}>
-        <Card title="30-day residual runway">
-          <HistoryTrend hist={hist} />
-          <Reading more="The residual was flat until ~day 16, then drifted monotonically over the trailing two weeks — a slow-developing fault with 14 days of warning, not a step change.">Flat to day 16, then 14 days of drift</Reading>
-        </Card>
-        <DeferralCard temp={temp} dTdt={dTdt} hoursToTrip={hoursToTrip} derived={derived} m={m} />
-      </div>
+      <CollapsibleCard id="health-thermal" title="Drive motor — temperature vs load-aware expected"
+        headline={`+${resid.toFixed(1)} °C`} caption="deviation rose on an empty belt — not load">
+        <ThermalChart tempS={tempS} loadS={loadS} m={m} N={derived.N} fmt={derived.fmt} chainEvents={derived.chainEvents} />
+        <Reading more="During the 16:52–17:47 starvation the absolute temperature fell toward the no-load expectation, yet the gap to expected kept widening at ~3.1 °C/h — ruling out load, pointing to a degrading cooling path.">Deviation widened as the belt emptied — not load</Reading>
+      </CollapsibleCard>
+      <CollapsibleCard id="health-vib" title="Rule-out — vibration flat"
+        headline={`${(vib ?? 2.1).toFixed(1)} mm/s`} caption="steady — rules out the bearing">
+        <VibChart vibS={vibS} m={m} N={derived.N} fmt={derived.fmt} />
+        <div style={{ display: 'flex', gap: 20, marginTop: 6 }}>
+          <Metric2 label="Residual now" v={`+${resid.toFixed(1)} °C`} col={resid > 8 ? '#E04B4B' : '#E0A32E'} />
+          <Metric2 label="Drift" v={`${dTdt >= 0 ? '+' : ''}${dTdt.toFixed(1)} °C/h`} col="var(--text-primary)" />
+          <Metric2 label="Vibration" v={`${(vib ?? 2.1).toFixed(1)} mm/s`} col="#12A16E" sub="steady" />
+        </div>
+        <Reading more="Steady vibration removes the bearing hypothesis: a spalling bearing would climb here. Thermal-only drift is consistent with fouled cooling fins / airflow.">Flat vibration rules out the bearing</Reading>
+      </CollapsibleCard>
+      <CollapsibleCard id="health-runway" title="30-day residual runway"
+        headline={`${dTdt >= 0 ? '+' : ''}${dTdt.toFixed(1)} °C/h`} caption="flat to day 16, then 14 days of drift">
+        <HistoryTrend hist={hist} />
+        <Reading more="The residual was flat until ~day 16, then drifted monotonically over the trailing two weeks — a slow-developing fault with 14 days of warning, not a step change.">Flat to day 16, then 14 days of drift</Reading>
+      </CollapsibleCard>
+      <CollapsibleCard id="health-decision" title="Decision — act now or defer"
+        headline="act 22:00" caption="fits the changeover — zero production cost" defaultOpen>
+        <DeferralBody temp={temp} dTdt={dTdt} hoursToTrip={hoursToTrip} derived={derived} m={m} />
+      </CollapsibleCard>
     </>
   )
 }
@@ -217,17 +219,19 @@ function HistoryTrend({ hist }) {
   )
 }
 
-function DeferralCard({ temp, dTdt, hoursToTrip, derived, m }) {
+function DeferralBody({ temp, dTdt, hoursToTrip, derived, m }) {
   const [defer, setDefer] = useState(false)
   const R = derived.R
   const pTrip = Number.isFinite(hoursToTrip) ? Math.max(0, Math.min(1, (14 - hoursToTrip) / 14)) : 0   // vs next-shift horizon ~14 h
   const stoppageT = Math.round(R * 60 * 3)   // ~3 h unplanned clear if it trips mid-shift
   return (
-    <Card title="Decision — act now or defer" density="working"
-      right={<div style={{ display: 'flex', gap: 2, background: 'var(--surface-2)', borderRadius: 8, padding: 2 }}>
-        <button onClick={() => setDefer(false)} className="dv3-chip" style={{ border: 'none', cursor: 'pointer', fontWeight: 700, background: !defer ? 'var(--accent-soft)' : 'transparent', color: !defer ? 'var(--accent)' : 'var(--text-tertiary)' }}>Act now</button>
-        <button onClick={() => setDefer(true)} className="dv3-chip" style={{ border: 'none', cursor: 'pointer', fontWeight: 700, background: defer ? 'var(--accent-soft)' : 'transparent', color: defer ? 'var(--accent)' : 'var(--text-tertiary)' }}>Defer</button>
-      </div>}>
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <div style={{ display: 'flex', gap: 2, background: 'var(--surface-2)', borderRadius: 8, padding: 2 }}>
+          <button onClick={() => setDefer(false)} className="dv3-chip" style={{ border: 'none', cursor: 'pointer', fontWeight: 700, background: !defer ? 'var(--accent-soft)' : 'transparent', color: !defer ? 'var(--accent)' : 'var(--text-tertiary)' }}>Act now</button>
+          <button onClick={() => setDefer(true)} className="dv3-chip" style={{ border: 'none', cursor: 'pointer', fontWeight: 700, background: defer ? 'var(--accent-soft)' : 'transparent', color: defer ? 'var(--accent)' : 'var(--text-tertiary)' }}>Defer</button>
+        </div>
+      </div>
       {!defer ? (
         <div>
           <div style={{ display: 'flex', gap: 24, marginBottom: 8 }}>
@@ -248,7 +252,7 @@ function DeferralCard({ temp, dTdt, hoursToTrip, derived, m }) {
         </div>
       )}
       <div style={{ marginTop: 8 }}><MaturityBadge level="stat" /></div>
-    </Card>
+    </div>
   )
 }
 

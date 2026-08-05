@@ -64,19 +64,31 @@ export function TopBar({ title = 'Mine Pulse', derived }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 18px', background: 'var(--surface)', boxShadow: 'var(--card-shadow)', zIndex: 5 }}>
       <div style={{ fontWeight: 650, fontSize: 15, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>Blackridge</div>
-      {/* screen switcher */}
-      <div style={{ display: 'flex', gap: 2, background: 'var(--surface-2)', borderRadius: 9, padding: 2 }}>
-        {SCREENS.map(([href, label]) => {
-          const active = hash.startsWith(href) || (href === '#/mine-pulse' && hash.startsWith('#/dashboard'))
-          return (
-            <a key={href} href={href} style={{ padding: '4px 10px', borderRadius: 7, fontSize: 12.5, textDecoration: 'none', fontWeight: active ? 650 : 500,
-              background: active ? 'var(--surface)' : 'transparent', color: active ? 'var(--accent)' : 'var(--text-secondary)', boxShadow: active ? 'var(--card-shadow)' : 'none' }}>{label}</a>
-          )
-        })}
-      </div>
+      {/* tiered switcher: Pulse (the front door) stands alone, then the six deep
+          screens grouped and quieter — one obvious starting place */}
+      {(() => {
+        const [[pHref, pLabel], ...rest] = SCREENS
+        const pActive = hash.startsWith(pHref) || hash.startsWith('#/dashboard')
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <a href={pHref} style={{ padding: '5px 14px', borderRadius: 8, fontSize: 13, textDecoration: 'none', fontWeight: 700,
+              background: pActive ? 'var(--accent-soft)' : 'var(--surface-2)', color: pActive ? 'var(--accent)' : 'var(--text-primary)' }}>{pLabel}</a>
+            <div style={{ width: 1, height: 20, background: 'var(--hairline)' }} />
+            <div style={{ display: 'flex', gap: 1, background: 'var(--surface-2)', borderRadius: 8, padding: 2 }}>
+              {rest.map(([href, label]) => {
+                const active = hash.startsWith(href)
+                return (
+                  <a key={href} href={href} style={{ padding: '3px 9px', borderRadius: 6, fontSize: 12, textDecoration: 'none', fontWeight: active ? 650 : 500,
+                    background: active ? 'var(--surface)' : 'transparent', color: active ? 'var(--accent)' : 'var(--text-tertiary)', boxShadow: active ? 'var(--card-shadow)' : 'none' }}>{label}</a>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
       <span style={{ flex: 0.04 }} />
       <button className="dv3-btn dv3-btn--ghost" style={{ padding: '5px 11px', fontSize: 14 }} onClick={() => setPlaying(!playing)} disabled={live}>{playing ? '❚❚' : '▶'}</button>
-      <input type="range" min={0} max={SHIFT_MIN} step={0.5} value={tMin} onChange={e => setT(+e.target.value)} disabled={live}
+      <input type="range" data-coach="scrubber" min={0} max={SHIFT_MIN} step={0.5} value={tMin} onChange={e => setT(+e.target.value)} disabled={live}
         style={{ flex: 1, accentColor: 'var(--accent)', opacity: live ? 0.4 : 1 }} aria-label="shift time scrubber" />
       <span className="dv3-mono" style={{ fontSize: 13, fontWeight: 700, width: 44 }}>{derived.fmt(Math.floor(tMin))}</span>
       <Segmented options={['60×', '120×', '240×']} value={`${speed}×`} onChange={v => setSpeed(parseInt(v))} />

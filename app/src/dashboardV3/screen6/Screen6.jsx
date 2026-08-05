@@ -4,7 +4,7 @@
 // limits, and per-zone PPE coverage — never a single mine-wide % that hides the
 // one bad area. Assembly of existing primitives.
 import { useMemo } from 'react'
-import { Card, Reading, Thesis } from '../ui'
+import { Card, CollapsibleCard, Reading, Thesis } from '../ui'
 import { ScreenFrame } from '../chrome'
 import { SiteMap } from '../viz'
 import { dedupeEpisodes, presentAlertMsg } from '../data/alertPolicy'
@@ -46,35 +46,35 @@ function SafetyMain({ fx, derived, m }) {
       <Thesis>
         Exposure is being caught live at {derived.fmt(m)} — closest approach {Math.round(s.minWorkerVehicleDistance ?? 0)} m, {Math.round(s.proximityAlertsToday ?? 0)} proximity breaches triggering {autoStops} vehicle auto-stops. Leading signals, not a lagging incident tally.
       </Thesis>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 16 }}>
-        <Card title="Site safety map" density="working"
-          right={<span className="dv3-support" style={{ fontSize: 11 }}>zones + live events at {derived.fmt(m)}</span>}>
-          <SiteMap fx={fx} derived={derived} m={m} height={210} zones={ZONES} events={pins} showLabels={false} />
-          <Reading more={`Restricted zones with live worker–vehicle events. ${s.workersOnSite ? Math.round(s.workersOnSite) : 'Crew'} workers across pit, plant, rail and port — where exposure is right now, not a site-wide average.`}>Where exposure is now, not a site average</Reading>
-        </Card>
-        <Card title="Leading safety signals">
-          <div style={{ display: 'flex', gap: 22, marginBottom: 6 }}>
-            <Big label="Closest approach" v={`${Math.round(s.minWorkerVehicleDistance ?? 0)} m`} col={(s.minWorkerVehicleDistance ?? 99) < 8 ? '#E04B4B' : '#12A16E'} />
-            <Big label="Proximity events" v={Math.round(s.proximityAlertsToday ?? 0)} sub="today" />
-            <Big label="Auto-stops" v={autoStops} sub="triggered" />
-          </div>
-          <Reading more="A proximity breach under 6 m triggers a real vehicle auto-stop — a prevented incident, counted as a leading win, not waited on as a lagging statistic.">Breach under 6 m → real vehicle auto-stop</Reading>
-          <div style={{ marginTop: 8, display: 'grid', gap: 5, maxHeight: 150, overflowY: 'auto' }}>
-            {safetyEps.slice(0, 6).map(e => (
-              <div key={e.key + e.firstT} style={{ display: 'flex', gap: 8, fontSize: 12, alignItems: 'baseline' }}>
-                <span className="dv3-mono dv3-tert">{derived.fmt(Math.floor(e.firstT / 60))}</span>
-                <span className="dv3-chip" style={{ background: e.sev === 'critical' ? '#FDECEC' : 'var(--surface-2)', color: e.sev === 'critical' ? '#B42318' : 'var(--text-secondary)' }}>{e.useCase}</span>
-                <span style={{ color: 'var(--text-secondary)' }}>{presentAlertMsg(e.msg)}</span>
-                {e.count > 1 && <span className="dv3-mono dv3-tert" style={{ marginLeft: 'auto' }}>×{e.count}</span>}
-              </div>
-            ))}
-            {safetyEps.length === 0 && <div className="dv3-support">No safety episodes by {derived.fmt(m)}.</div>}
-          </div>
-        </Card>
-      </div>
+      {/* hero: leading safety signals */}
+      <Card title="Leading safety signals" density="airy">
+        <div style={{ display: 'flex', gap: 28, marginBottom: 6 }}>
+          <Big label="Closest approach" v={`${Math.round(s.minWorkerVehicleDistance ?? 0)} m`} col={(s.minWorkerVehicleDistance ?? 99) < 8 ? '#E04B4B' : '#12A16E'} />
+          <Big label="Proximity events" v={Math.round(s.proximityAlertsToday ?? 0)} sub="today" />
+          <Big label="Auto-stops" v={autoStops} sub="triggered" />
+        </div>
+        <Reading more="A proximity breach under 6 m triggers a real vehicle auto-stop — a prevented incident, counted as a leading win, not waited on as a lagging statistic.">Breach under 6 m → real vehicle auto-stop</Reading>
+        <div style={{ marginTop: 8, display: 'grid', gap: 5, maxHeight: 160, overflowY: 'auto' }}>
+          {safetyEps.slice(0, 6).map(e => (
+            <div key={e.key + e.firstT} style={{ display: 'flex', gap: 8, fontSize: 12, alignItems: 'baseline' }}>
+              <span className="dv3-mono dv3-tert">{derived.fmt(Math.floor(e.firstT / 60))}</span>
+              <span className="dv3-chip" style={{ background: e.sev === 'critical' ? '#FDECEC' : 'var(--surface-2)', color: e.sev === 'critical' ? '#B42318' : 'var(--text-secondary)' }}>{e.useCase}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>{presentAlertMsg(e.msg)}</span>
+              {e.count > 1 && <span className="dv3-mono dv3-tert" style={{ marginLeft: 'auto' }}>×{e.count}</span>}
+            </div>
+          ))}
+          {safetyEps.length === 0 && <div className="dv3-support">No safety episodes by {derived.fmt(m)}.</div>}
+        </div>
+      </Card>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, marginTop: 16 }}>
-        <Card title="Environmental — vs statutory limits" density="working">
+      <CollapsibleCard id="safety-map" title="Site safety map"
+        headline={`${Math.round(s.minWorkerVehicleDistance ?? 0)} m closest`} caption={`${ZONES.length} restricted zones · live event pins`}>
+        <SiteMap fx={fx} derived={derived} m={m} height={230} zones={ZONES} events={pins} showLabels={false} />
+        <Reading more={`Restricted zones with live worker–vehicle events. ${s.workersOnSite ? Math.round(s.workersOnSite) : 'Crew'} workers across pit, plant, rail and port — where exposure is right now, not a site-wide average.`}>Where exposure is now, not a site average</Reading>
+      </CollapsibleCard>
+
+      <CollapsibleCard id="safety-env" title="Environmental — vs statutory limits"
+        headline={`PM10 ${Math.round(pm.pm10 ?? 0)}/250`} caption={(pm.pm10 ?? 0) >= 200 ? 'near exceedance · suppression on' : 'within limits'}>
           <div style={{ display: 'grid', gap: 12 }}>
             {envRows.map(r => {
               const pct = Math.min(1, r.v / r.limit)
@@ -94,9 +94,10 @@ function SafetyMain({ fx, derived, m }) {
             })}
           </div>
           <Reading more={`${(pm.pm10 ?? 0) >= 200 ? 'PM10 is riding near the exceedance limit — dust suppression should be active on the haul roads.' : 'Dust and noise within limits.'} Suppression ${pm.suppressionActive ? 'on' : 'off'}.`}>{(pm.pm10 ?? 0) >= 200 ? 'PM10 near limit · suppression on' : 'Within limits · suppression on'}</Reading>
-        </Card>
+      </CollapsibleCard>
 
-        <Card title="PPE compliance — per zone" density="working">
+      <CollapsibleCard id="safety-ppe" title="PPE compliance — per zone"
+        headline="all compliant" caption="per zone — a site average hides the bad walkway">
           {(() => {
             const zones = PPE_ZONES.map(([zone, cam]) => ({ zone, rate: snap[cam]?.parameters?.complianceRate ?? 100 }))
             const flagged = zones.filter(z => z.rate < 98)
@@ -131,8 +132,7 @@ function SafetyMain({ fx, derived, m }) {
             )
           })()}
           <Reading more="Coverage per zone, never a single site-wide number — a 99% average would hide the one walkway that needs attention. Exceptions surface as bars; a compliant site collapses to one chip.">Per zone — a site average hides the bad walkway</Reading>
-        </Card>
-      </div>
+      </CollapsibleCard>
     </>
   )
 }
