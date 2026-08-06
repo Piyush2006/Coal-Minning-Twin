@@ -5,16 +5,10 @@ import '@xyflow/react/dist/style.css'
 import './index.css'
 import Root from './Root'
 
-// Dashboard surface behind hash routes (lazy, so nothing loads for normal
-// users). The v4 operations dashboard (#/dashboard) is the live one; the v3
-// seven-screen surface is retired (kept in the codebase, no longer routed). The
-// #/design-system component gallery stays available.
-const DV4Dashboard = React.lazy(() => import('./dashboardV4/Dashboard'))
-const DV3Gallery = React.lazy(() => import('./dashboardV3/Gallery'))
-const DV3_ROUTES = [
-  ['#/design-system', DV3Gallery],
-  ['#/dashboard', DV4Dashboard], ['#/coal-mining', DV4Dashboard], ['#/coal-processing', DV4Dashboard],
-]
+// Dashboard surface behind a hash route (lazy, so nothing loads for the twin's
+// normal users). The management dashboard mounts at #/dashboard; everything else
+// falls through to the 3D twin.
+const MgmtDashboard = React.lazy(() => import('./dashboard/Dashboard'))
 function HashRouter() {
   const [hash, setHash] = React.useState(window.location.hash)
   React.useEffect(() => {
@@ -22,12 +16,10 @@ function HashRouter() {
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
-  const match = DV3_ROUTES.find(([prefix]) => hash.startsWith(prefix))
-  if (match) {
-    const Page = match[1]
+  if (hash.startsWith('#/dashboard')) {
     return (
       <React.Suspense fallback={<div style={{ minHeight: '100vh', background: '#EBEEF4' }} />}>
-        <Page />
+        <MgmtDashboard />
       </React.Suspense>
     )
   }

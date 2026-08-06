@@ -6,10 +6,11 @@
 // from the LIVE object states — so twin interactions (fault a crusher, park a
 // truck) actually move the chain and the dashboard.
 //
-// Reuses RATED/YIELD/BUFFERS and createMotorThermal from the dashboardV3 data
-// layer (pure modules) so Live and Replay share one physics definition.
-import { RATED, YIELD, BUFFERS } from '../dashboardV3/data/chainSim'
-import { createMotorThermal } from '../dashboardV3/data/motorThermal'
+// Reuses RATED/YIELD/BUFFERS and createMotorThermal from the pure twin-sim data
+// modules (relocated into lib/ when the old dashboards were removed) so Live and
+// Replay share one physics definition.
+import { RATED, YIELD, BUFFERS } from './chainSim'
+import { createMotorThermal } from './motorThermal'
 
 const COAL_TRUCKS = ['truck-1', 'truck-2', 'truck-4', 'truck-5', 'truck-7']
 const isDown = (o) => !o || o.status === 'fault' || o.status === 'idle' || o.status === 'off'

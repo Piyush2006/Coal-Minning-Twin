@@ -107,6 +107,14 @@ export function HomeScreen() {
     <div style={{ width: '100vw', height: '100vh', overflowY: 'auto', background: C.bg, color: C.text, fontFamily: FONT }}>
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={onUpload} style={{ display: 'none' }} />
 
+      {/* Dashboard — navigates to the (in-progress) analytics dashboard */}
+      <button onClick={() => { window.location.hash = '#/dashboard' }} title="Open dashboard"
+        style={{ position: 'fixed', top: 18, right: 140, zIndex: 50, display: 'inline-flex', alignItems: 'center', gap: 7,
+          height: 36, padding: '0 14px', borderRadius: R.pill, ...glass, border: `1px solid ${C.line}`, boxShadow: SHADOW.card,
+          color: C.text2, cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>
+        <span style={{ fontSize: 15 }}>📊</span> Dashboard
+      </button>
+
       {/* Settings (AI model + key) */}
       <button onClick={() => setSettings(true)} title="AI settings"
         style={{ position: 'fixed', top: 18, right: 22, zIndex: 50, display: 'inline-flex', alignItems: 'center', gap: 7,
