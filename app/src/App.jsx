@@ -1200,10 +1200,6 @@ function CloudSaveModal({ projectName, onClose }) {
 function ViewportControls({ orbitRef, leftEdge }) {
   const tourActive = useTourStore(s => s.active)
   const hasTour = useSceneStore(s => (s.tour?.beats?.length ?? 0) > 0)
-  const kpiShown = useKpiStore(s => s.shown)
-  const nightOn = useDayNight(s => s.night)
-  const safetyOn = useSafetyLayer(s => s.on)
-  const hasBlast = useSceneStore(s => Object.values(s.objects).some(o => o.config?.blast?.from))
   const dolly = (factor) => {
     const oc = orbitRef.current; if (!oc) return
     const off = oc.object.position.clone().sub(oc.target)
@@ -1239,28 +1235,6 @@ function ViewportControls({ orbitRef, leftEdge }) {
         <div style={sep} />
         <button title="Rotate left"  onClick={() => rotate(-1)} style={bs} onMouseEnter={enter} onMouseLeave={leave}>↺</button>
         <button title="Rotate right" onClick={() => rotate(1)}  style={bs} onMouseEnter={enter} onMouseLeave={leave}>↻</button>
-      </>}
-      {!tourActive && hasBlast && <>
-        <div style={sep} />
-        <button title="Fire blast sequence (demo)"
-          onClick={() => useBlastStore.getState().trigger()}
-          style={{ ...bs, fontSize: 10.5, fontWeight: 700, color: '#ff9f0a' }}
-          onMouseEnter={enter} onMouseLeave={leave}>BLAST</button>
-      </>}
-      {!tourActive && <>
-        <div style={sep} />
-        <button title={nightOn ? 'Switch to day' : 'Switch to night'}
-          onClick={() => useDayNight.getState().toggle()}
-          style={{ ...bs, fontSize: 14, color: nightOn ? C.accent : C.text2 }}
-          onMouseEnter={enter} onMouseLeave={leave}>{nightOn ? '☾' : '☀'}</button>
-        <button title={kpiShown ? 'Hide 3D KPI labels' : 'Show 3D KPI labels'}
-          onClick={() => useKpiStore.getState().toggle()}
-          style={{ ...bs, fontSize: 11, fontWeight: 700, color: kpiShown ? C.accent : C.text3 }}
-          onMouseEnter={enter} onMouseLeave={leave}>KPI</button>
-        <button title={safetyOn ? 'Hide safety overlays (zones, proximity, PPE tags)' : 'Show safety overlays'}
-          onClick={() => useSafetyLayer.getState().toggle()}
-          style={{ ...bs, fontSize: 13, color: safetyOn ? '#F79009' : C.text3 }}
-          onMouseEnter={enter} onMouseLeave={leave}>🦺</button>
       </>}
       {hasTour && <>
         {!tourActive && <div style={sep} />}
