@@ -40,9 +40,6 @@ import { Kpi3DLayer, useKpiStore } from './components/Kpi3D'
 import { AssetSparklines, AssetAlertHistory } from './components/AssetDrilldown'
 import { DayNightDriver, SiteLights } from './components/DayNight'
 import { BlastLayer, useBlastStore } from './components/effects/BlastFX'
-import { OpsDashboard } from './components/dashboard/OpsDashboard'
-import { DashboardPreviewRenderer } from './components/dashboard/DashboardPreview'
-import { useDashboard, syncDashboardForScene } from './lib/dashboardStore'
 import { tickMineModel } from './lib/mineModel'
 import { tickZoneHistory } from './lib/zoneHistory'
 import { tickPpeVision, ppeCameraDetections, siteCompliance } from './lib/ppeVision'
@@ -1347,10 +1344,6 @@ export default function App() {
     return () => clearInterval(t)
   }, [])
 
-  // Land on the operations dashboard when the scene declares one.
-  useEffect(() => { syncDashboardForScene() }, [])
-  const dashMode = useDashboard(s => s.mode)
-  const dashOn = dashMode === 'dashboard' && !editMode
 
   // Build-mode keyboard editing: nudge / rotate / scale / copy-paste / duplicate.
   // Reads fresh state via getState() so the listener never needs rebinding.
@@ -1517,8 +1510,8 @@ export default function App() {
         {/* ── BASE LAYER: full-bleed 3D canvas (+ process flow) fills the window ── */}
         <div style={{ position:'absolute', inset:0, zIndex:0 }}>
           {/* Bruce insight card — view mode, beside the floating nav (collapsible) */}
-          {!editMode && !showFlow && !dashOn && <BruceCard title="Shopfloor" recs={shopfloorRecommendations(objects)} offsetLeft={leftEdge} />}
-          {!editMode && !showFlow && !dashOn && <CameraFeedPanel />}
+          {!editMode && !showFlow && <BruceCard title="Shopfloor" recs={shopfloorRecommendations(objects)} offsetLeft={leftEdge} />}
+          {!editMode && !showFlow && <CameraFeedPanel />}
           {!showFlow && <TourOverlay />}
           <div style={{ position:'absolute', inset:0,
             visibility: showFlow ? 'hidden' : 'visible',
@@ -1568,13 +1561,12 @@ export default function App() {
                 <NearMissActor />
                 <CameraController orbitRef={orbitRef} />
                 <TourDriver orbitRef={orbitRef} />
-                {!dashOn && <Kpi3DLayer />}
+                {<Kpi3DLayer />}
                 <BlastLayer />
-                {!SNAP_MODE && !dashOn && <PostFX />}
+                {!SNAP_MODE && <PostFX />}
                 <CameraFeedRenderer />
-                <DashboardPreviewRenderer />
                 {import.meta.env.DEV && <DevFreezeHook />}
-                <ShadowCadence on={dashOn} />
+                <ShadowCadence on={false} />
 
                 <OrbitControls
                   ref={orbitRef}
@@ -1592,7 +1584,7 @@ export default function App() {
               </Canvas>
 
               {/* viewport controls — zoom / reset view / undo / redo */}
-              {!dashOn && <ViewportControls orbitRef={orbitRef} leftEdge={leftEdge} />}
+              {<ViewportControls orbitRef={orbitRef} leftEdge={leftEdge} />}
             </div>
 
             {/* Process Flow fully replaces the 3D view when active */}
@@ -1604,11 +1596,8 @@ export default function App() {
 
         </div>{/* ── end base layer ── */}
 
-        {/* ── OPERATIONS DASHBOARD overlay (landing view) ── */}
-        {dashOn && <OpsDashboard />}
-
-        {/* ── FLOATING top bar (hidden while the tour records or dashboard shows) ── */}
-        {!tourActive && !dashOn && <div style={{ position:'absolute', top:12, left:12, right:12, zIndex:30 }}>
+        {/* ── FLOATING top bar (hidden while the tour records) ── */}
+        {!tourActive && <div style={{ position:'absolute', top:12, left:12, right:12, zIndex:30 }}>
           <TopBar
             editMode={editMode} setEditMode={setEditMode}
             paneMode={paneMode} setPaneMode={setPaneMode}
@@ -1626,8 +1615,8 @@ export default function App() {
           />
         </div>}
 
-        {/* ── FLOATING left nav (UNS namespace tree) — hidden under the dashboard ── */}
-        {!dashOn && <FloatingPanel side="left">
+        {/* ── FLOATING left nav (UNS namespace tree)  ── */}
+        {<FloatingPanel side="left">
           {editMode ? <BuildLeftPanel /> : <div style={COL_L}><HierarchyPanel editMode={false} /></div>}
         </FloatingPanel>}
 
@@ -1644,7 +1633,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* ── FLOATING right panel — build: AI assistant · view: overview/inspector ── */}
-        {!dashOn && <FloatingPanel side="right">
+        {<FloatingPanel side="right">
           {editMode
             ? <ChatPanel surface="scene" />
             : (selectedGroupId
