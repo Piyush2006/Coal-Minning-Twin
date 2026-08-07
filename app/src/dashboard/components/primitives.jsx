@@ -62,6 +62,33 @@ export function Dropdown({ label, value, options, onChange, disabled = false, wi
   )
 }
 
+// centered modal — portal + overlay, Esc / overlay-click / X to dismiss. Header
+// shows a title + optional subtitle; body scrolls (wide tables scroll inside it).
+export function Modal({ isOpen, onClose, title, subtitle, children, maxWidth = 1040 }) {
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [isOpen, onClose])
+  if (!isOpen) return null
+  return createPortal(
+    <div onMouseDown={onClose} style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'var(--background-overlay-default, rgba(16,24,40,0.55))', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div onMouseDown={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth, maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: 'var(--background-surface-intense)', borderRadius: 'var(--global-border-radius-large)', boxShadow: 'var(--fds-shadow-lg)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '18px 20px', borderBottom: '1px solid var(--border-gray-subtle)' }}>
+          <div style={{ display: 'grid', gap: 2, flex: 1 }}>
+            <span className="HeadingSmallSemibold">{title}</span>
+            {subtitle && <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{subtitle}</span>}
+          </div>
+          <button aria-label="Close" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1, color: 'var(--text-gray-tertiary)', padding: 2 }}>×</button>
+        </div>
+        <div style={{ overflow: 'auto', padding: 20 }}>{children}</div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
 // plain content surface (used sparingly)
 export function Panel({ children, style, pad = 20 }) {
   return (

@@ -9,13 +9,19 @@ export const DOWNTIME_REASONS = ['Mechanical', 'Electrical', 'Planned Maintenanc
 const REASON_W = [0.30, 0.18, 0.16, 0.14, 0.14, 0.08]
 
 // One coherent day for the given scope (whole op or a filtered subset).
-export function productionDay(date, scope, s) {
+// `plannedCoalForDay` (already scope-scaled) is the plan's target for this day,
+// or null when no plan covers it — then the mine's capacity baseline sets the
+// scale so the synthetic ACTUAL telemetry still looks right. `plannedShiftForDay`
+// is a per-shift [s0,s1] planned split when the plan is shift-level.
+export function productionDay(date, scope, s, plannedCoalForDay = null, plannedShiftForDay = null) {
   const r = mulberry(hash(`${dayKey(date)}|${scope.key}`) ^ 0xA17)
   const dow = date.getDay()
 
-  const planned = s.plannedProductionPerDay * scope.factor         // T (saleable target for the day)
+  // basis = what the day's ACTUAL output is generated around: the plan when it
+  // covers this day, otherwise the mine's capacity baseline.
+  const basis = plannedCoalForDay != null ? plannedCoalForDay : s.capacityPerDay * scope.factor
   const plannedOpH = s.plannedOperatingHoursPerDay
-  const nominalRate = planned / plannedOpH                          // T/hr required to hit plan
+  const nominalRate = basis / plannedOpH                            // T/hr around which actual is built
 
   const bad = r() < 0.16                                            // ~1 in 6 days runs rough
   // downtime hours: baseline wear + a bad-day event + Sunday maintenance
@@ -28,21 +34,26 @@ export function productionDay(date, scope, s) {
   const actualRate = nominalRate * rateEff
   const actualTonnes = operatingHours * actualRate
 
-  // production loss decomposition — sums to (planned − actual) on a shortfall day
+  // production loss decomposition — sums to (basis − actual) on a shortfall day
   const lossDowntime = downH * nominalRate
   const lossThroughput = operatingHours * Math.max(0, nominalRate - actualRate)
-  const lossOther = Math.max(0, planned - actualTonnes - lossDowntime - lossThroughput)
+  const lossOther = Math.max(0, basis - actualTonnes - lossDowntime - lossThroughput)
 
   // yield / recovery
-  const yieldAct = s.targetCoalYield * (0.985 + r() * 0.05) - (bad ? 1.6 : 0)   // %
+  const yieldAct = s.nominalCoalYield * (0.985 + r() * 0.05) - (bad ? 1.6 : 0)   // %
   const saleable = actualTonnes
   const rawInput = saleable / (yieldAct / 100)
 
   // energy & fuel intensities drift up on bad days → worse kWh/T & L/T
-  const energyPerTon = s.targetEnergyPerTon * (0.96 + r() * 0.09 + (bad ? 0.07 : 0))
-  const fuelPerTon = s.targetFuelPerTon * (0.95 + r() * 0.11 + (bad ? 0.06 : 0))
+  const energyPerTon = s.baseEnergyPerTon * (0.96 + r() * 0.09 + (bad ? 0.07 : 0))
+  const fuelPerTon = s.baseFuelPerTon * (0.95 + r() * 0.11 + (bad ? 0.06 : 0))
   const kwh = saleable * energyPerTon
   const litres = saleable * fuelPerTon
+
+  // manpower → man-shifts (→ man-hours) for labour intensity. Crew is ~stable
+  // day to day, so a low-output day raises man-hours/ton (mh/T) naturally.
+  const attend = 0.93 + r() * 0.06
+  const manShiftsDay = s.plannedManpowerPerShift * 2 * attend * scope.factor
 
   // downtime by reason (minutes), normalised to the day's downtime
   const downMin = downH * 60
@@ -53,23 +64,29 @@ export function productionDay(date, scope, s) {
   // shift split (Shift 1 / Shift 2) — every extensive signal splits, so per-shift
   // throughput / yield / cost stay coherent while shift TOTALS genuinely differ.
   const s1 = 0.5 + (r() - 0.5) * 0.08
-  const mk = (f) => {
+  // per-shift planned: use the plan's explicit shift split when present, else
+  // fraction the day's plan (null when no plan covers the day).
+  const shiftPlanned = (i, f) => {
+    if (plannedShiftForDay && plannedShiftForDay[i] != null) return plannedShiftForDay[i]
+    return plannedCoalForDay != null ? plannedCoalForDay * f : null
+  }
+  const mk = (i, f) => {
     const at = actualTonnes * f
     return {
-      actualTonnes: at, plannedTonnes: planned * f, kwh: kwh * f, litres: litres * f,
+      actualTonnes: at, plannedTonnes: shiftPlanned(i, f), kwh: kwh * f, litres: litres * f,
       downtimeMin: downMin * f, operatingHours: operatingHours * f, rawInput: at / (yieldAct / 100),
     }
   }
 
   return {
     date,
-    plannedTonnes: planned, actualTonnes, operatingHours, plannedOpHours: plannedOpH,
-    rawInput, saleableTonnes: saleable, yieldAct, kwh, litres,
+    plannedTonnes: plannedCoalForDay, actualTonnes, operatingHours, plannedOpHours: plannedOpH,
+    rawInput, saleableTonnes: saleable, yieldAct, kwh, litres, manShifts: manShiftsDay,
     downtimeMin: downMin, downtimeReasons: reasons,
     loss: { downtime: lossDowntime, throughput: lossThroughput, other: lossOther },
     shifts: [
-      { name: s.shift1?.name || 'Shift 1', ...mk(s1) },
-      { name: s.shift2?.name || 'Shift 2', ...mk(1 - s1) },
+      { name: s.shift1?.name || 'Shift 1', ...mk(0, s1), manShifts: manShiftsDay / 2 },
+      { name: s.shift2?.name || 'Shift 2', ...mk(1, 1 - s1), manShifts: manShiftsDay / 2 },
     ],
   }
 }

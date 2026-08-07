@@ -21,8 +21,8 @@ const SENS_LABEL = { normal: 'Normal', warn: 'Warning', crit: 'Critical' }
 const STATUS_KEYS = ['Running', 'Idle — On Job', 'Idle — Off Job', 'Breakdown']
 
 export function Fleet() {
-  const { range, mineId, areaId, equipTypeId, shiftMode, settings } = useDash()
-  const kp = useMemo(() => buildProduction({ range, mineId, areaId, equipTypeId, shiftMode, settings }), [range, mineId, areaId, equipTypeId, shiftMode, settings])
+  const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
+  const kp = useMemo(() => buildProduction({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan }), [range, mineId, areaId, equipTypeId, shiftMode, settings, plan])
   const fleet = useMemo(() => buildFleet({ range, mineId, areaId, equipTypeId, settings, overallUtil: kp.utilization.pct }), [range, mineId, areaId, equipTypeId, settings, kp.utilization.pct])
   const [sel, setSel] = useState(null)
 

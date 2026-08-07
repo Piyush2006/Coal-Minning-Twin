@@ -39,6 +39,15 @@ export function achievementStatus(pct) {
   return 'critical'
 }
 
+// coal recovery % → status band. No target (the site just maximises recovery);
+// colour reflects absolute recovery quality, higher is better.
+export function recoveryStatus(pct) {
+  if (pct >= 85) return 'positive'
+  if (pct >= 78) return 'normal'
+  if (pct >= 70) return 'warning'
+  return 'critical'
+}
+
 // utilisation % → status band
 export function utilStatus(pct) {
   if (pct >= 85) return 'positive'

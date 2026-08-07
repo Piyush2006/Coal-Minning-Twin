@@ -89,8 +89,8 @@ function DateRangeControl({ range, settings, onRange }) {
   )
 }
 
-export function GlobalControls({ onOpenSettings }) {
-  const { range, mineId, areaId, equipTypeId, shiftMode, settings, setRange, setFilter, setShiftMode } = useDash()
+export function GlobalControls({ onOpenPlan }) {
+  const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan, setRange, setFilter, setShiftMode } = useDash()
   const side = sideOf(mineId)
   const areaOpts = AREAS.filter(a => a.side === 'both' || side === 'both' || a.side === side)
   const equipOpts = EQUIP_TYPES.filter(e => e.side === 'both' || side === 'both' || e.side === side)
@@ -121,7 +121,7 @@ export function GlobalControls({ onOpenSettings }) {
       </button>
 
       <span style={{ flex: 1, minWidth: 8 }} />
-      <Button variant="Secondary" size="Small" onClick={onOpenSettings}>⚙ Settings</Button>
+      <Button variant={plan ? 'Secondary' : 'Primary'} size="Small" onClick={onOpenPlan}>🗓 Plan{plan ? '' : ' — set up'}</Button>
     </div>
   )
 }

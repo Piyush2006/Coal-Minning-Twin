@@ -4,11 +4,11 @@
 // Built on @faclon-labs/design-sdk. Delivered in phases — Phase 1 ships the
 // global controls, Settings, and Section 1 (Production Performance); the rest
 // are placeholders that keep the structure and nav intact.
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useDash } from './store'
 import { GlobalControls } from './components/GlobalControls'
 import { SectionNav } from './components/SectionNav'
-import { SettingsDrawer } from './components/SettingsDrawer'
+import { PlanManager } from './components/PlanManager'
 import { ProductionPerformance } from './sections/ProductionPerformance'
 import { Efficiency } from './sections/Efficiency'
 import { EquipmentDowntime } from './sections/EquipmentDowntime'
@@ -27,8 +27,10 @@ const SECTIONS = [
   { id: 'safety', label: 'Safety', title: 'Safety', question: 'Are operations safe and compliant?' },
 ]
 export default function Dashboard() {
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [active, setActive] = useState('production')
+  const planOpen = useDash(s => s.planOpen)
+  const setPlanOpen = useDash(s => s.setPlanOpen)
+  const active = useDash(s => s.tab)
+  const setActive = useDash(s => s.setTab)
   const refresh = useDash(s => s.refresh)
   const didInit = useRef(false)
   const scrollRef = useRef(null)
@@ -45,7 +47,7 @@ export default function Dashboard() {
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background-surface-moderate)', color: 'var(--text-gray-primary)' }}>
       {/* fixed header — does not scroll */}
       <div style={{ flexShrink: 0, position: 'relative', zIndex: 20 }}>
-        <GlobalControls onOpenSettings={() => setSettingsOpen(true)} />
+        <GlobalControls onOpenPlan={() => setPlanOpen(true)} />
         <SectionNav sections={SECTIONS} activeId={active} onChange={setActive} />
       </div>
 
@@ -58,7 +60,7 @@ export default function Dashboard() {
         </div>
       </main>
 
-      <SettingsDrawer isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <PlanManager isOpen={planOpen} onClose={() => setPlanOpen(false)} />
     </div>
   )
 }

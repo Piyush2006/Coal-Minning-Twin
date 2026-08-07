@@ -14,21 +14,29 @@ export const useDash = create(persist((set, get) => ({
   shiftMode: false,
   lastUpdated: new Date(),
   settings: DEFAULT_SETTINGS,
+  tab: 'production',
+  // The active operational plan (null until uploaded/entered). Shape:
+  // { level, source:'upload'|'manual', createdAt, fileName?, rows:[{period,isMonth,shift?,plannedCoal,...}] }
+  plan: null,
+  planOpen: false,           // ephemeral: is the Plan Management drawer open
 
   setRange: (range) => set({ range }),
   setFilter: (key, value) => set({ [key]: value }),
   setShiftMode: (shiftMode) => set({ shiftMode }),
+  setTab: (tab) => set({ tab }),
   refresh: () => set({ lastUpdated: new Date() }),
-  updateSettings: (patch) => set({ settings: { ...get().settings, ...patch } }),
-  resetSettings: () => set({ settings: DEFAULT_SETTINGS }),
+  setPlan: (plan) => set({ plan }),
+  clearPlan: () => set({ plan: null }),
+  setPlanOpen: (planOpen) => set({ planOpen }),
 }), {
   name: 'blackridge-mgmt-dash',
-  version: 1,
-  partialize: (s) => ({ settings: s.settings }),
-  // merge persisted settings onto defaults so new fields always exist
+  version: 2,
+  partialize: (s) => ({ settings: s.settings, plan: s.plan }),
+  // merge persisted state onto defaults so new fields always exist
   merge: (persisted, current) => ({
     ...current,
     ...(persisted || {}),
     settings: { ...DEFAULT_SETTINGS, ...((persisted && persisted.settings) || {}) },
+    plan: (persisted && persisted.plan) || null,
   }),
 }))

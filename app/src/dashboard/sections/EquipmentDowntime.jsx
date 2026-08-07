@@ -14,10 +14,10 @@ import { KpiStat } from '../components/KpiStat'
 import { Panel, KpiTile } from '../components/primitives'
 
 export function EquipmentDowntime() {
-  const { range, mineId, areaId, equipTypeId, shiftMode, settings } = useDash()
+  const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
   const kp = useMemo(
-    () => buildProduction({ range, mineId, areaId, equipTypeId, shiftMode, settings }),
-    [range, mineId, areaId, equipTypeId, shiftMode, settings],
+    () => buildProduction({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan }),
+    [range, mineId, areaId, equipTypeId, shiftMode, settings, plan],
   )
   const eq = useMemo(
     () => buildEquipment({ range, mineId, areaId, equipTypeId, settings, overallUtil: kp.utilization.pct }),

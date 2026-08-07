@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { ColumnChart } from '@faclon-labs/design-sdk/ColumnChart'
 import { Badge } from '@faclon-labs/design-sdk/Badge'
+import { Button } from '@faclon-labs/design-sdk/Button'
 import { useDash } from '../store'
 import { buildProduction } from '../calc/production'
 import { NUM, STATUS, fmt } from '../calc/format'
@@ -18,15 +19,17 @@ const CAUSE_COLOR = {
 }
 
 export function ProductionPerformance() {
-  const { range, mineId, areaId, equipTypeId, shiftMode, settings } = useDash()
+  const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
+  const setTab = useDash(s => s.setTab)
+  const setPlanOpen = useDash(s => s.setPlanOpen)
   const kp = useMemo(
-    () => buildProduction({ range, mineId, areaId, equipTypeId, shiftMode, settings }),
-    [range, mineId, areaId, equipTypeId, shiftMode, settings],
+    () => buildProduction({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan }),
+    [range, mineId, areaId, equipTypeId, shiftMode, settings, plan],
   )
 
   const ach = kp.achievement
-  const achSt = STATUS[ach.status]
-  const gap = ach.planned - ach.actual
+  const achSt = ach ? STATUS[ach.status] : null
+  const gap = ach ? ach.planned - ach.actual : 0
 
   const t = kp.trend
   const series = shiftMode
@@ -34,14 +37,18 @@ export function ProductionPerformance() {
        { name: t.shift2Name, data: t.shift2, color: 'var(--background-positive-default)' }]
     : [{ name: 'Actual', data: t.actual, color: 'var(--background-info-default)' },
        { name: 'Planned', data: t.planned, color: 'var(--text-gray-tertiary)' }]
-  const planPerDay = Math.round(ach.planned / Math.max(1, kp.days))
-  const hcOpts = shiftMode
+  const planPerDay = ach ? Math.round(ach.planned / Math.max(1, kp.days)) : null
+  const hcOpts = shiftMode && planPerDay
     ? { yAxis: { plotLines: [{ value: planPerDay, color: 'var(--text-gray-secondary)', width: 1.5, dashStyle: 'Dash', zIndex: 5, label: { text: `Plan/day ${fmt(planPerDay)} T`, style: { color: 'var(--text-gray-secondary)', fontSize: '11px' } } }] } }
     : undefined
 
   return (
     <div style={{ display: 'grid', gap: 18 }}>
-      {/* Hero — Plan vs Actual / Achievement, with the gap broken down by cause */}
+      {/* Hero — Plan vs Actual / Achievement, with the gap broken down by cause.
+          When no plan covers the range, an empty state prompts to set one up. */}
+      {!ach ? (
+        <PlanEmptyState onOpen={() => setPlanOpen(true)} coveredNote={kp.plan} />
+      ) : (
       <Panel>
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) minmax(280px, 1.5fr)', gap: 28, alignItems: 'center' }}>
           <div style={{ display: 'grid', gap: 6 }}>
@@ -90,12 +97,13 @@ export function ProductionPerformance() {
           </div>
         </div>
       </Panel>
+      )}
 
       {/* Secondary KPIs — each its own bordered tile */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 14 }}>
         <KpiStat label="Throughput" value={kp.throughput.actual} unit="T/hr" kpi={kp.throughput} />
         <KpiStat label="Coal Yield / Recovery" value={kp.yield.actual} unit="%" dp={1} kpi={kp.yield} />
-        <KpiStat label="Operating Cost / Ton" value={kp.cost.actual} unit={`${CURRENCY}/T`} kpi={kp.cost} />
+        <KpiStat label="Operating Cost / Ton" value={kp.cost.actual} unit={`${CURRENCY}/T`} kpi={kp.cost} onClick={() => setTab('efficiency')} />
       </div>
       {shiftMode && (
         <Panel>
@@ -131,6 +139,20 @@ export function ProductionPerformance() {
     </div>
   )
 }
+
+// Shown in place of Plan-vs-Actual when no operational plan covers the range.
+const PlanEmptyState = ({ onOpen, coveredNote }) => (
+  <Panel style={{ display: 'grid', gap: 12, justifyItems: 'start', padding: 28 }}>
+    <Badge color="Warning" emphasis="Subtle" size="Small">No plan for this range</Badge>
+    <span className="HeadingMediumSemibold">Add an operational plan to see Plan vs Actual</span>
+    <span className="BodyMediumRegular" style={{ color: 'var(--text-gray-secondary)', maxWidth: 560 }}>
+      Upload an Excel plan or enter one manually (monthly, daily or shift-wise). The selected date range then
+      aggregates the planned coal automatically, and targets, gap and loss-by-cause populate here.
+      {coveredNote?.hasPlan === false && coveredNote?.level ? ' A plan exists but doesn’t cover the selected dates — adjust the range or extend the plan.' : ''}
+    </span>
+    <Button variant="Primary" size="Medium" onClick={onOpen}>🗓 Open Plan Management</Button>
+  </Panel>
+)
 
 const HeroStat = ({ label, value, color }) => (
   <div style={{ display: 'grid', gap: 2 }}>
