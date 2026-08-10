@@ -2,7 +2,7 @@
 // active plan becomes the source of every Plan-vs-Actual comparison (see
 // calc/plan.js). Two modes (Upload / Manual) + an active-plan summary with
 // Replace / Clear. All Excel I/O is delegated to lib/planParse (SheetJS).
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Drawer, DrawerHeader, DrawerBody, DrawerFooter } from '@faclon-labs/design-sdk/Drawer'
 import { Button } from '@faclon-labs/design-sdk/Button'
 import { TextInput } from '@faclon-labs/design-sdk/TextInput'
@@ -13,6 +13,7 @@ import { fmt } from '../calc/format'
 import { Dropdown } from './primitives'
 import { PLAN_COLUMNS, LEVELS, emptyRowsFor } from '../data/planSchema'
 import { parseWorkbook, validatePlan, toStoredRows, manualToRows, downloadTemplate } from '../lib/planParse'
+import { StrataManager } from './StrataManager'
 
 // columns shown in the preview / manual grid (period + shift handled separately)
 const VALUE_COLS = PLAN_COLUMNS.filter(c => !['period', 'shift'].includes(c.key))
@@ -34,23 +35,41 @@ const Note = ({ tone = 'info', children }) => {
 
 export function PlanManager({ isOpen, onClose }) {
   const { plan, setPlan, clearPlan } = useDash()
+  const planPanel = useDash(s => s.planPanel)
   const [mode, setMode] = useState('upload')
+  const [panel, setPanel] = useState('plan')     // 'plan' | 'strata'
+  // sync to the requested panel whenever the drawer opens (deep-link support)
+  useEffect(() => { if (isOpen) setPanel(planPanel || 'plan') }, [isOpen, planPanel])
+
+  const Seg = ({ id, children }) => (
+    <button onClick={() => setPanel(id)} className="BodySmallSemibold"
+      style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', font: 'inherit', background: panel === id ? 'var(--background-brand-default)' : 'transparent', color: panel === id ? '#fff' : 'var(--text-gray-secondary)' }}>{children}</button>
+  )
 
   return (
     <Drawer isOpen={isOpen} onDismiss={onClose} accessibilityLabel="Plan management">
-      <DrawerHeader title="Plan Management" subtitle="Provide the operational plan — the basis for every Plan-vs-Actual comparison" />
+      <DrawerHeader title="Plan Management" subtitle="Operational plan and borehole strata" />
       <DrawerBody>
         <div style={{ display: 'grid', gap: 18, paddingBottom: 8 }}>
-          {plan && <ActivePlan plan={plan} onClear={clearPlan} />}
-
-          <div style={{ display: 'flex', gap: 18, borderBottom: '1px solid var(--border-gray-subtle)' }}>
-            <Tab id="upload" active={mode === 'upload'} onClick={setMode}>Upload Plan</Tab>
-            <Tab id="manual" active={mode === 'manual'} onClick={setMode}>Add Manually</Tab>
+          <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 10, background: 'var(--background-surface-subtle)' }}>
+            <Seg id="plan">Operational Plan</Seg>
+            <Seg id="strata">Borehole Strata</Seg>
           </div>
 
-          {mode === 'upload'
-            ? <UploadPane onImport={(p) => { setPlan(p); onClose() }} />
-            : <ManualPane onSave={(p) => { setPlan(p); onClose() }} />}
+          {panel === 'plan' ? (
+            <>
+              {plan && <ActivePlan plan={plan} onClear={clearPlan} />}
+              <div style={{ display: 'flex', gap: 18, borderBottom: '1px solid var(--border-gray-subtle)' }}>
+                <Tab id="upload" active={mode === 'upload'} onClick={setMode}>Upload Plan</Tab>
+                <Tab id="manual" active={mode === 'manual'} onClick={setMode}>Add Manually</Tab>
+              </div>
+              {mode === 'upload'
+                ? <UploadPane onImport={(p) => { setPlan(p); onClose() }} />
+                : <ManualPane onSave={(p) => { setPlan(p); onClose() }} />}
+            </>
+          ) : (
+            <StrataManager />
+          )}
         </div>
       </DrawerBody>
       <DrawerFooter>

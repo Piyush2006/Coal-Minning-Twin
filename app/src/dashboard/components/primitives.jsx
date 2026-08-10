@@ -89,6 +89,57 @@ export function Modal({ isOpen, onClose, title, subtitle, children, maxWidth = 1
   )
 }
 
+// multi-select (options: [{id,name}]). Portaled panel with a checklist; button
+// shows a count. Same dual-ref outside-click handling as Dropdown.
+export function MultiSelect({ label, values = [], options, onToggle, width = 230 }) {
+  const [open, setOpen] = useState(false)
+  const btnRef = useRef(null)
+  const popRef = useRef(null)
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 })
+  const set = new Set(values)
+  const text = set.size === 0 ? 'None selected' : set.size === options.length ? `All ${options.length}` : `${set.size} selected`
+
+  useLayoutEffect(() => {
+    if (!open) return
+    const update = () => { const r = btnRef.current?.getBoundingClientRect(); if (r) setPos({ top: r.bottom + 4, left: r.left, width: r.width }) }
+    update()
+    window.addEventListener('resize', update); window.addEventListener('scroll', update, true)
+    return () => { window.removeEventListener('resize', update); window.removeEventListener('scroll', update, true) }
+  }, [open])
+  useEffect(() => {
+    if (!open) return
+    const h = (e) => { if (btnRef.current?.contains(e.target) || popRef.current?.contains(e.target)) return; setOpen(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [open])
+
+  return (
+    <div style={{ display: 'grid', gap: 6, width }}>
+      {label && <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{label}</span>}
+      <button ref={btnRef} onClick={() => setOpen(o => !o)}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 7, height: 36, padding: '0 12px', borderRadius: 8, border: '1px solid var(--border-gray-default)', background: 'var(--background-surface-intense)', cursor: 'pointer', font: 'inherit', width: '100%' }}>
+        <span className="BodySmallRegular" style={{ color: 'var(--text-gray-primary)', flex: 1, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</span>
+        <span style={{ color: 'var(--text-gray-tertiary)', fontSize: 10 }}>▾</span>
+      </button>
+      {open && createPortal(
+        <div ref={popRef} style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: pos.width, maxHeight: 300, overflowY: 'auto', zIndex: 9999, background: 'var(--background-surface-intense)', border: '1px solid var(--border-gray-default)', borderRadius: 10, boxShadow: 'var(--fds-shadow-md)', padding: 4 }}>
+          {options.map(o => {
+            const on = set.has(o.id)
+            return (
+              <button key={o.id} onClick={() => onToggle(o.id)}
+                style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '8px 10px', borderRadius: 7, border: 'none', background: 'none', cursor: 'pointer', font: 'inherit', textAlign: 'left' }}>
+                <span style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0, border: `1.5px solid ${on ? 'var(--background-brand-default)' : 'var(--border-gray-default)'}`, background: on ? 'var(--background-brand-default)' : 'transparent', display: 'grid', placeItems: 'center', color: '#fff', fontSize: 11 }}>{on ? '✓' : ''}</span>
+                <span className="BodySmallRegular" style={{ color: 'var(--text-gray-primary)' }}>{o.name}</span>
+              </button>
+            )
+          })}
+        </div>,
+        document.body,
+      )}
+    </div>
+  )
+}
+
 // plain content surface (used sparingly)
 export function Panel({ children, style, pad = 20 }) {
   return (

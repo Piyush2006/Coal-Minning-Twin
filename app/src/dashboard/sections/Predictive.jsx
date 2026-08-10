@@ -14,14 +14,17 @@ import { assetSensorTrend, FLEET_STATE, SEVERITY } from '../data/assets'
 import { NUM, STATUS, fmt } from '../calc/format'
 import { fmtStamp } from '../data/time'
 import { Panel, Dropdown } from '../components/primitives'
+import { BruceInsight } from '../components/BruceInsight'
+import { buildBruceContext } from '../lib/bruceContext'
 
 const SENS_TEXT = { normal: 'var(--text-positive-default)', warn: 'var(--text-warning-default)', crit: 'var(--text-error-default)' }
 const SENS_BADGE = { normal: 'Positive', warn: 'Notice', crit: 'Negative' }
 const SEV_COLOR = { Critical: 'critical', Warning: 'warning', Normal: 'positive' }
 
 export function Predictive() {
-  const { range, mineId, areaId, equipTypeId, settings } = useDash()
+  const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
   const pdm = useMemo(() => buildPdm({ range, mineId, areaId, equipTypeId, settings }), [range, mineId, areaId, equipTypeId, settings])
+  const ctx = useMemo(() => buildBruceContext({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan }), [range, mineId, areaId, equipTypeId, shiftMode, settings, plan])
   const [sev, setSev] = useState('all')
   const [ft, setFt] = useState('all')
   const [sel, setSel] = useState(null)
@@ -32,6 +35,12 @@ export function Predictive() {
 
   return (
     <div style={{ display: 'grid', gap: 18 }}>
+
+      <BruceInsight
+        context={ctx}
+        tone={pdm.counts.Critical > 0 ? 'critical' : pdm.counts.Warning > 0 ? 'warning' : 'positive'}
+        task="In 15-20 words, name the single highest-risk asset, its fault and health, and what to do first."
+        detail="Explain which assets are at highest risk, their diagnosed faults and health, and the maintenance priorities." />
 
       {/* alert counts */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>

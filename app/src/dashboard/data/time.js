@@ -4,7 +4,7 @@ import { startOfDay, endOfDay } from './rng'
 
 const hm = (s) => { const [h, m] = String(s).split(':').map(Number); return h * 60 + (m || 0) }
 
-export const PRESETS = ['Today', 'This Shift', 'Yesterday', 'Last 7 Days', 'This Month']
+export const PRESETS = ['Today', 'This Shift', 'Yesterday', 'Last 7 Days', 'Last 30 Days', 'This Month']
 
 // Which shift (by configured timings) contains instant `t`, and that shift's
 // [start,end] window. Handles a shift that wraps past midnight (e.g. 18:00→06:00).
@@ -33,6 +33,7 @@ export function presetRange(name, settings) {
   if (name === 'Today') return { start: startOfDay(now), end: now, preset: name }
   if (name === 'Yesterday') { const y = new Date(now); y.setDate(now.getDate() - 1); return { start: startOfDay(y), end: endOfDay(y), preset: name } }
   if (name === 'Last 7 Days') { const s = new Date(now); s.setDate(now.getDate() - 6); return { start: startOfDay(s), end: now, preset: name } }
+  if (name === 'Last 30 Days') { const s = new Date(now); s.setDate(now.getDate() - 29); return { start: startOfDay(s), end: now, preset: name } }
   if (name === 'This Month') return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: now, preset: name }
   if (name === 'This Shift') { const w = shiftWindowAt(now, settings); return { start: w.start, end: w.end, preset: name } }
   return { start: startOfDay(now), end: now, preset: name }

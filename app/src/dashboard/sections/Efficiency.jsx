@@ -12,6 +12,8 @@ import { fmtStamp } from '../data/time'
 import { KpiStat } from '../components/KpiStat'
 import { Panel, KpiTile } from '../components/primitives'
 import { CostTableModal } from '../components/CostTableModal'
+import { BruceInsight } from '../components/BruceInsight'
+import { buildBruceContext } from '../lib/bruceContext'
 
 const BUDGET_LABEL = { positive: 'Under budget', normal: 'On budget', warning: 'Over budget', critical: 'Over budget' }
 
@@ -23,6 +25,10 @@ export function Efficiency() {
   )
 
   const [costOpen, setCostOpen] = useState(false)
+  const ctx = useMemo(
+    () => buildBruceContext({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan }),
+    [range, mineId, areaId, equipTypeId, shiftMode, settings, plan],
+  )
   const cost = kp.cost
   const cSt = STATUS[cost.status]
   const t = kp.trend
@@ -42,6 +48,12 @@ export function Efficiency() {
 
   return (
     <div style={{ display: 'grid', gap: 18 }}>
+
+      <BruceInsight
+        context={ctx}
+        tone={cost.status}
+        task="In 15-20 words, say what is driving the operating-cost / efficiency position — name which of fuel, energy or man-hours per ton is over target and why (e.g. downtime, idling)."
+        detail="Explain what's driving our operating cost per ton and which efficiency intensities (energy, fuel, man-hours) are over target and why." />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
         {/* Cost Variance — the only cost KPI */}

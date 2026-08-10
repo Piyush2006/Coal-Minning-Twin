@@ -11,6 +11,8 @@ import { CURRENCY } from '../data/taxonomy'
 import { fmtStamp } from '../data/time'
 import { KpiStat } from '../components/KpiStat'
 import { Panel, SegmentBar } from '../components/primitives'
+import { BruceInsight } from '../components/BruceInsight'
+import { buildBruceContext } from '../lib/bruceContext'
 
 const CAUSE_COLOR = {
   'Equipment Downtime': 'var(--background-error-default)',
@@ -24,6 +26,10 @@ export function ProductionPerformance() {
   const setPlanOpen = useDash(s => s.setPlanOpen)
   const kp = useMemo(
     () => buildProduction({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan }),
+    [range, mineId, areaId, equipTypeId, shiftMode, settings, plan],
+  )
+  const ctx = useMemo(
+    () => buildBruceContext({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan }),
     [range, mineId, areaId, equipTypeId, shiftMode, settings, plan],
   )
 
@@ -68,23 +74,6 @@ export function ProductionPerformance() {
               <HeroStat label="Actual" value={`${fmt(ach.actual)} T`} color={achSt.text} />
               <HeroStat label="Gap" value={`${gap >= 0 ? '' : '+'}${fmt(-gap)} T`} color={gap > 0 ? 'var(--text-error-default)' : 'var(--text-positive-default)'} />
             </div>
-            {kp.loss.total > 0 && (
-              <div style={{ display: 'grid', gap: 8 }}>
-                <SegmentBar segments={kp.loss.byCause.map(c => ({ label: c.cause, value: c.value, color: CAUSE_COLOR[c.cause] }))} height={12} />
-                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-                  {kp.loss.byCause.map(c => {
-                    const pct = kp.loss.total ? (c.value / kp.loss.total) * 100 : 0
-                    return (
-                      <span key={c.cause} className="BodyXSmallRegular" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text-gray-secondary)' }}>
-                        <span style={{ width: 9, height: 9, borderRadius: 2, background: CAUSE_COLOR[c.cause] }} />
-                        {c.cause} <b style={{ color: 'var(--text-gray-primary)', ...NUM }}>{fmt(c.value)} T</b>
-                        <span style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>· {fmt(pct)}%</span>
-                      </span>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
             {shiftMode && (
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 {kp.shifts.map(sh => (
@@ -97,6 +86,31 @@ export function ProductionPerformance() {
           </div>
         </div>
       </Panel>
+      )}
+
+      {/* Bruce Insight — the cause of the shortfall, in one line. Numbers on demand. */}
+      {ach && kp.loss.total > 0 && (
+        <BruceInsight
+          context={ctx}
+          tone={ach.status}
+          task="Explain in 15-20 words what specifically caused the production shortfall versus plan — name the reason, the culprit unit(s) and fault if any — and the practical takeaway."
+          detail="Explain in detail what caused the production shortfall this period, the main contributing factors, and how to recover it.">
+          <div style={{ display: 'grid', gap: 8 }}>
+            <SegmentBar segments={kp.loss.byCause.map(c => ({ label: c.cause, value: c.value, color: CAUSE_COLOR[c.cause] }))} height={12} />
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              {kp.loss.byCause.map(c => {
+                const pct = kp.loss.total ? (c.value / kp.loss.total) * 100 : 0
+                return (
+                  <span key={c.cause} className="BodyXSmallRegular" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text-gray-secondary)' }}>
+                    <span style={{ width: 9, height: 9, borderRadius: 2, background: CAUSE_COLOR[c.cause] }} />
+                    {c.cause} <b style={{ color: 'var(--text-gray-primary)', ...NUM }}>{fmt(c.value)} T</b>
+                    <span style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>· {fmt(pct)}%</span>
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        </BruceInsight>
       )}
 
       {/* Secondary KPIs — each its own bordered tile */}

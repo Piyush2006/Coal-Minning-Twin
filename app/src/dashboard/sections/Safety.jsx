@@ -1,6 +1,7 @@
-// Section 6 · Safety — "Are operations safe and compliant?" Safety Compliance %
-// = (Checks − Violations) / Checks × 100, with a compliance trend and drill-down
-// by PPE / Restricted Area / Vehicle Safety / Other.
+// Section 6 · Safety — evidence-first. A CV "Safety Evidence Log" is the hero:
+// each violation (danger-zone crossing, missing PPE, unsafe vehicle move) is a
+// row with a snapshot + a Raise-action CTA. Compact KPIs sit on top; the
+// compliance trend + violations-by-category charts are kept as a strip below.
 import { useMemo, useState } from 'react'
 import { LineChart } from '@faclon-labs/design-sdk/LineChart'
 import { HorizontalGroupBarChart } from '@faclon-labs/design-sdk/HorizontalGroupBarChart'
@@ -10,65 +11,136 @@ import { useDash } from '../store'
 import { buildSafety, complianceStatus } from '../calc/safety'
 import { NUM, STATUS, fmt } from '../calc/format'
 import { fmtStamp } from '../data/time'
-import { Panel } from '../components/primitives'
+import { Panel, KpiTile } from '../components/primitives'
+import { EvidenceModal, SeverityBadge, fmtEvidenceTime } from '../components/EvidenceModal'
+import { BruceInsight } from '../components/BruceInsight'
+import { buildBruceContext } from '../lib/bruceContext'
 
 const CHIPS = [{ id: 'all', name: 'All' }, { id: 'PPE', name: 'PPE' }, { id: 'Restricted Area', name: 'Restricted Area' }, { id: 'Vehicle Safety', name: 'Vehicle Safety' }, { id: 'Other', name: 'Other' }]
 
 export function Safety() {
-  const { range, mineId, areaId, equipTypeId, shiftMode, settings } = useDash()
+  const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
+  const actions = useDash(s => s.safetyActions)
   const sf = useMemo(() => buildSafety({ range, mineId, areaId, equipTypeId, settings }), [range, mineId, areaId, equipTypeId, settings])
+  const ctx = useMemo(() => buildBruceContext({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan, safetyActions: actions }), [range, mineId, areaId, equipTypeId, shiftMode, settings, plan, actions])
   const [cat, setCat] = useState('all')
+  const [openOnly, setOpenOnly] = useState(false)
+  const [selected, setSelected] = useState(null)
 
   const cur = sf.totalsByKey[cat] || sf.total
   const st = STATUS[complianceStatus(cur.compliancePct)]
 
-  return (
-    <div style={{ display: 'grid', gap: 18 }}>
+  const catEvidence = useMemo(() => sf.evidence.filter(e => cat === 'all' || e.cat === cat), [sf.evidence, cat])
+  const rows = useMemo(() => catEvidence.filter(e => !openOnly || !actions[e.id]), [catEvidence, openOnly, actions])
+  const highCrit = catEvidence.filter(e => e.severity === 'High' || e.severity === 'Critical').length
+  const raisedCount = catEvidence.filter(e => actions[e.id]).length
+  const capped = sf.evidenceTotal > sf.evidence.length
 
-      {/* drill-down by category */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+  return (
+    <div style={{ display: 'grid', gap: 16 }}>
+
+      <BruceInsight
+        context={ctx}
+        tone={complianceStatus(sf.total.compliancePct)}
+        task="In 15-20 words, say what is driving safety violations — name the top category and the specific pattern/location — and what needs action."
+        detail="Explain the safety situation — the main violation types, where they occur, and which need actions raised." />
+
+      {/* filters */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         {CHIPS.map(c => (
           <Button key={c.id} size="XSmall" variant={cat === c.id ? 'Secondary' : 'Gray'} onClick={() => setCat(c.id)}>{c.name}</Button>
         ))}
+        <span style={{ flex: 1 }} />
+        <button onClick={() => setOpenOnly(o => !o)} role="switch" aria-checked={openOnly}
+          className="BodyXSmallRegular"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid var(--border-gray-default)', cursor: 'pointer', font: 'inherit', color: 'var(--text-gray-secondary)', background: openOnly ? 'var(--background-brand-secondary, var(--background-surface-subtle))' : 'var(--background-surface-intense)' }}>
+          <span style={{ width: 30, height: 18, borderRadius: 9, padding: 2, background: openOnly ? 'var(--background-brand-default)' : 'var(--border-gray-default)', display: 'inline-flex' }}>
+            <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', transform: openOnly ? 'translateX(12px)' : 'translateX(0)', transition: 'transform 120ms' }} />
+          </span>
+          Open only
+        </button>
       </div>
 
-      {/* compliance headline */}
-      <Panel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 2fr', gap: 28, alignItems: 'center' }}>
-          <div style={{ display: 'grid', gap: 6 }}>
-            <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>Safety Compliance{cat !== 'all' ? ` · ${cat}` : ''}</span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-              <span className="DisplayMediumSemibold" style={{ color: st.text, ...NUM }}>{fmt(cur.compliancePct, 1)}%</span>
-              <Badge color={st.badge} emphasis="Subtle" size="Medium">{st.label}</Badge>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 30, flexWrap: 'wrap' }}>
-            <HeroStat label="Total Checks / Observations" value={fmt(cur.checks)} />
-            <HeroStat label="Violations" value={fmt(cur.violations)} color={cur.violations ? 'var(--text-error-default)' : 'var(--text-positive-default)'} />
-            {shiftMode && sf.shifts.map(s => (
-              <HeroStat key={s.name} label={`${s.name} compliance`} value={`${fmt(s.compliancePct, 1)}%`} sub={`${fmt(s.violations)} viol.`} />
-            ))}
-          </div>
+      {/* compact KPI row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+        <Stat label={`Safety Compliance${cat !== 'all' ? ` · ${cat}` : ''}`} value={`${fmt(cur.compliancePct, 1)}%`} color={st.text} badge={<Badge color={st.badge} emphasis="Subtle" size="Small">{st.label}</Badge>} />
+        <Stat label="Violations" value={fmt(cur.violations)} color={cur.violations ? 'var(--text-error-default)' : 'var(--text-positive-default)'} sub={`${fmt(cur.checks)} checks`} />
+        <Stat label="High / Critical" value={fmt(highCrit)} color={highCrit ? 'var(--text-error-default)' : 'var(--text-gray-primary)'} sub="in evidence log" />
+        <Stat label="Actions raised" value={fmt(raisedCount)} color="var(--text-positive-default)" sub={`${fmt(catEvidence.length - raisedCount)} open`} />
+      </div>
+
+      {/* Safety Evidence Log — the hero */}
+      <Panel pad={0} style={{ overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '14px 16px' }}>
+          <span className="HeadingSmallSemibold">Safety Evidence Log</span>
+          <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>
+            {rows.length} {rows.length === 1 ? 'record' : 'records'}{capped ? ` · latest ${sf.evidence.length} of ${sf.evidenceTotal}` : ''}
+          </span>
+        </div>
+        <div style={{ maxHeight: 460, overflow: 'auto', borderTop: '1px solid var(--border-gray-subtle)' }}>
+          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: 'var(--background-surface-subtle)' }}>
+              <tr>
+                <th style={th(180)}>Date &amp; time</th>
+                <th style={th(120)}>Evidence</th>
+                <th style={{ ...th(), textAlign: 'left' }}>Description</th>
+                <th style={{ ...th(150), textAlign: 'right' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(e => {
+                const raised = actions[e.id]
+                return (
+                  <tr key={e.id} style={{ borderTop: '1px solid var(--border-gray-subtle)' }}>
+                    <td style={td()}><span style={NUM} className="BodySmallRegular">{fmtEvidenceTime(e.ts)}</span></td>
+                    <td style={td()}>
+                      <img src={e.image} alt="evidence" onClick={() => setSelected(e)}
+                        style={{ width: 84, height: 50, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-gray-subtle)', cursor: 'pointer', display: 'block' }} />
+                    </td>
+                    <td style={td()}>
+                      <div style={{ display: 'grid', gap: 4 }}>
+                        <span className="BodySmallSemibold" style={{ cursor: 'pointer' }} onClick={() => setSelected(e)}>{e.description}</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <Badge color="Neutral" emphasis="Subtle" size="Small">{e.cat}</Badge>
+                          <SeverityBadge level={e.severity} />
+                          <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{e.location} · {e.camera}</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td style={{ ...td(), textAlign: 'right' }}>
+                      {raised
+                        ? <span style={{ display: 'inline-grid', gap: 2, justifyItems: 'end' }}>
+                            <Badge color="Positive" emphasis="Subtle" size="Small">✓ Action raised</Badge>
+                            <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{raised.assignee}</span>
+                          </span>
+                        : <Button size="XSmall" variant="Primary" onClick={() => setSelected(e)}>Raise action</Button>}
+                    </td>
+                  </tr>
+                )
+              })}
+              {!rows.length && (
+                <tr><td colSpan={4} style={{ ...td(), textAlign: 'center', color: 'var(--text-gray-tertiary)', padding: '28px 0' }}>
+                  {openOnly ? 'No open evidence — all actioned 🎉' : 'No safety evidence for this filter.'}
+                </td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </Panel>
 
-      {/* compliance trend + violations by category */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 18 }}>
-        <div style={{ height: 320 }}>
+      {/* analytics strip — kept, demoted below the evidence log */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
+        <div style={{ height: 260 }}>
           <LineChart
-            title={`Safety Compliance Trend${cat !== 'all' ? ` · ${cat}` : ''}`}
+            title={`Compliance Trend${cat !== 'all' ? ` · ${cat}` : ''}`}
             duration={`${fmtStamp(range.start)} → ${fmtStamp(range.end)}`}
             categories={sf.categories}
             series={[{ name: 'Compliance %', data: sf.trend.compliance[cat], color: 'var(--background-positive-default)' }]}
-            showLegend={false}
-            smooth
-            showMarkers={sf.categories.length <= 31}
-            yAxisUnit=" %"
-            xAxisTitle="Day"
-            yAxisTitle="Compliance %"
+            showLegend={false} smooth showMarkers={sf.categories.length <= 31}
+            yAxisUnit=" %" xAxisTitle="Day" yAxisTitle="Compliance %"
           />
         </div>
-        <div style={{ height: 320 }}>
+        <div style={{ height: 260 }}>
           <HorizontalGroupBarChart
             title="Violations by Category"
             duration="Count over the selected period, largest first"
@@ -77,14 +149,24 @@ export function Safety() {
           />
         </div>
       </div>
+
+      <EvidenceModal evidence={selected} onClose={() => setSelected(null)} />
     </div>
   )
 }
 
-const HeroStat = ({ label, value, color, sub }) => (
-  <div style={{ display: 'grid', gap: 3 }}>
-    <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{label}</span>
-    <span className="HeadingLargeSemibold" style={{ color: color || 'var(--text-gray-primary)', ...NUM }}>{value}</span>
-    {sub && <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>{sub}</span>}
-  </div>
-)
+const th = (w) => ({ padding: '9px 14px', textAlign: 'left', color: 'var(--text-gray-secondary)', fontWeight: 600, whiteSpace: 'nowrap', width: w, fontSize: 12 })
+const td = () => ({ padding: '10px 14px', verticalAlign: 'middle' })
+
+function Stat({ label, value, color, sub, badge }) {
+  return (
+    <KpiTile>
+      <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>{label}</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+        <span className="HeadingLargeSemibold" style={{ color: color || 'var(--text-gray-primary)', ...NUM }}>{value}</span>
+        {badge}
+      </div>
+      {sub && <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>{sub}</span>}
+    </KpiTile>
+  )
+}

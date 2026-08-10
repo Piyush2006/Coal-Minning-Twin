@@ -4,7 +4,7 @@
 import { Badge } from '@faclon-labs/design-sdk/Badge'
 import { NUM, STATUS, fmt, fmtSigned } from '../calc/format'
 
-export function KpiStat({ label, value, unit, dp = 0, kpi, targetSuffix, sub, onClick }) {
+export function KpiStat({ label, value, unit, dp = 0, kpi, targetSuffix, sub, onClick, tooltip }) {
   const st = STATUS[kpi?.status] || STATUS.normal
   const clickable = typeof onClick === 'function'
   return (
@@ -18,6 +18,7 @@ export function KpiStat({ label, value, unit, dp = 0, kpi, targetSuffix, sub, on
       style={{ background: 'var(--background-surface-intense)', border: '1px solid var(--border-gray-subtle)', borderRadius: 'var(--global-border-radius-large)', padding: 16, display: 'grid', gap: 6, alignContent: 'start', cursor: clickable ? 'pointer' : 'default', transition: 'box-shadow 120ms, border-color 120ms' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>{label}</span>
+        {tooltip && <span title={tooltip} aria-label={tooltip} style={{ cursor: 'help', color: 'var(--text-gray-tertiary)', fontSize: 12, lineHeight: 1 }}>ⓘ</span>}
         {clickable && <span aria-hidden style={{ marginLeft: 'auto', color: 'var(--text-brand-default)', fontSize: 13, lineHeight: 1 }}>→</span>}
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>

@@ -9,26 +9,30 @@ import { useDash } from './store'
 import { GlobalControls } from './components/GlobalControls'
 import { SectionNav } from './components/SectionNav'
 import { PlanManager } from './components/PlanManager'
+import { BruceChat } from './components/BruceChat'
 import { ProductionPerformance } from './sections/ProductionPerformance'
 import { Efficiency } from './sections/Efficiency'
 import { EquipmentDowntime } from './sections/EquipmentDowntime'
-import { Fleet } from './sections/Fleet'
+import { EquipmentResources } from './sections/EquipmentResources'
 import { Predictive } from './sections/Predictive'
 import { Safety } from './sections/Safety'
+import { DepthProfile } from './sections/DepthProfile'
 import { Placeholder } from './sections/Placeholder'
 
-const COMPONENTS = { production: ProductionPerformance, efficiency: Efficiency, equipment: EquipmentDowntime, fleet: Fleet, predictive: Predictive, safety: Safety }
+const COMPONENTS = { production: ProductionPerformance, efficiency: Efficiency, equipment: EquipmentDowntime, resources: EquipmentResources, predictive: Predictive, safety: Safety, depth: DepthProfile }
 const SECTIONS = [
   { id: 'production', label: 'Production' },
   { id: 'efficiency', label: 'Efficiency & Cost', title: 'Efficiency & Cost', question: 'Are we operating efficiently and within the expected cost?' },
   { id: 'equipment', label: 'Equipment & Downtime', title: 'Equipment Utilisation & Downtime', question: 'How effectively are machines operating, and where are we losing time?' },
-  { id: 'fleet', label: 'Fleet', title: 'Fleet', question: 'What is the status and health of our mobile fleet?' },
+  { id: 'resources', label: 'Equipment & Resources', title: 'Equipment & Resources', question: 'Is our equipment available, effective, scheduled and healthy?' },
   { id: 'predictive', label: 'Predictive Maintenance', title: 'Predictive Maintenance — Assets Needing Attention', question: 'Which assets need attention right now?' },
   { id: 'safety', label: 'Safety', title: 'Safety', question: 'Are operations safe and compliant?' },
+  { id: 'depth', label: 'Depth Profile', title: 'Depth Profile', question: 'How are boreholes drilled — speed, fuel, and geology?' },
 ]
 export default function Dashboard() {
   const planOpen = useDash(s => s.planOpen)
   const setPlanOpen = useDash(s => s.setPlanOpen)
+  const openPlan = useDash(s => s.openPlan)
   const active = useDash(s => s.tab)
   const setActive = useDash(s => s.setTab)
   const refresh = useDash(s => s.refresh)
@@ -47,7 +51,7 @@ export default function Dashboard() {
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--background-surface-moderate)', color: 'var(--text-gray-primary)' }}>
       {/* fixed header — does not scroll */}
       <div style={{ flexShrink: 0, position: 'relative', zIndex: 20 }}>
-        <GlobalControls onOpenPlan={() => setPlanOpen(true)} />
+        <GlobalControls onOpenPlan={() => openPlan('plan')} />
         <SectionNav sections={SECTIONS} activeId={active} onChange={setActive} />
       </div>
 
@@ -61,6 +65,7 @@ export default function Dashboard() {
       </main>
 
       <PlanManager isOpen={planOpen} onClose={() => setPlanOpen(false)} />
+      <BruceChat />
     </div>
   )
 }

@@ -46,5 +46,15 @@ export function buildSafety({ range, mineId, areaId, equipTypeId, settings }) {
   const totalsByKey = { all: { checks, violations, compliancePct: comp(checks, violations) } }
   for (const c of byCategory) totalsByKey[c.cat] = { checks: c.checks, violations: c.violations, compliancePct: c.compliancePct }
 
-  return { total: totalsByKey.all, totalsByKey, byCategory, categories, trend: { compliance, violations: viols }, shifts }
+  // Evidence log — every discrete violation event, newest first, bounded so a
+  // long range can't render thousands of rows.
+  const EVIDENCE_CAP = 200
+  const evidence = days.flatMap(d => d.events).sort((a, b) => b.ts - a.ts)
+  const evidenceTotal = evidence.length
+
+  return {
+    total: totalsByKey.all, totalsByKey, byCategory, categories,
+    trend: { compliance, violations: viols }, shifts,
+    evidence: evidence.slice(0, EVIDENCE_CAP), evidenceTotal, evidenceCap: EVIDENCE_CAP,
+  }
 }
