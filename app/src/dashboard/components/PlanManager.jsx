@@ -50,7 +50,8 @@ export function PlanManager({ isOpen, onClose }) {
     <Drawer isOpen={isOpen} onDismiss={onClose} accessibilityLabel="Plan management">
       <DrawerHeader title="Plan Management" subtitle="Operational plan and borehole strata" />
       <DrawerBody>
-        <div style={{ display: 'grid', gap: 18, paddingBottom: 8 }}>
+        {/* the Drawer portals outside the themed root — re-apply the theme here */}
+        <div className="dash-theme" style={{ display: 'grid', gap: 18, paddingBottom: 8 }}>
           <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 10, background: 'var(--background-surface-subtle)' }}>
             <Seg id="plan">Operational Plan</Seg>
             <Seg id="strata">Borehole Strata</Seg>

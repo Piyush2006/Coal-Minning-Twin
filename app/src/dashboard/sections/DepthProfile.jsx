@@ -17,27 +17,33 @@ import { DepthCurve } from '../components/DepthCurve'
 
 const AXIS_OPTS = [{ id: 'time', name: 'Depth vs Time' }, { id: 'diesel', name: 'Depth vs Diesel' }, { id: 'both', name: 'Both (dual axis)' }]
 
-const HOLE_COLORS = ['#5b5bf0', '#2bbf6a', '#ff8c1a', '#e0457b', '#00b4d8', '#8b5cf6']
+// categorical borehole colours — from the redesign chart palette (violet #8B5CF6 is
+// a chart series colour, distinct from the Bruce brand accent).
+const HOLE_COLORS = ['#3E6DF4', '#0E9F6E', '#F59E0B', '#8B5CF6', '#E5484D', '#00B4D8']
 const colorFor = (id) => HOLE_COLORS[BOREHOLES.findIndex(b => b.id === id) % HOLE_COLORS.length]
 const toRGBA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})` }
 
-const Tab = ({ id, active, onClick, children }) => (
-  <button onClick={() => onClick(id)} className="BodySmallSemibold"
-    style={{ padding: '9px 4px', background: 'none', border: 'none', borderBottom: `2px solid ${active ? 'var(--text-brand-default)' : 'transparent'}`, color: active ? 'var(--text-brand-default)' : 'var(--text-gray-secondary)', cursor: 'pointer', font: 'inherit' }}>
+const SUBTABS = [{ id: 'profile', label: 'Depth Profile' }, { id: 'formation', label: 'Formation' }, { id: 'predict', label: 'Predict' }]
+const SegBtn = ({ active, onClick, children }) => (
+  <button onClick={onClick} className="BodySmallSemibold"
+    onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = 'var(--text-gray-primary)' }}
+    onMouseLeave={(e) => { if (!active) e.currentTarget.style.color = 'var(--text-gray-secondary)' }}
+    style={{ padding: '7px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', font: 'inherit', transition: 'color 150ms',
+      background: active ? 'var(--background-surface-intense)' : 'transparent',
+      color: active ? 'var(--text-gray-primary)' : 'var(--text-gray-secondary)',
+      boxShadow: active ? 'var(--fds-shadow-sm)' : 'none' }}>
     {children}
   </button>
 )
-const th = (a = 'right') => ({ padding: '8px 10px', textAlign: a, color: 'var(--text-gray-secondary)', fontWeight: 600, whiteSpace: 'nowrap', fontSize: 12, borderBottom: '1px solid var(--border-gray-default)' })
-const td = (a = 'right') => ({ padding: '7px 10px', textAlign: a, whiteSpace: 'nowrap', borderBottom: '1px solid var(--border-gray-subtle)', ...NUM })
+const th = (a = 'right') => ({ padding: '10px 10px', textAlign: a, color: 'var(--text-gray-tertiary)', fontWeight: 600, whiteSpace: 'nowrap', fontSize: 11, letterSpacing: '.06em', textTransform: 'uppercase', borderBottom: '1px solid var(--border-gray-subtle)', background: 'var(--background-surface-subtle)' })
+const td = (a = 'right') => ({ padding: '9px 10px', textAlign: a, whiteSpace: 'nowrap', borderTop: '1px solid var(--border-gray-subtle)', ...NUM })
 
 export function DepthProfile() {
   const [view, setView] = useState('profile')
   return (
     <div style={{ display: 'grid', gap: 18 }}>
-      <div style={{ display: 'flex', gap: 20, borderBottom: '1px solid var(--border-gray-subtle)' }}>
-        <Tab id="profile" active={view === 'profile'} onClick={setView}>Depth Profile</Tab>
-        <Tab id="formation" active={view === 'formation'} onClick={setView}>Formation</Tab>
-        <Tab id="predict" active={view === 'predict'} onClick={setView}>Predict</Tab>
+      <div style={{ display: 'inline-flex', gap: 4, padding: 4, borderRadius: 999, background: 'var(--background-surface-subtle)', border: '1px solid var(--border-gray-subtle)', justifySelf: 'start' }}>
+        {SUBTABS.map(t => <SegBtn key={t.id} active={view === t.id} onClick={() => setView(t.id)}>{t.label}</SegBtn>)}
       </div>
       {view === 'profile' && <ProfileView />}
       {view === 'formation' && <FormationView />}

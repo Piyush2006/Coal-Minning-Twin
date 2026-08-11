@@ -13,17 +13,29 @@ const DOT = {
   positive: 'var(--background-positive-default)', normal: 'var(--text-gray-tertiary)',
 }
 const linkBtn = { background: 'none', border: 'none', padding: 0, color: 'var(--text-brand-default)', cursor: 'pointer', font: 'inherit', whiteSpace: 'nowrap' }
+// compact round icon button (ghost) — tooltip carries the label
+const iconBtn = {
+  width: 26, height: 26, borderRadius: 999, border: 'none', background: 'transparent',
+  display: 'inline-grid', placeItems: 'center', cursor: 'pointer', color: 'var(--text-gray-tertiary)',
+  flexShrink: 0, transition: 'background 150ms, color 150ms',
+}
+const SVG = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }
 
 // one-time shimmer keyframes
 const SHIMMER_CSS = '@keyframes bruceShimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}'
 
-export function BruceInsight({ context, task, tone = 'normal', detail, children }) {
+export function BruceInsight({ context, task, tone = 'normal', detail, children, variant = 'card' }) {
   const { text, loading, error, refresh } = useBruceInsight(context, task)
   const askBruce = useDash(s => s.askBruce)
   const [showNums, setShowNums] = useState(false)
 
+  const base = { display: 'grid', gap: (children && showNums) ? 12 : 0 }
+  const wrap = variant === 'bare' ? base
+    : variant === 'rail' ? { ...base, padding: '12px 14px 12px 16px', borderRadius: 'var(--global-border-radius-large)', border: '1px solid var(--border-gray-subtle)', borderLeft: '3px solid #6b5bf0', background: 'var(--background-surface-intense)', boxShadow: 'var(--fds-shadow-xs)' }
+    : { ...base, padding: '12px 14px', borderRadius: 'var(--global-border-radius-large)', border: '1px solid var(--border-gray-subtle)', background: 'var(--background-surface-intense)', boxShadow: 'var(--fds-shadow-xs)' }
+
   return (
-    <div style={{ display: 'grid', gap: (children && showNums) ? 12 : 0, padding: '12px 14px', borderRadius: 'var(--global-border-radius-large)', border: '1px solid var(--border-gray-subtle)', background: 'var(--background-surface-intense)', boxShadow: 'var(--fds-shadow-xs)' }}>
+    <div style={wrap}>
       <style>{SHIMMER_CSS}</style>
       <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
         <span style={{ width: 30, height: 30, borderRadius: 9, background: GRADIENT, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
@@ -33,10 +45,24 @@ export function BruceInsight({ context, task, tone = 'normal', detail, children 
         <div style={{ flex: 1, minWidth: 0 }}>
           {loading ? <Shimmer />
             : error ? <span className="BodySmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>Insight unavailable · <button onClick={refresh} style={linkBtn}>retry</button></span>
-            : <span className="BodyMediumRegular" style={{ color: 'var(--text-gray-primary)' }}><b style={{ color: 'var(--text-brand-default)', fontWeight: 600 }}>Bruce&nbsp;·&nbsp;</b>{text}</span>}
+            : <span className="BodyMediumRegular" style={{ color: 'var(--text-gray-primary)' }}>{text}</span>}
         </div>
-        {detail && !loading && !error && <button onClick={() => askBruce(detail)} className="BodyXSmallSemibold" style={linkBtn}>Ask Bruce →</button>}
-        {children && <button onClick={() => setShowNums(s => !s)} className="BodyXSmallRegular" style={{ ...linkBtn, color: 'var(--text-gray-secondary)' }}>{showNums ? 'Hide numbers' : 'Show numbers'}</button>}
+        {detail && !loading && !error && (
+          <button onClick={() => askBruce(detail)} title="Ask Bruce about this" aria-label="Ask Bruce about this"
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(107,91,240,0.10)'; e.currentTarget.style.color = '#6b5bf0' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-gray-tertiary)' }}
+            style={iconBtn}>
+            <svg width="14" height="14" viewBox="0 0 24 24" {...SVG}><path d="M7 17 17 7M9 7h8v8" /></svg>
+          </button>
+        )}
+        {children && (
+          <button onClick={() => setShowNums(s => !s)} title={showNums ? 'Hide numbers' : 'Show numbers'} aria-label={showNums ? 'Hide numbers' : 'Show numbers'} aria-expanded={showNums}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(16,24,40,0.05)'; e.currentTarget.style.color = 'var(--text-gray-primary)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-gray-tertiary)' }}
+            style={iconBtn}>
+            <svg width="14" height="14" viewBox="0 0 24 24" {...SVG} style={{ transform: showNums ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }}><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+        )}
       </div>
       {children && showNums && <div>{children}</div>}
     </div>

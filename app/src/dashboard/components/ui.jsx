@@ -1,0 +1,131 @@
+// Shared design-system primitives for the redesign — ONE pill, one delta pill,
+// one table style, one card language. Everything reads the overridden tokens.
+import { fmt } from '../calc/format'
+
+export const BRUCE_GRADIENT = 'linear-gradient(135deg, #a779f0 0%, #5b5bf0 100%)'
+
+const PILL = {
+  positive: { bg: 'var(--background-positive-secondary)', fg: 'var(--text-positive-default)' },
+  warning:  { bg: 'var(--background-warning-secondary)',  fg: 'var(--text-warning-default)' },
+  critical: { bg: 'var(--background-error-secondary)',    fg: 'var(--text-error-default)' },
+  info:     { bg: 'var(--background-info-secondary)',     fg: 'var(--text-info-default)' },
+  brand:    { bg: 'var(--background-brand-secondary)',    fg: 'var(--text-brand-default)' },
+  neutral:  { bg: 'var(--background-surface-subtle)',     fg: 'var(--text-gray-secondary)' },
+}
+// the ONE pill/badge component — tinted bg + semantic text, fully rounded, 11px
+export function Pill({ tone = 'neutral', children, style }) {
+  const t = PILL[tone] || PILL.neutral
+  return (
+    <span className="BodyXSmallSemibold" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 9px', borderRadius: 999, background: t.bg, color: t.fg, whiteSpace: 'nowrap', lineHeight: 1.55, ...style }}>
+      {children}
+    </span>
+  )
+}
+
+// map the metric() status → pill tone
+export const toneOf = (status) => (status === 'positive' ? 'positive' : status === 'warning' ? 'warning' : status === 'critical' ? 'critical' : 'neutral')
+
+// signed delta pill — colour by good/bad state (status), arrow by sign
+export function DeltaPill({ variance, status = 'normal', dp = 1 }) {
+  if (variance == null || Number.isNaN(variance)) return null
+  return <Pill tone={toneOf(status)}>{variance >= 0 ? '▲' : '▾'} {fmt(Math.abs(variance), dp)}%</Pill>
+}
+
+export const Eyebrow = ({ children, style }) => (
+  <span className="eyebrow" style={style}>{children}</span>
+)
+
+// Import STATUS lazily inside the component to avoid a cycle-free small helper.
+// Compact stat block (label + value/unit + optional delta pill) on a subtle well
+// — used inside grouped cards where a full bordered KPI tile would be too heavy.
+const MINI_TEXT = { positive: 'var(--text-positive-default)', warning: 'var(--text-warning-default)', critical: 'var(--text-error-default)', normal: 'var(--text-gray-primary)' }
+export function MiniKpi({ label, value, unit, dp, kpi, tone, onClick, title }) {
+  const status = kpi?.status || tone || 'normal'
+  const clickable = typeof onClick === 'function'
+  return (
+    <div
+      onClick={onClick} title={title}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
+      onMouseEnter={clickable ? (e) => { e.currentTarget.style.background = 'var(--background-surface-moderate)' } : undefined}
+      onMouseLeave={clickable ? (e) => { e.currentTarget.style.background = 'var(--background-surface-subtle)' } : undefined}
+      style={{ display: 'grid', gap: 5, justifyItems: 'start', padding: '11px 13px', borderRadius: 'var(--global-border-radius-medium)', background: 'var(--background-surface-subtle)', minWidth: 0, cursor: clickable ? 'pointer' : 'default', transition: 'background 150ms' }}>
+      <span className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+        {label}
+        {clickable && <span aria-hidden style={{ color: 'var(--text-brand-default)', fontSize: 11, lineHeight: 1, textTransform: 'none', letterSpacing: 0 }}>→</span>}
+      </span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+        <span className="BodyLargeSemibold" style={{ color: MINI_TEXT[status] || MINI_TEXT.normal, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>{fmt(value, dp)}</span>
+        {unit && <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{unit}</span>}
+      </div>
+      {kpi?.target != null && <DeltaPill variance={kpi.variance} status={kpi.status} />}
+    </div>
+  )
+}
+
+// status dot + label (tables/rows) — colour only ever encodes state
+const DOT = { positive: 'var(--background-positive-default)', warning: 'var(--background-warning-default)', critical: 'var(--background-error-default)', info: 'var(--background-info-default)', neutral: 'var(--text-gray-tertiary)' }
+export const StatusDot = ({ tone = 'neutral', label, size = 9 }) => (
+  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+    <span style={{ width: size, height: size, borderRadius: '50%', background: DOT[tone] || DOT.neutral, flexShrink: 0 }} />
+    {label != null && <span className="BodySmallRegular">{label}</span>}
+  </span>
+)
+
+// health score → small progress track + number, coloured by band
+export const healthBand = (h) => (h >= 85 ? 'positive' : h >= 70 ? 'warning' : 'critical')
+export function HealthBar({ value, width = 44 }) {
+  const tone = healthBand(value)
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <span style={{ width, height: 6, borderRadius: 999, background: 'var(--background-surface-subtle)', overflow: 'hidden', flexShrink: 0 }}>
+        <span style={{ display: 'block', height: '100%', width: `${Math.max(4, Math.min(100, value))}%`, background: DOT[tone], borderRadius: 999 }} />
+      </span>
+      <b className="BodySmallSemibold" style={{ color: `var(--text-${tone === 'critical' ? 'error' : tone}-default)`, fontVariantNumeric: 'tabular-nums' }}>{value}</b>
+    </span>
+  )
+}
+
+// ── card + table style tokens (import into components) ──
+// v2: BORDERLESS — white on soft canvas, depth from one soft shadow only.
+export const CARD = { background: 'var(--background-surface-intense)', borderRadius: 'var(--global-border-radius-large)', boxShadow: 'var(--fds-shadow-sm)' }
+
+// small tinted icon chip — anchors a KPI card / stat row (reference style)
+const CHIP = {
+  info:     { bg: 'var(--background-info-secondary)',     fg: 'var(--text-info-default)' },
+  positive: { bg: 'var(--background-positive-secondary)', fg: 'var(--text-positive-default)' },
+  warning:  { bg: 'var(--background-warning-secondary)',  fg: 'var(--text-warning-default)' },
+  critical: { bg: 'var(--background-error-secondary)',    fg: 'var(--text-error-default)' },
+  neutral:  { bg: 'var(--background-surface-subtle)',     fg: 'var(--text-gray-secondary)' },
+}
+export function IconChip({ tone = 'info', size = 34, children }) {
+  const t = CHIP[tone] || CHIP.info
+  return (
+    <span style={{ width: size, height: size, borderRadius: size * 0.32, background: t.bg, color: t.fg, display: 'inline-grid', placeItems: 'center', flexShrink: 0 }}>
+      {children}
+    </span>
+  )
+}
+
+// segmented pill control (sub-tabs) — track well + white active pill w/ shadow
+export function Segmented({ options, value, onChange }) {
+  return (
+    <div style={{ display: 'inline-flex', gap: 4, padding: 4, borderRadius: 999, background: 'var(--background-surface-subtle)', justifySelf: 'start' }}>
+      {options.map(o => {
+        const on = o.id === value
+        return (
+          <button key={o.id} onClick={() => onChange(o.id)} className="BodySmallSemibold"
+            style={{ padding: '7px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', font: 'inherit', transition: 'color 150ms, background 150ms',
+              background: on ? 'var(--background-surface-intense)' : 'transparent',
+              color: on ? 'var(--text-gray-primary)' : 'var(--text-gray-secondary)',
+              boxShadow: on ? 'var(--fds-shadow-sm)' : 'none' }}>
+            {o.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+export const th = (align = 'left') => ({ padding: '10px 14px', textAlign: align, color: 'var(--text-gray-tertiary)', fontWeight: 600, fontSize: 11, letterSpacing: '.06em', textTransform: 'uppercase', whiteSpace: 'nowrap', borderBottom: '1px solid var(--border-gray-subtle)', background: 'var(--background-surface-subtle)' })
+export const td = (align = 'left') => ({ padding: '12px 14px', textAlign: align, whiteSpace: 'nowrap', borderTop: '1px solid var(--border-gray-subtle)', color: 'var(--text-gray-primary)' })

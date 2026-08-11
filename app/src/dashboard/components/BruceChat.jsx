@@ -88,15 +88,16 @@ export function BruceChat() {
     setMessages([{ role: 'bot', text: GREETING }])
   }
 
-  // ── Collapsed floating button ──
+  // ── Collapsed floating button — icon only ──
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} aria-label="Open Bruce assistant"
-        style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9998, display: 'inline-flex', alignItems: 'center', gap: 10,
-          padding: '10px 16px 10px 10px', borderRadius: 999, border: 'none', background: '#fff', cursor: 'pointer',
-          boxShadow: '0 10px 30px rgba(60,50,120,0.28)' }}>
-        <span style={{ width: 34, height: 34, borderRadius: 10, background: GRADIENT, display: 'grid', placeItems: 'center' }}><Avatar size={24} /></span>
-        <span className="BodyMediumSemibold" style={{ color: '#1d1d1f' }}>Ask Bruce</span>
+      <button onClick={() => setOpen(true)} aria-label="Ask Bruce" title="Ask Bruce"
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.04)'; e.currentTarget.style.boxShadow = '0 14px 36px rgba(60,50,120,0.36)' }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(60,50,120,0.30)' }}
+        style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9998, width: 50, height: 50, borderRadius: 16, border: 'none',
+          background: GRADIENT, display: 'grid', placeItems: 'center', cursor: 'pointer',
+          boxShadow: '0 10px 28px rgba(60,50,120,0.30)', transition: 'transform 150ms, box-shadow 150ms' }}>
+        <Avatar size={30} />
       </button>
     )
   }

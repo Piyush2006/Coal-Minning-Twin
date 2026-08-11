@@ -132,6 +132,10 @@ export function buildProduction({ range, mineId, areaId, equipTypeId, shiftMode,
     energyPerTon: days.map(d => Math.round((d.kwh / d.saleableTonnes) * 100) / 100),
     fuelPerTon: days.map(d => Math.round((d.litres / d.saleableTonnes) * 1000) / 1000),
     manHoursPerTon: days.map(d => Math.round((d.manShifts * settings.hoursPerManShift / d.saleableTonnes) * 1000) / 1000),
+    // per-day series behind the headline KPIs (sparklines) — same figures, no new KPI
+    throughput: days.map(d => Math.round(d.actualTonnes / Math.max(0.1, d.operatingHours))),
+    yieldPct: days.map(d => Math.round(d.yieldAct * 10) / 10),
+    costPerTon: days.map(d => Math.round((d.kwh * eRate + d.litres * fRate) / Math.max(1, d.saleableTonnes))),
   }
 
   return {

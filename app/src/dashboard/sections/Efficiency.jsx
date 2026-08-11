@@ -1,16 +1,17 @@
 // Section 2 · Efficiency & Cost — "Are we operating efficiently and within the
 // expected cost?" Cost Variance + Energy/Ton + Fuel/Ton (no separate energy-cost
-// or fuel-cost KPIs, by spec), plus an intensity trend of the same two KPIs.
+// or fuel-cost KPIs, by spec), plus small-multiple intensity trends vs target.
 import { useMemo, useState } from 'react'
-import { LineChart } from '@faclon-labs/design-sdk/LineChart'
-import { Badge } from '@faclon-labs/design-sdk/Badge'
+import { Chart, dashedTarget } from '../components/Chart'
 import { useDash } from '../store'
 import { buildProduction } from '../calc/production'
 import { NUM, STATUS, fmt, fmtSigned } from '../calc/format'
 import { CURRENCY } from '../data/taxonomy'
 import { fmtStamp } from '../data/time'
 import { KpiStat } from '../components/KpiStat'
-import { Panel, KpiTile } from '../components/primitives'
+import { MetricDrillModal } from '../components/MetricDrill'
+import { Panel } from '../components/primitives'
+import { CARD, Pill, toneOf } from '../components/ui'
 import { CostTableModal } from '../components/CostTableModal'
 import { BruceInsight } from '../components/BruceInsight'
 import { buildBruceContext } from '../lib/bruceContext'
@@ -25,6 +26,7 @@ export function Efficiency() {
   )
 
   const [costOpen, setCostOpen] = useState(false)
+  const [drill, setDrill] = useState(null)   // 'energy' | 'fuel' | 'labour' | null
   const ctx = useMemo(
     () => buildBruceContext({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan }),
     [range, mineId, areaId, equipTypeId, shiftMode, settings, plan],
@@ -33,52 +35,49 @@ export function Efficiency() {
   const cSt = STATUS[cost.status]
   const t = kp.trend
   const tg = kp.targets   // plan-derived intensity targets (null when the plan omits them)
-  // a dashed target plotLine only when the plan supplies that target
-  const plot = (val, color, textColor, align) => val != null
-    ? [{ value: val, color, width: 1.4, dashStyle: 'Dash', label: { text: `Target ${val}`, style: { color: textColor, fontSize: '10px' }, align } }]
-    : []
-  const hcOpts = {
-    yAxis: [
-      { title: { text: 'kWh/T' }, plotLines: plot(tg.energy, 'var(--background-info-default)', 'var(--text-info-default)', 'left') },
-      { title: { text: 'L/T' }, opposite: true, plotLines: plot(tg.fuel, 'var(--background-warning-default)', 'var(--text-warning-default)', 'right') },
-      { title: { text: 'mh/T' }, opposite: true, offset: 52, plotLines: plot(tg.manHours, 'var(--background-positive-default)', 'var(--text-positive-default)', 'right') },
-    ],
-    series: [{ yAxis: 0 }, { yAxis: 1 }, { yAxis: 2 }],
-  }
 
   return (
     <div style={{ display: 'grid', gap: 18 }}>
 
+      {/* slim insight strip with a 3px purple rail */}
       <BruceInsight
+        variant="rail"
         context={ctx}
         tone={cost.status}
         task="In 15-20 words, say what is driving the operating-cost / efficiency position — name which of fuel, energy or man-hours per ton is over target and why (e.g. downtime, idling)."
         detail="Explain what's driving our operating cost per ton and which efficiency intensities (energy, fuel, man-hours) are over target and why." />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-        {/* Cost Variance — the only cost KPI */}
-        <KpiTile>
-          <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>Cost Variance</span>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-            <span className="HeadingLargeSemibold" style={{ color: cSt.text, ...NUM }}>{fmtSigned(cost.variance, 1)}%</span>
-            <Badge color={cSt.badge} emphasis="Subtle" size="Small">{BUDGET_LABEL[cost.status]}</Badge>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, alignItems: 'stretch' }}>
+        {/* Cost Variance — the whole card IS the drill-down into the daily cost table */}
+        <div role="button" tabIndex={0} title="Open the daily cost table"
+          onClick={() => setCostOpen(true)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCostOpen(true) } }}
+          onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'var(--fds-shadow-md)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'var(--fds-shadow-sm)'; e.currentTarget.style.transform = 'none' }}
+          style={{ ...CARD, padding: 18, display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer', transition: 'box-shadow 150ms, transform 150ms' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>Cost Variance</span>
+            <span aria-hidden style={{ marginLeft: 'auto', color: 'var(--text-brand-default)', fontSize: 14, lineHeight: 1 }}>→</span>
           </div>
-          <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>
-            {CURRENCY}{fmt(cost.actual)}/T actual vs {CURRENCY}{fmt(cost.target)}/T planned
-          </span>
-          <button onClick={() => setCostOpen(true)}
-            style={{ marginTop: 4, justifySelf: 'start', display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 'var(--global-border-radius-medium)', border: '1px solid var(--border-gray-default)', background: 'var(--background-surface-intense)', color: 'var(--text-brand-default)', cursor: 'pointer', font: 'inherit' }}
-            className="BodyXSmallSemibold">⤢ Daily cost table</button>
-        </KpiTile>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+            <span className="HeadingLargeSemibold" style={{ color: cSt.text, ...NUM, fontSize: 27, lineHeight: 1 }}>{fmtSigned(cost.variance, 1)}%</span>
+            <Pill tone={toneOf(cost.status)}>{BUDGET_LABEL[cost.status]}</Pill>
+          </div>
+          <div style={{ marginTop: 'auto', paddingTop: 10, borderTop: '1px solid var(--border-gray-subtle)' }}>
+            <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>
+              {CURRENCY}{fmt(cost.actual)}/T vs {CURRENCY}{fmt(cost.target)}/T target
+            </span>
+          </div>
+        </div>
 
-        <KpiStat label="Energy / Ton" value={kp.energy.actual} unit="kWh/T" dp={2} kpi={kp.energy} />
-        <KpiStat label="Fuel / Ton" value={kp.fuel.actual} unit="L/T" dp={3} kpi={kp.fuel} />
-        <KpiStat label="Man-Hours / Ton" value={kp.manHours.actual} unit="mh/T" dp={3} kpi={kp.manHours} />
+        <KpiStat label="Energy / Ton" value={kp.energy.actual} unit="kWh/T" dp={2} kpi={kp.energy} onClick={() => setDrill('energy')} />
+        <KpiStat label="Fuel / Ton" value={kp.fuel.actual} unit="L/T" dp={3} kpi={kp.fuel} onClick={() => setDrill('fuel')} />
+        <KpiStat label="Man-Hours / Ton" value={kp.manHours.actual} unit="mh/T" dp={3} kpi={kp.manHours} onClick={() => setDrill('labour')} />
       </div>
 
       {shiftMode && (
         <Panel>
-          <div className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8 }}>Shift breakdown</div>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>Shift breakdown</div>
           <div style={{ display: 'grid', gridTemplateColumns: '90px repeat(4, 1fr)', gap: 8, alignItems: 'center' }}>
             {['', 'Cost/T', 'Energy/T', 'Fuel/T', 'Man-Hrs/T'].map((h, i) => (
               <span key={i} className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{h}</span>
@@ -90,30 +89,45 @@ export function Efficiency() {
         </Panel>
       )}
 
-      <div style={{ height: 360 }}>
-        <LineChart
-          title="Energy, Fuel & Labour Intensity vs Target"
-          duration={`${fmtStamp(range.start)} → ${fmtStamp(range.end)}`}
-          categories={t.categories}
-          series={[
-            { name: 'Energy (kWh/T)', data: t.energyPerTon, color: 'var(--background-info-default)' },
-            { name: 'Fuel (L/T)', data: t.fuelPerTon, color: 'var(--background-warning-default)' },
-            { name: 'Man-Hours (mh/T)', data: t.manHoursPerTon, color: 'var(--background-positive-default)' },
-          ]}
-          showLegend
-          smooth
-          showMarkers={t.categories.length <= 31}
-          xAxisTitle="Day"
-          highchartsOptions={hcOpts}
-        />
+      {/* Small multiples — one intensity each, so trend + target read at a glance */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
+        <Intensity title="Energy Intensity" unit="kWh/T" color="#3E6DF4" data={t.energyPerTon} categories={t.categories} target={tg.energy} dp={2} />
+        <Intensity title="Fuel Intensity" unit="L/T" color="#F59E0B" data={t.fuelPerTon} categories={t.categories} target={tg.fuel} dp={2} />
+        <Intensity title="Labour Intensity" unit="mh/T" color="#0E9F6E" data={t.manHoursPerTon} categories={t.categories} target={tg.manHours} dp={2} />
       </div>
 
       <CostTableModal isOpen={costOpen} onClose={() => setCostOpen(false)}
         costByDay={kp.costByDay} shiftMode={shiftMode}
         shiftNames={[kp.shifts[0]?.name || 'Shift 1', kp.shifts[1]?.name || 'Shift 2']} />
+
+      {/* KPI drill-downs — daily values vs target, one shared language */}
+      <MetricDrillModal isOpen={drill === 'energy'} onClose={() => setDrill(null)}
+        title="Energy / Ton" subtitle="kWh consumed per saleable tonne, per day" unit="kWh/T" dp={2}
+        categories={t.categories} values={t.energyPerTon} target={tg.energy} goodIfHigh={false} />
+      <MetricDrillModal isOpen={drill === 'fuel'} onClose={() => setDrill(null)}
+        title="Fuel / Ton" subtitle="Diesel litres per saleable tonne, per day" unit="L/T" dp={3}
+        categories={t.categories} values={t.fuelPerTon} target={tg.fuel} goodIfHigh={false} color="#F59E0B" />
+      <MetricDrillModal isOpen={drill === 'labour'} onClose={() => setDrill(null)}
+        title="Man-Hours / Ton" subtitle="Man-hours per saleable tonne, per day" unit="mh/T" dp={3}
+        categories={t.categories} values={t.manHoursPerTon} target={tg.manHours} goodIfHigh={false} color="#0E9F6E" />
     </div>
   )
 }
+
+// One intensity trend vs its plan target — compact card in the small-multiple grid.
+const Intensity = ({ title, unit, color, data, categories, target, dp = 2 }) => (
+  <Panel style={{ padding: 18, minWidth: 0 }}>
+    <Chart title={title} height={225} options={{
+      chart: { type: 'spline' },
+      xAxis: { categories },
+      yAxis: { title: { text: null }, labels: { format: `{value} ${unit}` }, plotLines: target != null ? [dashedTarget(target, `Target ${fmt(target, dp)}`, 'right')] : [] },
+      legend: { enabled: false },
+      tooltip: { valueSuffix: ` ${unit}` },
+      plotOptions: { spline: { marker: { enabled: categories.length <= 31, radius: 3 } } },
+      series: [{ name: title, data, color }],
+    }} />
+  </Panel>
+)
 
 const ShiftRow = ({ sh }) => (
   <>

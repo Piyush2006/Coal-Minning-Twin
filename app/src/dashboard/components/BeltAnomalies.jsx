@@ -1,77 +1,82 @@
-// Vision-Based Belt Anomalies — a compact evidence panel: each detected event
-// (belt tear / foreign object / spillage / misalignment) with a camera thumbnail,
-// severity, timestamp and camera id; click a row to enlarge the frame + metadata.
-// Reuses the shared Modal and the Safety severity helpers.
-import { useState } from 'react'
-import { Badge } from '@faclon-labs/design-sdk/Badge'
-import { Panel, Modal } from './primitives'
+// Vision-Based Belt Anomalies — a MODAL drill-down (opened from the Conveyor
+// card's "Active Anomalies" mini-KPI). Top: the selected camera frame with its
+// metadata. Below: the full evidence table in the dashboard's table language
+// (uppercase hairline headers, hover rows, severity pills). Click a row to
+// preview its frame.
+import { useEffect, useState } from 'react'
+import { Modal } from './primitives'
+import { Pill, th, td } from './ui'
 import { SeverityBadge, fmtEvidenceTime } from './EvidenceModal'
 
-const th = (a = 'left') => ({ padding: '8px 12px', textAlign: a, color: 'var(--text-gray-secondary)', fontWeight: 600, whiteSpace: 'nowrap', fontSize: 12 })
 const Meta = ({ label, children }) => (
-  <div style={{ display: 'grid', gap: 2 }}>
-    <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{label}</span>
+  <div style={{ display: 'grid', gap: 3 }}>
+    <span className="eyebrow">{label}</span>
     <span className="BodySmallSemibold">{children}</span>
   </div>
 )
 
-export function BeltAnomalies({ anomalies, activeCount }) {
+export function BeltAnomaliesModal({ isOpen, onClose, anomalies, activeCount }) {
   const [sel, setSel] = useState(null)
-  const rows = anomalies.slice(0, 12)
+  // preview the first (latest) anomaly whenever the modal opens
+  useEffect(() => { if (isOpen) setSel(anomalies[0] || null) }, [isOpen, anomalies])
 
   return (
-    <Panel pad={0} style={{ overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '14px 16px' }}>
-        <span className="BodyMediumSemibold">Vision-Based Belt Anomalies</span>
-        <Badge color={activeCount ? 'Negative' : 'Positive'} emphasis="Subtle" size="Small">{activeCount} active</Badge>
-        <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', marginLeft: 'auto' }}>{anomalies.length} detected in range</span>
-      </div>
-      <div style={{ maxHeight: 340, overflow: 'auto', borderTop: '1px solid var(--border-gray-subtle)' }}>
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth={920}
+      title="Vision-Based Belt Anomalies"
+      subtitle={`${anomalies.length} detected in range · ${activeCount} active`}>
+
+      {/* selected frame preview */}
+      {sel && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 1.1fr) 1fr', gap: 20, marginBottom: 18, padding: 16, borderRadius: 'var(--global-border-radius-medium)', background: 'var(--background-surface-subtle)' }}>
+          <img src={sel.image} alt="belt camera frame" style={{ width: '100%', height: 220, objectFit: 'cover', borderRadius: 'var(--global-border-radius-medium)', border: '1px solid var(--border-gray-subtle)' }} />
+          <div style={{ display: 'grid', gap: 14, alignContent: 'start' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span className="BodyLargeSemibold">{sel.type}</span>
+              <SeverityBadge level={sel.severity} />
+              {sel.active && <Pill tone="critical">Active</Pill>}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <Meta label="Detected">{fmtEvidenceTime(sel.ts)}</Meta>
+              <Meta label="Location">{sel.location}</Meta>
+              <Meta label="Camera">{sel.camera}</Meta>
+              <Meta label="Confidence">{sel.confidence}%</Meta>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* full-length evidence table */}
+      <div style={{ borderRadius: 'var(--global-border-radius-medium)', border: '1px solid var(--border-gray-subtle)', overflow: 'hidden' }}>
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: 'var(--background-surface-subtle)' }}>
+          <thead>
             <tr><th style={th()}>Frame</th><th style={th()}>Anomaly</th><th style={th()}>Severity</th><th style={th('right')}>Detected</th></tr>
           </thead>
           <tbody>
-            {rows.map(a => (
-              <tr key={a.id} onClick={() => setSel(a)} style={{ borderTop: '1px solid var(--border-gray-subtle)', cursor: 'pointer' }}>
-                <td style={{ padding: '8px 12px' }}>
-                  <img src={a.image} alt="belt frame" style={{ width: 76, height: 46, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-gray-subtle)', display: 'block' }} />
-                </td>
-                <td style={{ padding: '8px 12px' }}>
-                  <div style={{ display: 'grid', gap: 3 }}>
-                    <span className="BodySmallSemibold" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>{a.type}{a.active && <Badge color="Negative" emphasis="Subtle" size="Small">Active</Badge>}</span>
-                    <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{a.location} · {a.camera}</span>
-                  </div>
-                </td>
-                <td style={{ padding: '8px 12px' }}><SeverityBadge level={a.severity} /></td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}><span className="BodySmallRegular" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtEvidenceTime(a.ts)}</span></td>
-              </tr>
-            ))}
-            {!rows.length && <tr><td colSpan={4} style={{ padding: '26px 0', textAlign: 'center', color: 'var(--text-gray-tertiary)' }} className="BodySmallRegular">No belt anomalies detected in this range.</td></tr>}
+            {anomalies.map(a => {
+              const on = sel?.id === a.id
+              return (
+                <tr key={a.id} onClick={() => setSel(a)}
+                  onMouseEnter={(e) => { if (!on) e.currentTarget.style.background = 'var(--background-surface-subtle)' }}
+                  onMouseLeave={(e) => { if (!on) e.currentTarget.style.background = 'transparent' }}
+                  style={{ cursor: 'pointer', background: on ? 'var(--background-surface-subtle)' : 'transparent', transition: 'background 120ms' }}>
+                  <td style={td()}>
+                    <img src={a.image} alt="belt frame" style={{ width: 76, height: 46, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border-gray-subtle)', display: 'block' }} />
+                  </td>
+                  <td style={td()}>
+                    <div style={{ display: 'grid', gap: 4 }}>
+                      <span className="BodySmallSemibold" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>{a.type}{a.active && <Pill tone="critical">Active</Pill>}</span>
+                      <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{a.location} · {a.camera}</span>
+                    </div>
+                  </td>
+                  <td style={td()}><SeverityBadge level={a.severity} /></td>
+                  <td style={{ ...td('right'), fontVariantNumeric: 'tabular-nums' }} className="BodySmallRegular">{fmtEvidenceTime(a.ts)}</td>
+                </tr>
+              )
+            })}
+            {!anomalies.length && <tr><td colSpan={4} style={{ ...td(), textAlign: 'center', color: 'var(--text-gray-tertiary)', padding: '26px 0' }}>No belt anomalies detected in this range.</td></tr>}
           </tbody>
         </table>
       </div>
-
-      <Modal isOpen={!!sel} onClose={() => setSel(null)} maxWidth={780}
-        title={sel ? sel.type : ''} subtitle={sel ? `${sel.location} · ${sel.camera}` : ''}>
-        {sel && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1.1fr) 1fr', gap: 20 }}>
-            <img src={sel.image} alt="belt camera frame" style={{ width: '100%', height: 240, objectFit: 'cover', borderRadius: 'var(--global-border-radius-medium)', border: '1px solid var(--border-gray-subtle)' }} />
-            <div style={{ display: 'grid', gap: 14, alignContent: 'start' }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <SeverityBadge level={sel.severity} />
-                {sel.active && <Badge color="Negative" emphasis="Subtle" size="Small">Active</Badge>}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <Meta label="Detected">{fmtEvidenceTime(sel.ts)}</Meta>
-                <Meta label="Location">{sel.location}</Meta>
-                <Meta label="Camera">{sel.camera}</Meta>
-                <Meta label="Detection confidence">{sel.confidence}%</Meta>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
-    </Panel>
+    </Modal>
   )
 }

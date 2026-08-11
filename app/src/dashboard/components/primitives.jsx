@@ -48,7 +48,7 @@ export function Dropdown({ label, value, options, onChange, disabled = false, wi
         <span style={{ color: 'var(--text-gray-tertiary)', fontSize: 10 }}>▾</span>
       </button>
       {open && createPortal(
-        <div ref={popRef} style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: pos.width, zIndex: 9999 }}>
+        <div ref={popRef} className="dash-theme" style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: pos.width, zIndex: 9999 }}>
           <DropdownMenu>
             {options.map(o => (
               <ActionListItem key={o.id} title={o.name} isSelected={o.id === value}
@@ -73,7 +73,7 @@ export function Modal({ isOpen, onClose, title, subtitle, children, maxWidth = 1
   }, [isOpen, onClose])
   if (!isOpen) return null
   return createPortal(
-    <div onMouseDown={onClose} style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'var(--background-overlay-default, rgba(16,24,40,0.55))', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <div onMouseDown={onClose} className="dash-theme" style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'var(--background-overlay-default, rgba(16,24,40,0.55))', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div onMouseDown={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth, maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: 'var(--background-surface-intense)', borderRadius: 'var(--global-border-radius-large)', boxShadow: 'var(--fds-shadow-lg)', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '18px 20px', borderBottom: '1px solid var(--border-gray-subtle)' }}>
           <div style={{ display: 'grid', gap: 2, flex: 1 }}>
@@ -122,7 +122,7 @@ export function MultiSelect({ label, values = [], options, onToggle, width = 230
         <span style={{ color: 'var(--text-gray-tertiary)', fontSize: 10 }}>▾</span>
       </button>
       {open && createPortal(
-        <div ref={popRef} style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: pos.width, maxHeight: 300, overflowY: 'auto', zIndex: 9999, background: 'var(--background-surface-intense)', border: '1px solid var(--border-gray-default)', borderRadius: 10, boxShadow: 'var(--fds-shadow-md)', padding: 4 }}>
+        <div ref={popRef} className="dash-theme" style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: pos.width, maxHeight: 300, overflowY: 'auto', zIndex: 9999, background: 'var(--background-surface-intense)', border: '1px solid var(--border-gray-default)', borderRadius: 10, boxShadow: 'var(--fds-shadow-md)', padding: 4 }}>
           {options.map(o => {
             const on = set.has(o.id)
             return (
@@ -140,19 +140,19 @@ export function MultiSelect({ label, values = [], options, onToggle, width = 230
   )
 }
 
-// plain content surface (used sparingly)
+// plain content surface — v2: borderless, floating on the canvas via shadow
 export function Panel({ children, style, pad = 20 }) {
   return (
-    <div style={{ background: 'var(--background-surface-intense)', border: '1px solid var(--border-gray-subtle)', borderRadius: 'var(--global-border-radius-large)', boxShadow: 'var(--fds-shadow-xs)', padding: pad, ...style }}>
+    <div style={{ background: 'var(--background-surface-intense)', borderRadius: 'var(--global-border-radius-large)', boxShadow: 'var(--fds-shadow-sm)', padding: pad, ...style }}>
       {children}
     </div>
   )
 }
 
-// bordered KPI tile — gives each metric its own boundary so they don't visually merge
+// KPI tile — same borderless card language
 export function KpiTile({ children, style }) {
   return (
-    <div style={{ background: 'var(--background-surface-intense)', border: '1px solid var(--border-gray-subtle)', borderRadius: 'var(--global-border-radius-large)', padding: 16, display: 'grid', gap: 6, alignContent: 'start', ...style }}>
+    <div style={{ background: 'var(--background-surface-intense)', borderRadius: 'var(--global-border-radius-large)', boxShadow: 'var(--fds-shadow-sm)', padding: 18, display: 'grid', gap: 6, alignContent: 'start', ...style }}>
       {children}
     </div>
   )

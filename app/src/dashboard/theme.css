@@ -1,0 +1,106 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Blackridge dashboard — visual redesign layer.
+   Overrides design-sdk TOKEN VALUES (not names), scoped to `.dash-theme` so
+   the twin app is untouched. Light-mode only. Depth from shadows, not borders.
+   ───────────────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+.dash-theme {
+  /* surfaces & lines */
+  --background-surface-moderate: #F4F6FB;   /* page canvas — cool mist */
+  --background-surface-intense: #FFFFFF;     /* cards */
+  --background-surface-subtle: #F8FAFD;      /* wells / table headers */
+  --background-overlay-default: rgba(16,24,40,.55);
+  --border-gray-subtle: #E9EDF5;
+  --border-gray-default: #DCE2EE;
+
+  /* shadows — the ONLY depth cue (cards are borderless) */
+  --fds-shadow-xs: 0 1px 2px rgba(16,24,40,.05);
+  --fds-shadow-sm: 0 1px 2px rgba(16,24,40,.03), 0 6px 20px rgba(16,24,40,.055);
+  --fds-shadow-md: 0 4px 12px rgba(16,24,40,.06), 0 16px 40px rgba(16,24,40,.08);
+  --fds-shadow-lg: 0 8px 24px rgba(16,24,40,.09), 0 32px 64px rgba(16,24,40,.11);
+
+  /* radius */
+  --global-border-radius-large: 20px;
+  --global-border-radius-medium: 12px;
+  --global-border-radius-max: 999px;
+
+  /* text */
+  --text-gray-primary: #0F1728;
+  --text-gray-secondary: #5B6577;
+  --text-gray-tertiary: #98A2B3;
+
+  /* semantic — soft-tint system (text / fill / tint) */
+  --text-positive-default: #0B7A55; --background-positive-default: #0E9F6E; --background-positive-secondary: #E6F6EF;
+  --text-warning-default:  #B45309; --background-warning-default:  #F59E0B; --background-warning-secondary:  #FDF3E2;
+  --text-error-default:    #C02434; --background-error-default:    #E5484D; --background-error-secondary:    #FDECEE;
+  --text-info-default:     #175CD3; --background-info-default:     #3B82F6; --background-info-secondary:     #EAF1FD;
+  /* Primary buttons render INK (spec: only ink-coloured buttons/tabs). Links/accents
+     use the info-blue text token; Bruce surfaces use the purple gradient inline. */
+  --text-brand-default: #175CD3; --background-brand-default: #0F1728; --background-brand-secondary: #EAF1FD;
+
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text-gray-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Pairing (final): Manrope for everything numeric + headings/card titles;
+   Inter for body/UI text — labels, table cells, descriptions, buttons. */
+.dash-theme .DisplayLargeSemibold, .dash-theme .DisplayMediumSemibold, .dash-theme .DisplaySmallSemibold,
+.dash-theme .HeadingLargeSemibold, .dash-theme .HeadingMediumSemibold, .dash-theme .HeadingSmallSemibold,
+.dash-theme .BodyLargeSemibold, .dash-theme .BodyMediumSemibold {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.dash-theme .DisplayLargeSemibold, .dash-theme .DisplayMediumSemibold { letter-spacing: -0.02em; font-weight: 800; }
+
+/* eyebrow / label utility */
+.dash-theme .eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-gray-tertiary);
+}
+
+/* focus + selection use the info accent (not purple) */
+.dash-theme :focus-visible { outline: 2px solid var(--background-info-default); outline-offset: 1px; border-radius: 6px; }
+.dash-theme ::selection { background: var(--background-info-secondary); }
+
+/* tab-change motion */
+@keyframes dashFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.dash-fade { animation: dashFade 250ms cubic-bezier(.22,.61,.36,1) both; }
+@media (prefers-reduced-motion: reduce) { .dash-fade { animation: none; } }
+
+/* alert ring — subtle red border + minimal heartbeat on the Predictive icon */
+@keyframes alertPulse {
+  0% { box-shadow: 0 0 0 0 rgba(229,72,77,.30); }
+  60% { box-shadow: 0 0 0 5px rgba(229,72,77,0); }
+  100% { box-shadow: 0 0 0 0 rgba(229,72,77,0); }
+}
+.alert-ring {
+  border: 1.5px solid rgba(229,72,77,.45);
+  border-radius: 9px;
+  animation: alertPulse 2.4s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) { .alert-ring { animation: none; } }
+
+/* charts — naked axes: no axis titles anywhere (labels + units carry the meaning) */
+.dash-theme .highcharts-axis-title { display: none; }
+
+/* strip the design-sdk chart component's own card chrome — OUR Panel/card is the
+   surface; without this every chart renders as a card-within-a-card */
+.dash-theme .fds-chart { border: none !important; border-radius: 0 !important; background: transparent !important; padding: 0 !important; }
+
+/* hard containment — a chart may NEVER paint outside its own card. Charts get
+   an EXPLICIT canvas height per instance (chart.height), so only width ever
+   reflows; between a container-width change and the (debounced) reflow,
+   stale-sized charts clip horizontally instead of overlapping neighbours. */
+.dash-theme .fds-chart { overflow: hidden !important; max-width: 100%; min-width: 0; }
+.dash-theme .highcharts-container { max-width: 100%; }
+.dash-theme .highcharts-container > svg { max-width: 100%; }
+
+/* slim scrollbars inside the dashboard */
+.dash-theme *::-webkit-scrollbar { width: 10px; height: 10px; }
+.dash-theme *::-webkit-scrollbar-thumb { background: #D5DBE8; border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+.dash-theme *::-webkit-scrollbar-thumb:hover { background: #C3CBDC; background-clip: content-box; }
+.dash-theme *::-webkit-scrollbar-track { background: transparent; }

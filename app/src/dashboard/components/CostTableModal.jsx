@@ -75,9 +75,13 @@ export function CostTableModal({ isOpen, onClose, costByDay = [], shiftMode, shi
       subtitle={`${rows.length} rows · the detail behind Operating Cost / Ton`}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
         <button onClick={() => exportXlsx(rows, shiftMode, shiftNames)} disabled={!rows.length}
-          className="BodySmallSemibold"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 'var(--global-border-radius-medium)', border: '1px solid var(--border-gray-default)', background: 'var(--background-positive-secondary, var(--background-surface-subtle))', color: 'var(--text-positive-default)', cursor: rows.length ? 'pointer' : 'not-allowed', font: 'inherit' }}>
-          ⬇ Export to Excel
+          title="Export to Excel" aria-label="Export to Excel"
+          onMouseEnter={(e) => { if (rows.length) { e.currentTarget.style.background = 'var(--background-surface-subtle)'; e.currentTarget.style.color = 'var(--text-gray-primary)' } }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-gray-secondary)' }}
+          style={{ width: 32, height: 32, borderRadius: 10, border: '1px solid var(--border-gray-default)', background: 'transparent', color: 'var(--text-gray-secondary)', display: 'inline-grid', placeItems: 'center', cursor: rows.length ? 'pointer' : 'not-allowed', opacity: rows.length ? 1 : 0.5, transition: 'background 150ms, color 150ms' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3v11M7.5 9.5 12 14l4.5-4.5" /><path d="M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17" />
+          </svg>
         </button>
       </div>
       <div style={{ overflowX: 'auto' }}>

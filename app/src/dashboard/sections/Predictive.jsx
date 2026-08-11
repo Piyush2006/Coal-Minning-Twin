@@ -4,7 +4,7 @@
 // → Act. Filter by severity / fault type (equipment · area · time come from the
 // global controls).
 import { useMemo, useState } from 'react'
-import { LineChart } from '@faclon-labs/design-sdk/LineChart'
+import { Chart } from '../components/Chart'
 import { Badge } from '@faclon-labs/design-sdk/Badge'
 import { Indicator } from '@faclon-labs/design-sdk/Indicator'
 import { Drawer, DrawerHeader, DrawerBody } from '@faclon-labs/design-sdk/Drawer'
@@ -14,12 +14,14 @@ import { assetSensorTrend, FLEET_STATE, SEVERITY } from '../data/assets'
 import { NUM, STATUS, fmt } from '../calc/format'
 import { fmtStamp } from '../data/time'
 import { Panel, Dropdown } from '../components/primitives'
+import { CARD, Pill } from '../components/ui'
 import { BruceInsight } from '../components/BruceInsight'
 import { buildBruceContext } from '../lib/bruceContext'
 
 const SENS_TEXT = { normal: 'var(--text-positive-default)', warn: 'var(--text-warning-default)', crit: 'var(--text-error-default)' }
 const SENS_BADGE = { normal: 'Positive', warn: 'Notice', crit: 'Negative' }
 const SEV_COLOR = { Critical: 'critical', Warning: 'warning', Normal: 'positive' }
+const SEV_RAIL = { critical: 'var(--background-error-default)', warning: 'var(--background-warning-default)', positive: 'var(--background-positive-default)' }
 
 export function Predictive() {
   const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
@@ -37,6 +39,7 @@ export function Predictive() {
     <div style={{ display: 'grid', gap: 18 }}>
 
       <BruceInsight
+        variant="rail"
         context={ctx}
         tone={pdm.counts.Critical > 0 ? 'critical' : pdm.counts.Warning > 0 ? 'warning' : 'positive'}
         task="In 15-20 words, name the single highest-risk asset, its fault and health, and what to do first."
@@ -64,20 +67,20 @@ export function Predictive() {
             const sc = STATUS[SEV_COLOR[a.severity]]
             return (
               <button key={a.id} onClick={() => setSel(a)}
-                style={{ display: 'grid', gap: 10, textAlign: 'left', width: '100%', cursor: 'pointer', font: 'inherit', padding: '14px 16px', borderRadius: 'var(--global-border-radius-large)',
-                  border: `1px solid ${a.severity === 'Critical' ? 'var(--border-error-default)' : 'var(--border-warning-default)'}`,
-                  background: a.severity === 'Critical' ? 'var(--background-error-secondary)' : 'var(--background-warning-secondary)' }}>
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = 'var(--fds-shadow-md)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--fds-shadow-xs)' }}
+                style={{ ...CARD, borderLeft: `3px solid ${SEV_RAIL[SEV_COLOR[a.severity]]}`, display: 'grid', gap: 10, textAlign: 'left', width: '100%', cursor: 'pointer', font: 'inherit', padding: '14px 16px', transition: 'transform 150ms, box-shadow 150ms' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <b className="BodyMediumSemibold" style={NUM}>{a.id}</b>
                   <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{a.typeName} · {a.area}</span>
-                  <Badge color={SEVERITY[a.severity].badge} emphasis="Intense" size="Small">{a.severity}</Badge>
+                  <Pill tone={SEV_COLOR[a.severity]}>{a.severity}</Pill>
                   <span style={{ flex: 1 }} />
                   <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>{fmtStamp(a.detectedAt)}</span>
                 </div>
                 <span className="BodyMediumSemibold" style={{ color: sc.text }}>{a.diagnosis.fault}</span>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {a.abnormal.slice(0, 4).map(s => (
-                    <span key={s.key} className="BodyXSmallRegular" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 'var(--global-border-radius-max)', background: 'var(--background-surface-intense)', color: SENS_TEXT[s.state], ...NUM }}>
+                    <span key={s.key} className="BodyXSmallRegular" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 999, background: 'var(--background-surface-subtle)', color: SENS_TEXT[s.state], ...NUM }}>
                       {s.label} {s.deltaText}
                     </span>
                   ))}
@@ -96,12 +99,10 @@ export function Predictive() {
 const CountTile = ({ label, value, status }) => {
   const st = STATUS[status]
   return (
-    <Panel>
-      <div style={{ display: 'grid', gap: 4 }}>
-        <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>{label}</span>
-        <span className="DisplaySmallSemibold" style={{ color: st.text, ...NUM }}>{value}</span>
-      </div>
-    </Panel>
+    <div style={{ ...CARD, padding: 18, display: 'grid', gap: 6, alignContent: 'start', borderLeft: `3px solid ${SEV_RAIL[status]}` }}>
+      <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>{label}</span>
+      <span className="HeadingLargeSemibold" style={{ color: st.text, ...NUM, fontSize: 27, lineHeight: 1 }}>{value}</span>
+    </div>
   )
 }
 
@@ -110,27 +111,33 @@ function AlertDrawer({ a, onClose }) {
   const trend = useMemo(() => assetSensorTrend(a, lead, 24), [a, lead])
   const cats = Array.from({ length: 24 }, (_, i) => (i === 23 ? 'now' : `−${23 - i}h`))
   const sc = STATUS[SEV_COLOR[a.severity]]
-  const hcOpts = {
+  const SENS_HEX = { normal: '#0E9F6E', warn: '#F59E0B', crit: '#E5484D' }
+  const trendChart = {
+    chart: { type: 'spline' },
+    xAxis: { categories: cats },
     yAxis: {
+      title: { text: null },
       plotLines: [
-        { value: lead.warn, color: 'var(--background-warning-default)', width: 1.3, dashStyle: 'Dash', label: { text: `Warn ${lead.warn}`, style: { color: 'var(--text-warning-default)', fontSize: '10px' } } },
-        { value: lead.crit, color: 'var(--background-error-default)', width: 1.3, dashStyle: 'Dash', label: { text: `Crit ${lead.crit}`, style: { color: 'var(--text-error-default)', fontSize: '10px' } } },
+        { value: lead.warn, color: '#F59E0B', width: 1.3, dashStyle: 'Dash', label: { text: `Warn ${lead.warn}`, style: { color: '#B45309', fontSize: '10px' } } },
+        { value: lead.crit, color: '#E5484D', width: 1.3, dashStyle: 'Dash', label: { text: `Crit ${lead.crit}`, style: { color: '#C02434', fontSize: '10px' } } },
       ],
     },
+    legend: { enabled: false },
     tooltip: {
-      enabled: true,
-      outside: true,
-      useHTML: true,
+      outside: true, useHTML: true,
       headerFormat: '<span style="font-size:11px;color:#98A2B3">{point.key} before now</span><br/>',
       pointFormat: `${lead.label}: <b>{point.y} ${lead.unit}</b>`,
     },
+    plotOptions: { spline: { marker: { enabled: true, radius: 3 } } },
+    series: [{ name: lead.label, data: trend, color: SENS_HEX[lead.state] || '#3E6DF4' }],
   }
 
   return (
     <Drawer isOpen onDismiss={onClose} accessibilityLabel={`${a.id} alert`}>
       <DrawerHeader title={`${a.id} — ${a.severity}`} subtitle={`${a.typeName} · ${a.area}`} />
       <DrawerBody>
-        <div style={{ display: 'grid', gap: 20 }}>
+        {/* the Drawer portals outside the themed root — re-apply the theme here */}
+        <div className="dash-theme" style={{ display: 'grid', gap: 20 }}>
           {/* DETECT */}
           <Stage tag="Detect" color={sc.text}>
             <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
@@ -148,10 +155,8 @@ function AlertDrawer({ a, onClose }) {
               {['Sensor', 'Value', 'Normal', 'Deviation'].map(h => <span key={h} className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{h}</span>)}
               {a.abnormal.map(s => <EvidenceRow key={s.key} s={s} />)}
             </div>
-            <div style={{ height: 260, marginTop: 8 }}>
-              <LineChart title={`${lead.label} — trend before alert`} categories={cats}
-                series={[{ name: `${lead.label} (${lead.unit})`, data: trend, color: SENS_TEXT[lead.state] }]}
-                showLegend={false} smooth showMarkers xAxisTitle="Time before now" highchartsOptions={hcOpts} />
+            <div style={{ minWidth: 0, marginTop: 8 }}>
+              <Chart title={`${lead.label} — trend before alert`} height={230} options={trendChart} />
             </div>
           </Stage>
 
