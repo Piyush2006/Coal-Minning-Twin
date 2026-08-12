@@ -4,7 +4,7 @@
 // the interaction always feels the same.
 import { Modal } from './primitives'
 import { Chart, dashedTarget } from './Chart'
-import { Pill, th, td } from './ui'
+import { Pill, th, td, usePagination, Pager } from './ui'
 import { NUM, fmt } from '../calc/format'
 
 const Well = ({ label, value, sub, color }) => (
@@ -17,7 +17,8 @@ const Well = ({ label, value, sub, color }) => (
 
 // Generic per-day metric drill. `values` pairs with `categories`; `target` is
 // optional; `goodIfHigh` orients best/worst day and delta colouring.
-export function MetricDrillModal({ isOpen, onClose, title, subtitle, unit = '', dp = 0, categories = [], values = [], target = null, goodIfHigh = true, color = '#3E6DF4' }) {
+export function MetricDrillModal({ isOpen, onClose, title, subtitle, unit = '', dp = 0, categories = [], values = [], target = null, goodIfHigh = true, color = '#3E6DF4', extraWells = null }) {
+  const pg = usePagination(categories.map((c, i) => ({ c, i })), { resetKey: `${title}|${isOpen}` })
   if (!isOpen) return null
   const n = values.length || 1
   const avg = values.reduce((a, b) => a + b, 0) / n
@@ -44,6 +45,13 @@ export function MetricDrillModal({ isOpen, onClose, title, subtitle, unit = '', 
           {target != null && <Well label="Target" value={`${fmt(target, dp)}${unit ? ` ${unit}` : ''}`} />}
         </div>
 
+        {/* optional second wells row (e.g. per-shift split) */}
+        {extraWells && extraWells.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${extraWells.length}, 1fr)`, gap: 10 }}>
+            {extraWells.map((w, i) => <Well key={i} label={w.label} value={w.value} sub={w.sub} color={w.color} />)}
+          </div>
+        )}
+
         {/* per-day chart — spline so day-to-day movement stays readable */}
         <Chart height={200} options={{
           chart: { type: 'spline' },
@@ -57,13 +65,13 @@ export function MetricDrillModal({ isOpen, onClose, title, subtitle, unit = '', 
 
         {/* day table */}
         <div style={{ borderRadius: 'var(--global-border-radius-medium)', border: '1px solid var(--border-gray-subtle)', overflow: 'hidden' }}>
-          <div style={{ maxHeight: 250, overflowY: 'auto' }}>
+          <div style={{ overflowX: 'auto' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+              <thead>
                 <tr><th style={th()}>Day</th><th style={th('right')}>{title}</th>{target != null && <th style={th('right')}>vs target</th>}</tr>
               </thead>
               <tbody>
-                {categories.map((c, i) => (
+                {pg.pageItems.map(({ c, i }) => (
                   <tr key={c}
                     onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--background-surface-subtle)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
@@ -80,6 +88,7 @@ export function MetricDrillModal({ isOpen, onClose, title, subtitle, unit = '', 
               </tbody>
             </table>
           </div>
+          <Pager {...pg} />
         </div>
       </div>
     </Modal>
@@ -88,12 +97,13 @@ export function MetricDrillModal({ isOpen, onClose, title, subtitle, unit = '', 
 
 // Plan vs Actual by day — the hero's drill. Same language, plan-specific columns.
 export function PlanDrillModal({ isOpen, onClose, subtitle, categories = [], planned = [], actual = [] }) {
-  if (!isOpen) return null
   const rows = categories.map((c, i) => {
     const p = planned[i], a = actual[i]
     const pct = p ? (a / p) * 100 : null
     return { c, p, a, gap: p != null ? p - a : null, pct }
   })
+  const pg = usePagination(rows, { resetKey: `${subtitle}|${isOpen}` })
+  if (!isOpen) return null
   const totP = rows.reduce((s, r) => s + (r.p || 0), 0)
   const totA = rows.reduce((s, r) => s + (r.a || 0), 0)
   const achTone = (pct) => pct == null ? 'neutral' : pct >= 95 ? 'positive' : pct >= 85 ? 'warning' : 'critical'
@@ -109,13 +119,13 @@ export function PlanDrillModal({ isOpen, onClose, subtitle, categories = [], pla
         </div>
 
         <div style={{ borderRadius: 'var(--global-border-radius-medium)', border: '1px solid var(--border-gray-subtle)', overflow: 'hidden' }}>
-          <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+          <div style={{ overflowX: 'auto' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+              <thead>
                 <tr><th style={th()}>Day</th><th style={th('right')}>Planned</th><th style={th('right')}>Actual</th><th style={th('right')}>Gap</th><th style={th('right')}>Achievement</th></tr>
               </thead>
               <tbody>
-                {rows.map(r => (
+                {pg.pageItems.map(r => (
                   <tr key={r.c}
                     onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--background-surface-subtle)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
@@ -132,6 +142,7 @@ export function PlanDrillModal({ isOpen, onClose, subtitle, categories = [], pla
               </tbody>
             </table>
           </div>
+          <Pager {...pg} />
         </div>
       </div>
     </Modal>

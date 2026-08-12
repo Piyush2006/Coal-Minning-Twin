@@ -5,14 +5,15 @@ import { eachDay } from '../data/rng'
 import { assetCondition } from '../data/assets'
 import { unitStats } from '../data/equipment'
 import { ROSTER, filterRoster, typeLabel, simplifyStatus } from '../data/resources'
-import { JOBS, effectiveUnit, jobWindow, currentJobFor, upcomingFor, overlaps } from '../data/resourceJobs'
+import { effectiveJobs, effectiveUnit, jobWindow, currentJobFor, upcomingFor, overlaps } from '../data/resourceJobs'
 import { downtimeActiveNow } from '../data/plannedDowntime'
 
 const BASELINE_UTIL = 82
 const round = (n, dp = 0) => { const f = 10 ** dp; return Math.round(n * f) / f }
 const PRIO = { P1: 0, P2: 1, P3: 2 }
 
-export function buildResources({ range, mineId, areaId, equipTypeId, settings, assignments = {}, now = new Date() }) {
+export function buildResources({ range, mineId, areaId, equipTypeId, settings, assignments = {}, jobOverrides = {}, downtimeOverrides = {}, now = new Date() }) {
+  const jobs = effectiveJobs(jobOverrides)
   const days = eachDay(range).length
 
   // condition + tab status for EVERY roster unit (assignment/conflict use the
@@ -20,7 +21,7 @@ export function buildResources({ range, mineId, areaId, equipTypeId, settings, a
   const cond = {}, gStatus = {}
   for (const u of ROSTER) {
     cond[u.id] = assetCondition(u, settings)
-    gStatus[u.id] = downtimeActiveNow(u.id, now) ? 'Under Maintenance' : simplifyStatus(cond[u.id].status)
+    gStatus[u.id] = downtimeActiveNow(u.id, now, downtimeOverrides) ? 'Under Maintenance' : simplifyStatus(cond[u.id].status)
   }
   const available = (id) => { const s = gStatus[id]; return !!s && s !== 'Breakdown' && s !== 'Under Maintenance' }
 
@@ -29,7 +30,7 @@ export function buildResources({ range, mineId, areaId, equipTypeId, settings, a
   const rows = filtered.map(u => {
     const c = cond[u.id]
     const st = unitStats(u, BASELINE_UTIL, days, settings)
-    const cur = currentJobFor(u.id, assignments, now)
+    const cur = currentJobFor(u.id, assignments, now, jobOverrides)
     return {
       id: u.id, type: u.type, typeName: typeLabel(u.type), area: u.area,
       status: gStatus[u.id], util: round(st.util), downtimeH: round(st.downtimeMin / 60, 1),
@@ -47,7 +48,7 @@ export function buildResources({ range, mineId, areaId, equipTypeId, settings, a
   const overview = { ...counts, overallUtil, availability }
 
   // ── assignments (all jobs, global) ──
-  const jobRows = JOBS.map(j => {
+  const jobRows = jobs.map(j => {
     const eff = effectiveUnit(j, assignments)
     const win = jobWindow(j, now)
     return {

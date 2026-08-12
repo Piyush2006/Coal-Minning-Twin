@@ -25,17 +25,28 @@ export const JOBS = [
 ]
 
 export const jobById = (id) => JOBS.find(j => j.id === id)
-export const jobWindow = (job, now) => { const start = new Date(now.getTime() + job.offStart * H); return { start, end: new Date(start.getTime() + job.durH * H) } }
+// user-created/edited jobs carry an absolute `startISO`; built-ins use offsets from now
+export const jobWindow = (job, now) => {
+  const start = job.startISO ? new Date(job.startISO) : new Date(now.getTime() + job.offStart * H)
+  return { start, end: new Date(start.getTime() + job.durH * H) }
+}
 export const effectiveUnit = (job, assignments = {}) => (job.id in assignments ? assignments[job.id] : job.defaultUnit) || null
+
+// the live job list: built-ins minus deletions, with edits applied, plus created jobs
+export function effectiveJobs(overrides = {}) {
+  const builtin = JOBS.filter(j => overrides[j.id] !== null).map(j => overrides[j.id] || j)
+  const created = Object.values(overrides).filter(o => o && !JOBS.some(j => j.id === o.id))
+  return [...builtin, ...created]
+}
 
 export const overlaps = (a, b) => a.start < b.end && b.start < a.end
 
-export function jobsForUnit(unitId, assignments, now) {
-  return JOBS.filter(j => effectiveUnit(j, assignments) === unitId).map(j => ({ ...j, ...jobWindow(j, now) }))
+export function jobsForUnit(unitId, assignments, now, overrides = {}) {
+  return effectiveJobs(overrides).filter(j => effectiveUnit(j, assignments) === unitId).map(j => ({ ...j, ...jobWindow(j, now) }))
 }
-export function currentJobFor(unitId, assignments, now) {
-  return jobsForUnit(unitId, assignments, now).find(j => j.start <= now && now < j.end) || null
+export function currentJobFor(unitId, assignments, now, overrides = {}) {
+  return jobsForUnit(unitId, assignments, now, overrides).find(j => j.start <= now && now < j.end) || null
 }
-export function upcomingFor(unitId, assignments, now) {
-  return jobsForUnit(unitId, assignments, now).filter(j => j.start > now).sort((a, b) => a.start - b.start)
+export function upcomingFor(unitId, assignments, now, overrides = {}) {
+  return jobsForUnit(unitId, assignments, now, overrides).filter(j => j.start > now).sort((a, b) => a.start - b.start)
 }

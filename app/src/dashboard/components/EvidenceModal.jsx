@@ -4,19 +4,14 @@
 // actions persist in the store (survive tab switches / reload).
 import { useState } from 'react'
 import { Button } from '@faclon-labs/design-sdk/Button'
-import { Badge } from '@faclon-labs/design-sdk/Badge'
 import { Modal, Dropdown } from './primitives'
+import { Pill } from './ui'
 import { useDash } from '../store'
 
-// severity → badge colour + dot, shared with the evidence table
-export const SEVERITY = {
-  Critical: { badge: 'Negative', dot: 'var(--background-error-default)' },
-  High: { badge: 'Negative', dot: 'var(--background-error-default)' },
-  Medium: { badge: 'Warning', dot: 'var(--background-warning-default)' },
-  Low: { badge: 'Neutral', dot: 'var(--text-gray-tertiary)' },
-}
+// severity → pill tone, shared with the evidence table + belt anomalies
+export const SEV_TONE = { Critical: 'critical', High: 'warning', Medium: 'neutral', Low: 'neutral' }
 export const SeverityBadge = ({ level }) => (
-  <Badge color={SEVERITY[level]?.badge || 'Neutral'} emphasis="Subtle" size="Small">{level}</Badge>
+  <Pill tone={SEV_TONE[level] || 'neutral'}>{level}</Pill>
 )
 export const fmtEvidenceTime = (ts) =>
   new Date(ts).toLocaleString(undefined, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
@@ -65,7 +60,7 @@ export function EvidenceModal({ evidence, onClose }) {
               <div style={{ display: 'grid', gap: 6 }}>
                 <span className="HeadingSmallSemibold">{evidence.description}</span>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <Badge color="Neutral" emphasis="Subtle" size="Small">{evidence.cat}</Badge>
+                  <Pill tone="neutral">{evidence.cat}</Pill>
                   <SeverityBadge level={evidence.severity} />
                 </div>
               </div>
@@ -83,7 +78,7 @@ export function EvidenceModal({ evidence, onClose }) {
           {raised ? (
             <div style={{ display: 'grid', gap: 8, padding: 14, borderRadius: 'var(--global-border-radius-large)', background: 'var(--background-positive-secondary, var(--background-surface-subtle))' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Badge color="Positive" emphasis="Subtle" size="Small">✓ Action raised</Badge>
+                <Pill tone="positive">✓ Action raised</Pill>
                 <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{fmtEvidenceTime(raised.at)}</span>
               </div>
               <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>

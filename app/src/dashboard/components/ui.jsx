@@ -1,8 +1,47 @@
 // Shared design-system primitives for the redesign — ONE pill, one delta pill,
 // one table style, one card language. Everything reads the overridden tokens.
+import { useEffect, useState } from 'react'
 import { fmt } from '../calc/format'
 
 export const BRUCE_GRADIENT = 'linear-gradient(135deg, #a779f0 0%, #5b5bf0 100%)'
+
+// ── ONE pagination for every table on the dashboard ──
+// Default 10 per page; `pageItems` is the current slice; the `<Pager>` footer
+// only renders when there's more than one page, so tables with ≤10 rows are
+// unchanged. Pass a `resetKey` (e.g. the active filter) to jump back to page 1.
+export function usePagination(items, { perPage = 10, resetKey } = {}) {
+  const [page, setPage] = useState(0)
+  useEffect(() => { setPage(0) }, [resetKey])
+  const total = items.length
+  const pages = Math.max(1, Math.ceil(total / perPage))
+  const cur = Math.min(page, pages - 1)
+  const start = cur * perPage
+  return { pageItems: items.slice(start, start + perPage), page: cur, pages, total, perPage, start, setPage }
+}
+
+const PagerBtn = ({ disabled, onClick, dir }) => (
+  <button onClick={onClick} disabled={disabled} aria-label={dir === 'prev' ? 'Previous page' : 'Next page'}
+    onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.background = 'var(--background-surface-subtle)' }}
+    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+    style={{ width: 28, height: 28, display: 'grid', placeItems: 'center', borderRadius: 'var(--global-border-radius-medium)', border: '1px solid var(--border-gray-default)', background: 'transparent', color: 'var(--text-gray-secondary)', cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.4 : 1, transition: 'background 150ms' }}>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: dir === 'prev' ? 'rotate(90deg)' : 'rotate(-90deg)' }}><path d="m6 9 6 6 6-6" /></svg>
+  </button>
+)
+
+// footer for a paginated table — spread the hook's return onto it: <Pager {...p} />
+export function Pager({ page, pages, total, perPage, start, setPage, style }) {
+  if (pages <= 1) return null
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 14px', borderTop: '1px solid var(--border-gray-subtle)', ...style }}>
+      <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', fontVariantNumeric: 'tabular-nums' }}>{start + 1}–{Math.min(start + perPage, total)} of {total}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <PagerBtn disabled={page === 0} onClick={() => setPage(page - 1)} dir="prev" />
+        <span className="BodyXSmallSemibold" style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--text-gray-secondary)', padding: '0 4px' }}>{page + 1} / {pages}</span>
+        <PagerBtn disabled={page >= pages - 1} onClick={() => setPage(page + 1)} dir="next" />
+      </div>
+    </div>
+  )
+}
 
 const PILL = {
   positive: { bg: 'var(--background-positive-secondary)', fg: 'var(--text-positive-default)' },
@@ -108,7 +147,25 @@ export function IconChip({ tone = 'info', size = 34, children }) {
   )
 }
 
-// segmented pill control (sub-tabs) — track well + white active pill w/ shadow
+// filter chip — single-select pill row (ink when active); optional muted count
+export function FilterChip({ active, onClick, count, children }) {
+  return (
+    <button onClick={onClick} className="BodyXSmallSemibold" aria-pressed={active}
+      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'var(--background-surface-subtle)' }}
+      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'var(--background-surface-intense)' }}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 13px', borderRadius: 999, cursor: 'pointer', font: 'inherit', transition: 'background 150ms',
+        border: `1px solid ${active ? '#0F1728' : 'var(--border-gray-default)'}`,
+        background: active ? '#0F1728' : 'var(--background-surface-intense)',
+        color: active ? '#fff' : 'var(--text-gray-secondary)' }}>
+      {children}
+      {count != null && <span style={{ fontVariantNumeric: 'tabular-nums', color: active ? 'rgba(255,255,255,0.65)' : 'var(--text-gray-tertiary)' }}>{count}</span>}
+    </button>
+  )
+}
+
+// segmented pill control (sub-tabs) — track well + white active pill w/ shadow.
+// An option may carry `badge` (a number): shown as a small amber count so
+// attention items stay visible from sibling tabs.
 export function Segmented({ options, value, onChange }) {
   return (
     <div style={{ display: 'inline-flex', gap: 4, padding: 4, borderRadius: 999, background: 'var(--background-surface-subtle)', justifySelf: 'start' }}>
@@ -116,11 +173,14 @@ export function Segmented({ options, value, onChange }) {
         const on = o.id === value
         return (
           <button key={o.id} onClick={() => onChange(o.id)} className="BodySmallSemibold"
-            style={{ padding: '7px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', font: 'inherit', transition: 'color 150ms, background 150ms',
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', font: 'inherit', transition: 'color 150ms, background 150ms',
               background: on ? 'var(--background-surface-intense)' : 'transparent',
               color: on ? 'var(--text-gray-primary)' : 'var(--text-gray-secondary)',
               boxShadow: on ? 'var(--fds-shadow-sm)' : 'none' }}>
             {o.label}
+            {o.badge != null && o.badge > 0 && (
+              <span style={{ minWidth: 17, height: 17, padding: '0 5px', borderRadius: 999, background: 'var(--background-warning-secondary)', color: 'var(--text-warning-default)', display: 'inline-grid', placeItems: 'center', fontSize: 10.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{o.badge}</span>
+            )}
           </button>
         )
       })}

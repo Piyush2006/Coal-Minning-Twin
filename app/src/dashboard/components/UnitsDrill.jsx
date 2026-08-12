@@ -5,7 +5,7 @@
 // shared equipment drawer.
 import { useMemo } from 'react'
 import { Modal } from './primitives'
-import { Pill, th, td } from './ui'
+import { Pill, th, td, usePagination, Pager } from './ui'
 import { NUM, fmt } from '../calc/format'
 import { filterUnits, unitStats } from '../data/equipment'
 
@@ -34,6 +34,7 @@ export function UnitsDrillModal({ isOpen, onClose, mode = 'utilisation', typeFil
       .map(s => ({ ...s, downH: s.downtimeMin / 60, topReason: [...s.reasons].sort((a, b) => b.min - a.min)[0]?.name }))
       .sort(mode === 'utilisation' ? (a, b) => a.util - b.util : (a, b) => b.downH - a.downH)
   }, [isOpen, filters, typeFilter, overallUtil, days, settings, mode])
+  const pg = usePagination(rows, { resetKey: `${mode}|${typeFilter || ''}` })
 
   if (!isOpen) return null
   const isUtil = mode === 'utilisation'
@@ -65,9 +66,9 @@ export function UnitsDrillModal({ isOpen, onClose, mode = 'utilisation', typeFil
         </div>
 
         <div style={{ borderRadius: 'var(--global-border-radius-medium)', border: '1px solid var(--border-gray-subtle)', overflow: 'hidden' }}>
-          <div style={{ maxHeight: 380, overflowY: 'auto' }}>
+          <div style={{ overflowX: 'auto' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+              <thead>
                 <tr>
                   <th style={th()}>Unit</th>
                   <th style={{ ...th(), width: '34%' }}>{isUtil ? 'Utilisation' : 'Downtime'}</th>
@@ -77,7 +78,7 @@ export function UnitsDrillModal({ isOpen, onClose, mode = 'utilisation', typeFil
                 </tr>
               </thead>
               <tbody>
-                {rows.map(r => {
+                {pg.pageItems.map(r => {
                   const tone = utilTone(r.util)
                   return (
                     <tr key={r.id} onClick={() => onUnitClick?.(r.id)} title={`Open ${r.id} detail`}
@@ -99,6 +100,7 @@ export function UnitsDrillModal({ isOpen, onClose, mode = 'utilisation', typeFil
               </tbody>
             </table>
           </div>
+          <Pager {...pg} />
         </div>
       </div>
     </Modal>

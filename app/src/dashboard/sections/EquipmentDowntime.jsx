@@ -42,6 +42,7 @@ const dualSpline = (categories, axes, seriesDefs) => ({
 export function EquipmentDowntime() {
   const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
   const assignments = useDash(s => s.resourceAssignments)
+  const downtimeOverrides = useDash(s => s.downtimeOverrides)
   // drill-down: click a unit row → the shared per-equipment drawer
   const [sel, setSel] = useState(null)
   // drill-down: "Active Anomalies" mini-KPI → full vision-evidence modal
@@ -54,7 +55,7 @@ export function EquipmentDowntime() {
   const openUnit = (id) => {
     const unit = rosterById(id)
     if (!unit) return
-    const status = downtimeActiveNow(unit.id, now) ? 'Under Maintenance' : simplifyStatus(assetCondition(unit, settings).status)
+    const status = downtimeActiveNow(unit.id, now, downtimeOverrides) ? 'Under Maintenance' : simplifyStatus(assetCondition(unit, settings).status)
     setSel({ unit, status })
   }
   const kp = useMemo(

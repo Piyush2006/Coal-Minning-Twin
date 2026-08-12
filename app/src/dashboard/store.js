@@ -27,6 +27,11 @@ export const useDash = create(persist((set, get) => ({
   boreholeStrata: {},
   // equipment job assignments (Equipment & Resources), keyed by jobId → unitId ('' = unassigned)
   resourceAssignments: {},
+  // job create/edit/delete overrides, keyed by jobId → job object (created/edited)
+  // or null (deleted). Built-in jobs stay in data/resourceJobs; this layers on top.
+  jobOverrides: {},
+  // planned-downtime overrides — same layering (id → entry | null)
+  downtimeOverrides: {},
 
   setRange: (range) => set({ range }),
   setFilter: (key, value) => set({ [key]: value }),
@@ -43,10 +48,18 @@ export const useDash = create(persist((set, get) => ({
   resetBoreholeStrata: (id) => set(s => { const n = { ...s.boreholeStrata }; delete n[id]; return { boreholeStrata: n } }),
   setResourceAssignment: (jobId, unitId) => set({ resourceAssignments: { ...get().resourceAssignments, [jobId]: unitId } }),
   clearResourceAssignment: (jobId) => set(s => { const n = { ...s.resourceAssignments }; delete n[jobId]; return { resourceAssignments: n } }),
+  saveJob: (job) => set({ jobOverrides: { ...get().jobOverrides, [job.id]: job } }),
+  saveDowntime: (d) => set({ downtimeOverrides: { ...get().downtimeOverrides, [d.id]: d } }),
+  deleteDowntime: (id) => set({ downtimeOverrides: { ...get().downtimeOverrides, [id]: null } }),
+  deleteJob: (jobId) => set(s => {
+    // also drop any assignment pointing at the deleted job
+    const a = { ...s.resourceAssignments }; delete a[jobId]
+    return { jobOverrides: { ...s.jobOverrides, [jobId]: null }, resourceAssignments: a }
+  }),
 }), {
   name: 'blackridge-mgmt-dash',
   version: 2,
-  partialize: (s) => ({ settings: s.settings, plan: s.plan, safetyActions: s.safetyActions, boreholeStrata: s.boreholeStrata, resourceAssignments: s.resourceAssignments }),
+  partialize: (s) => ({ settings: s.settings, plan: s.plan, safetyActions: s.safetyActions, boreholeStrata: s.boreholeStrata, resourceAssignments: s.resourceAssignments, jobOverrides: s.jobOverrides, downtimeOverrides: s.downtimeOverrides }),
   // merge persisted state onto defaults so new fields always exist
   merge: (persisted, current) => ({
     ...current,
@@ -56,5 +69,7 @@ export const useDash = create(persist((set, get) => ({
     safetyActions: (persisted && persisted.safetyActions) || {},
     boreholeStrata: (persisted && persisted.boreholeStrata) || {},
     resourceAssignments: (persisted && persisted.resourceAssignments) || {},
+    jobOverrides: (persisted && persisted.jobOverrides) || {},
+    downtimeOverrides: (persisted && persisted.downtimeOverrides) || {},
   }),
 }))

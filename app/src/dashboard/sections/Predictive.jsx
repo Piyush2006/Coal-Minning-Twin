@@ -1,25 +1,23 @@
 // Section 5 · Predictive Maintenance — Assets Needing Attention. An ACTION list
 // (no PdM score). Abnormal sensor signals are grouped into a diagnosed fault
 // with evidence + recommendation. Click an alert → Detect → Explain → Recommend
-// → Act. Filter by severity / fault type (equipment · area · time come from the
-// global controls).
-import { useMemo, useState } from 'react'
-import { Chart } from '../components/Chart'
-import { Badge } from '@faclon-labs/design-sdk/Badge'
-import { Indicator } from '@faclon-labs/design-sdk/Indicator'
+// → Act. Count tiles + severity/fault-type dropdowns filter the list (they share
+// one `sev` state, so a tile click and the dropdown stay in sync).
+import { useState } from 'react'
 import { Drawer, DrawerHeader, DrawerBody } from '@faclon-labs/design-sdk/Drawer'
+import { useMemo } from 'react'
 import { useDash } from '../store'
 import { buildPdm } from '../calc/pdm'
-import { assetSensorTrend, FLEET_STATE, SEVERITY } from '../data/assets'
-import { NUM, STATUS, fmt } from '../calc/format'
+import { FLEET_STATE } from '../data/assets'
+import { NUM, STATUS } from '../calc/format'
 import { fmtStamp } from '../data/time'
 import { Panel, Dropdown } from '../components/primitives'
-import { CARD, Pill } from '../components/ui'
+import { CARD, Pill, usePagination, Pager, th, td } from '../components/ui'
+import { SensorChartModal } from '../components/SensorChartModal'
 import { BruceInsight } from '../components/BruceInsight'
 import { buildBruceContext } from '../lib/bruceContext'
 
 const SENS_TEXT = { normal: 'var(--text-positive-default)', warn: 'var(--text-warning-default)', crit: 'var(--text-error-default)' }
-const SENS_BADGE = { normal: 'Positive', warn: 'Notice', crit: 'Negative' }
 const SEV_COLOR = { Critical: 'critical', Warning: 'warning', Normal: 'positive' }
 const SEV_RAIL = { critical: 'var(--background-error-default)', warning: 'var(--background-warning-default)', positive: 'var(--background-positive-default)' }
 
@@ -34,6 +32,10 @@ export function Predictive() {
   const alerts = pdm.alerts.filter(a => (sev === 'all' || a.severity === sev) && (ft === 'all' || a.diagnosis?.faultType === ft))
   const sevOpts = [{ id: 'all', name: 'All severities' }, { id: 'Critical', name: 'Critical' }, { id: 'Warning', name: 'Warning' }]
   const ftOpts = [{ id: 'all', name: 'All fault types' }, ...pdm.faultTypes.map(f => ({ id: f, name: f }))]
+  const total = pdm.assets.length
+  const pg = usePagination(alerts, { resetKey: `${sev}|${ft}` })
+  // a tile toggles its severity filter (click the active one to clear)
+  const tileClick = (s) => setSev(cur => (cur === s ? 'all' : s))
 
   return (
     <div style={{ display: 'grid', gap: 18 }}>
@@ -45,28 +47,29 @@ export function Predictive() {
         task="In 15-20 words, name the single highest-risk asset, its fault and health, and what to do first."
         detail="Explain which assets are at highest risk, their diagnosed faults and health, and the maintenance priorities." />
 
-      {/* alert counts */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
-        <CountTile label="Critical" value={pdm.counts.Critical} status="critical" />
-        <CountTile label="Warning" value={pdm.counts.Warning} status="warning" />
-        <CountTile label="Normal" value={pdm.counts.Normal} status="positive" />
+      {/* alert counts — Critical/Warning filter the list; Normal is a plain count */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14, alignItems: 'stretch' }}>
+        <CountTile label="Critical" value={pdm.counts.Critical} status="critical" total={total} onClick={() => tileClick('Critical')} active={sev === 'Critical'} />
+        <CountTile label="Warning" value={pdm.counts.Warning} status="warning" total={total} onClick={() => tileClick('Warning')} active={sev === 'Warning'} />
+        <CountTile label="Normal" value={pdm.counts.Normal} status="positive" total={total} />
       </div>
 
-      {/* filters + alert list */}
+      {/* alert list */}
       <Panel>
-        <div style={{ display: 'flex', gap: 14, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 14 }}>
-          <Dropdown label="Severity" value={sev} options={sevOpts} onChange={setSev} width={170} />
-          <Dropdown label="Fault Type" value={ft} options={ftOpts} onChange={setFt} width={190} />
-          <span style={{ flex: 1 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+          <span className="BodyLargeSemibold">Assets needing attention</span>
           <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{alerts.length} alert{alerts.length === 1 ? '' : 's'}</span>
+          <span style={{ flex: 1 }} />
+          <Dropdown value={sev} options={sevOpts} onChange={setSev} width={160} />
+          <Dropdown value={ft} options={ftOpts} onChange={setFt} width={180} />
         </div>
 
         <div style={{ display: 'grid', gap: 10 }}>
           {alerts.length === 0 && <div className="BodyMediumRegular" style={{ color: 'var(--text-gray-secondary)', padding: '16px 0' }}>No assets need attention for this selection.</div>}
-          {alerts.map(a => {
+          {pg.pageItems.map(a => {
             const sc = STATUS[SEV_COLOR[a.severity]]
             return (
-              <button key={a.id} onClick={() => setSel(a)}
+              <button key={a.id} onClick={() => setSel(a)} title={`Open ${a.id} detail`}
                 onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = 'var(--fds-shadow-md)' }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--fds-shadow-xs)' }}
                 style={{ ...CARD, borderLeft: `3px solid ${SEV_RAIL[SEV_COLOR[a.severity]]}`, display: 'grid', gap: 10, textAlign: 'left', width: '100%', cursor: 'pointer', font: 'inherit', padding: '14px 16px', transition: 'transform 150ms, box-shadow 150ms' }}>
@@ -76,6 +79,7 @@ export function Predictive() {
                   <Pill tone={SEV_COLOR[a.severity]}>{a.severity}</Pill>
                   <span style={{ flex: 1 }} />
                   <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>{fmtStamp(a.detectedAt)}</span>
+                  <span aria-hidden style={{ color: 'var(--text-gray-tertiary)', fontSize: 12 }}>›</span>
                 </div>
                 <span className="BodyMediumSemibold" style={{ color: sc.text }}>{a.diagnosis.fault}</span>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -89,6 +93,7 @@ export function Predictive() {
             )
           })}
         </div>
+        <Pager {...pg} style={{ marginTop: 12 }} />
       </Panel>
 
       {sel && <AlertDrawer a={sel} onClose={() => setSel(null)} />}
@@ -96,41 +101,37 @@ export function Predictive() {
   )
 }
 
-const CountTile = ({ label, value, status }) => {
+const CountTile = ({ label, value, status, total, onClick, active }) => {
   const st = STATUS[status]
+  const clickable = typeof onClick === 'function'
   return (
-    <div style={{ ...CARD, padding: 18, display: 'grid', gap: 6, alignContent: 'start', borderLeft: `3px solid ${SEV_RAIL[status]}` }}>
-      <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>{label}</span>
+    <div
+      onClick={onClick}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
+      onMouseEnter={clickable ? (e) => { if (!active) { e.currentTarget.style.boxShadow = 'var(--fds-shadow-md)'; e.currentTarget.style.transform = 'translateY(-1px)' } } : undefined}
+      onMouseLeave={clickable ? (e) => { e.currentTarget.style.boxShadow = 'var(--fds-shadow-sm)'; e.currentTarget.style.transform = 'none' } : undefined}
+      title={clickable ? (active ? 'Show all alerts' : `Show only ${label} alerts`) : undefined}
+      style={{ ...CARD, padding: 18, display: 'flex', flexDirection: 'column', gap: 6, borderLeft: `3px solid ${SEV_RAIL[status]}`, cursor: clickable ? 'pointer' : 'default', background: active ? 'var(--background-surface-subtle)' : 'var(--background-surface-intense)', transition: 'box-shadow 150ms, transform 150ms' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>{label}</span>
+        {clickable && <span aria-hidden style={{ marginLeft: 'auto', color: 'var(--text-brand-default)', fontSize: 14, lineHeight: 1 }}>→</span>}
+      </div>
       <span className="HeadingLargeSemibold" style={{ color: st.text, ...NUM, fontSize: 27, lineHeight: 1 }}>{value}</span>
+      <div style={{ marginTop: 'auto', paddingTop: 10, borderTop: '1px solid var(--border-gray-subtle)' }}>
+        <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>of {total} assets</span>
+      </div>
     </div>
   )
 }
 
 function AlertDrawer({ a, onClose }) {
-  const lead = a.abnormal.find(s => s.state === 'crit') || a.abnormal[0]
-  const trend = useMemo(() => assetSensorTrend(a, lead, 24), [a, lead])
-  const cats = Array.from({ length: 24 }, (_, i) => (i === 23 ? 'now' : `−${23 - i}h`))
+  const [sensorsOpen, setSensorsOpen] = useState(false)
   const sc = STATUS[SEV_COLOR[a.severity]]
-  const SENS_HEX = { normal: '#0E9F6E', warn: '#F59E0B', crit: '#E5484D' }
-  const trendChart = {
-    chart: { type: 'spline' },
-    xAxis: { categories: cats },
-    yAxis: {
-      title: { text: null },
-      plotLines: [
-        { value: lead.warn, color: '#F59E0B', width: 1.3, dashStyle: 'Dash', label: { text: `Warn ${lead.warn}`, style: { color: '#B45309', fontSize: '10px' } } },
-        { value: lead.crit, color: '#E5484D', width: 1.3, dashStyle: 'Dash', label: { text: `Crit ${lead.crit}`, style: { color: '#C02434', fontSize: '10px' } } },
-      ],
-    },
-    legend: { enabled: false },
-    tooltip: {
-      outside: true, useHTML: true,
-      headerFormat: '<span style="font-size:11px;color:#98A2B3">{point.key} before now</span><br/>',
-      pointFormat: `${lead.label}: <b>{point.y} ${lead.unit}</b>`,
-    },
-    plotOptions: { spline: { marker: { enabled: true, radius: 3 } } },
-    series: [{ name: lead.label, data: trend, color: SENS_HEX[lead.state] || '#3E6DF4' }],
-  }
+  const eSt = FLEET_STATE[a.status]
+  const pdmSensors = a.sensors.filter(s => s.isPdm)
+  const maintTone = a.maintenance === 'Overdue' ? 'critical' : a.maintenance === 'Due' ? 'warning' : 'positive'
 
   return (
     <Drawer isOpen onDismiss={onClose} accessibilityLabel={`${a.id} alert`}>
@@ -140,37 +141,56 @@ function AlertDrawer({ a, onClose }) {
         <div className="dash-theme" style={{ display: 'grid', gap: 20 }}>
           {/* DETECT */}
           <Stage tag="Detect" color={sc.text}>
-            <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <Field label="Detected" value={fmtStamp(a.detectedAt)} />
-              <Field label="Severity" node={<Badge color={SEVERITY[a.severity].badge} emphasis="Subtle" size="Small">{a.severity}</Badge>} />
-              <Field label="Current status" node={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Indicator intent={FLEET_STATE[a.status].intent} size="Medium" />{a.status}</span>} />
+              <Field label="Severity" node={<Pill tone={SEV_COLOR[a.severity]}>{a.severity}</Pill>} />
+              <Field label="Current status" node={
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '4px 11px', borderRadius: 999, background: 'var(--background-surface-subtle)' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: eSt.color }} />
+                  <span className="BodySmallSemibold">{a.status}</span>
+                </span>} />
             </div>
           </Stage>
 
-          {/* EXPLAIN */}
+          {/* EXPLAIN — the evidence IS the diagnosis; kept inline, raw trends behind the button */}
           <Stage tag="Explain" color={sc.text}>
             <span className="BodyLargeSemibold" style={{ color: sc.text }}>{a.diagnosis.fault}</span>
             <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>Fault type · {a.diagnosis.faultType}</span>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 0.9fr 0.9fr 1.1fr', gap: 8, alignItems: 'center', marginTop: 4 }}>
-              {['Sensor', 'Value', 'Normal', 'Deviation'].map(h => <span key={h} className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{h}</span>)}
-              {a.abnormal.map(s => <EvidenceRow key={s.key} s={s} />)}
+            <div style={{ border: '1px solid var(--border-gray-subtle)', borderRadius: 'var(--global-border-radius-medium)', overflow: 'hidden', marginTop: 2 }}>
+              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                <thead><tr><th style={th()}>Sensor</th><th style={th('right')}>Value</th><th style={th('right')}>Normal</th><th style={th('right')}>Deviation</th></tr></thead>
+                <tbody>
+                  {a.abnormal.map(s => (
+                    <tr key={s.key}>
+                      <td style={td()} className="BodySmallRegular">{s.label}</td>
+                      <td style={{ ...td('right'), ...NUM, color: SENS_TEXT[s.state] }} className="BodySmallSemibold">{s.value} {s.unit}</td>
+                      <td style={{ ...td('right'), ...NUM, color: 'var(--text-gray-tertiary)' }} className="BodyXSmallRegular">{s.normalRange}</td>
+                      <td style={{ ...td('right'), color: SENS_TEXT[s.state] }} className="BodyXSmallRegular">{s.deltaText}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div style={{ minWidth: 0, marginTop: 8 }}>
-              <Chart title={`${lead.label} — trend before alert`} height={230} options={trendChart} />
-            </div>
+            <button onClick={() => setSensorsOpen(true)} className="BodySmallSemibold"
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--background-surface-subtle)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+              style={{ justifySelf: 'start', display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 999, border: '1px solid var(--border-gray-default)', background: 'transparent', color: 'var(--text-gray-primary)', cursor: 'pointer', font: 'inherit', fontSize: 12.5, marginTop: 2, transition: 'background 150ms' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l2.5-6.5L14 18l2.5-6H21" /></svg>
+              Sensor data
+            </button>
           </Stage>
 
-          {/* RECOMMEND */}
+          {/* RECOMMEND — well + info rail (tints + rails, not full-tint) */}
           <Stage tag="Recommend" color="var(--text-brand-default)">
-            <div style={{ padding: '12px 14px', borderRadius: 'var(--global-border-radius-large)', background: 'var(--background-brand-secondary, var(--background-surface-subtle))' }}>
+            <div style={{ padding: '12px 14px', borderRadius: 'var(--global-border-radius-medium)', background: 'var(--background-surface-subtle)', borderLeft: '3px solid var(--background-info-default)' }}>
               <span className="BodyMediumSemibold">{a.diagnosis.rec}</span>
             </div>
           </Stage>
 
           {/* ACT */}
           <Stage tag="Act" color="var(--text-gray-secondary)">
-            <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
-              <Field label="Maintenance" node={<Badge color={a.maintenance === 'Overdue' ? 'Negative' : a.maintenance === 'Due' ? 'Notice' : 'Positive'} emphasis="Subtle" size="Small">{a.maintenance}</Badge>} />
+            <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              <Field label="Maintenance" node={<Pill tone={maintTone}>{a.maintenance}</Pill>} />
               <Field label="Recent breakdowns" value={String(a.breakdowns)} />
               <Field label="Active fault codes" value={String(a.faultCodes)} />
               <Field label="Downtime (period)" value={`${a.downtimeHours} h`} />
@@ -178,21 +198,15 @@ function AlertDrawer({ a, onClose }) {
           </Stage>
         </div>
       </DrawerBody>
+
+      <SensorChartModal isOpen={sensorsOpen} onClose={() => setSensorsOpen(false)} unit={a} sensors={pdmSensors} />
     </Drawer>
   )
 }
 
-const EvidenceRow = ({ s }) => (
-  <>
-    <span className="BodySmallRegular">{s.label}</span>
-    <span className="BodySmallSemibold" style={{ color: SENS_TEXT[s.state], ...NUM }}>{s.value} {s.unit}</span>
-    <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>{s.normalRange}</span>
-    <span className="BodyXSmallRegular" style={{ color: SENS_TEXT[s.state] }}>{s.deltaText}</span>
-  </>
-)
 const Stage = ({ tag, color, children }) => (
   <div style={{ display: 'grid', gap: 8 }}>
-    <span className="BodyXSmallRegular" style={{ color, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{tag}</span>
+    <span className="eyebrow" style={{ color }}>{tag}</span>
     {children}
   </div>
 )

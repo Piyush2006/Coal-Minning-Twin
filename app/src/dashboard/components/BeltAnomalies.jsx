@@ -5,7 +5,7 @@
 // preview its frame.
 import { useEffect, useState } from 'react'
 import { Modal } from './primitives'
-import { Pill, th, td } from './ui'
+import { Pill, th, td, usePagination, Pager } from './ui'
 import { SeverityBadge, fmtEvidenceTime } from './EvidenceModal'
 
 const Meta = ({ label, children }) => (
@@ -19,6 +19,7 @@ export function BeltAnomaliesModal({ isOpen, onClose, anomalies, activeCount }) 
   const [sel, setSel] = useState(null)
   // preview the first (latest) anomaly whenever the modal opens
   useEffect(() => { if (isOpen) setSel(anomalies[0] || null) }, [isOpen, anomalies])
+  const pg = usePagination(anomalies, { resetKey: isOpen })
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth={920}
@@ -52,7 +53,7 @@ export function BeltAnomaliesModal({ isOpen, onClose, anomalies, activeCount }) 
             <tr><th style={th()}>Frame</th><th style={th()}>Anomaly</th><th style={th()}>Severity</th><th style={th('right')}>Detected</th></tr>
           </thead>
           <tbody>
-            {anomalies.map(a => {
+            {pg.pageItems.map(a => {
               const on = sel?.id === a.id
               return (
                 <tr key={a.id} onClick={() => setSel(a)}
@@ -76,6 +77,7 @@ export function BeltAnomaliesModal({ isOpen, onClose, anomalies, activeCount }) 
             {!anomalies.length && <tr><td colSpan={4} style={{ ...td(), textAlign: 'center', color: 'var(--text-gray-tertiary)', padding: '26px 0' }}>No belt anomalies detected in this range.</td></tr>}
           </tbody>
         </table>
+        <Pager {...pg} />
       </div>
     </Modal>
   )

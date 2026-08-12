@@ -48,7 +48,7 @@ export function Dropdown({ label, value, options, onChange, disabled = false, wi
         <span style={{ color: 'var(--text-gray-tertiary)', fontSize: 10 }}>▾</span>
       </button>
       {open && createPortal(
-        <div ref={popRef} className="dash-theme" style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: pos.width, zIndex: 9999 }}>
+        <div ref={popRef} className="dash-theme" style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: pos.width, zIndex: 10500 }}>
           <DropdownMenu>
             {options.map(o => (
               <ActionListItem key={o.id} title={o.name} isSelected={o.id === value}
@@ -122,7 +122,7 @@ export function MultiSelect({ label, values = [], options, onToggle, width = 230
         <span style={{ color: 'var(--text-gray-tertiary)', fontSize: 10 }}>▾</span>
       </button>
       {open && createPortal(
-        <div ref={popRef} className="dash-theme" style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: pos.width, maxHeight: 300, overflowY: 'auto', zIndex: 9999, background: 'var(--background-surface-intense)', border: '1px solid var(--border-gray-default)', borderRadius: 10, boxShadow: 'var(--fds-shadow-md)', padding: 4 }}>
+        <div ref={popRef} className="dash-theme" style={{ position: 'fixed', top: pos.top, left: pos.left, minWidth: pos.width, maxHeight: 300, overflowY: 'auto', zIndex: 10500, background: 'var(--background-surface-intense)', border: '1px solid var(--border-gray-default)', borderRadius: 10, boxShadow: 'var(--fds-shadow-md)', padding: 4 }}>
           {options.map(o => {
             const on = set.has(o.id)
             return (

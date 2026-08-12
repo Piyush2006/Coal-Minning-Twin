@@ -2,6 +2,7 @@
 // a modal. In shift mode the header becomes two levels — a shift group spanning
 // its metric columns (Day | Shift 1 [metrics] | Shift 2 [metrics]).
 import { Modal } from './primitives'
+import { usePagination, Pager } from './ui'
 import { NUM, fmt } from '../calc/format'
 import { CURRENCY } from '../data/taxonomy'
 
@@ -60,6 +61,7 @@ const GROUP = { background: 'var(--background-surface-subtle)', textAlign: 'cent
 
 export function CostTableModal({ isOpen, onClose, costByDay = [], shiftMode, shiftNames = ['Shift 1', 'Shift 2'] }) {
   const rows = costByDay
+  const pg = usePagination(rows, { resetKey: `${isOpen}|${shiftMode}` })
   const metricHead = (prefix) => METRICS.map((m, i) => (
     <th key={prefix + m.key} style={TH('right', i === 0 ? { borderLeft: '1px solid var(--border-gray-subtle)' } : null)}>
       {m.label}<span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', fontWeight: 400 }}> ({m.unit})</span>
@@ -107,8 +109,8 @@ export function CostTableModal({ isOpen, onClose, costByDay = [], shiftMode, shi
             )}
           </thead>
           <tbody>
-            {rows.map((r, idx) => (
-              <tr key={idx} style={{ background: idx % 2 ? 'var(--background-surface-subtle)' : 'transparent' }}>
+            {pg.pageItems.map((r, idx) => (
+              <tr key={r.date} style={{ background: idx % 2 ? 'var(--background-surface-subtle)' : 'transparent' }}>
                 <td style={TD('left', { fontWeight: 600 })}>{r.date}</td>
                 {shiftMode
                   ? <>{metricCells(r.shifts[0])}{metricCells(r.shifts[1])}</>
@@ -132,6 +134,7 @@ export function CostTableModal({ isOpen, onClose, costByDay = [], shiftMode, shi
           </tfoot>
         </table>
       </div>
+      <Pager {...pg} />
     </Modal>
   )
 }

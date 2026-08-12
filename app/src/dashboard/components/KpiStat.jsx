@@ -5,7 +5,7 @@
 import { NUM, STATUS, fmt } from '../calc/format'
 import { CARD, DeltaPill } from './ui'
 
-export function KpiStat({ label, value, unit, dp = 0, kpi, targetSuffix, sub, onClick, tooltip }) {
+export function KpiStat({ label, value, unit, dp = 0, kpi, targetSuffix, sub, footer, onClick, tooltip }) {
   const st = STATUS[kpi?.status] || STATUS.normal
   const clickable = typeof onClick === 'function'
 
@@ -31,6 +31,13 @@ export function KpiStat({ label, value, unit, dp = 0, kpi, targetSuffix, sub, on
       </div>
 
       {sub && <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{sub}</span>}
+
+      {/* plain-text footer on the card's bottom edge (used where there is no target/variance) */}
+      {footer != null && kpi?.target == null && kpi?.variance == null && (
+        <div style={{ marginTop: 'auto', paddingTop: 10, borderTop: '1px solid var(--border-gray-subtle)' }}>
+          <span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', ...NUM }}>{footer}</span>
+        </div>
+      )}
 
       {/* footer sits on the card's bottom edge, however tall the card stretches */}
       {(kpi?.target != null || kpi?.variance != null) && (
