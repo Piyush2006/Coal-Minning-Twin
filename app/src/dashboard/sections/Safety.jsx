@@ -2,21 +2,23 @@
 // each violation (danger-zone crossing, missing PPE, unsafe vehicle move) is a
 // row with a snapshot + a Raise-action CTA. KPIs sit on top; Compliance and
 // Violations drill into the shared MetricDrillModal (Compliance also carries the
-// per-shift split). The compliance-trend + violations-by-category charts follow.
+// per-shift split). Category + status dropdowns filter the whole tab.
 import { useMemo, useState } from 'react'
 import { Button } from '@faclon-labs/design-sdk/Button'
 import { useDash } from '../store'
 import { buildSafety, complianceStatus } from '../calc/safety'
 import { NUM, fmt } from '../calc/format'
 import { fmtStamp } from '../data/time'
-import { CARD, Pill, usePagination, Pager, FilterChip, th, td } from '../components/ui'
+import { CARD, Pill, usePagination, Pager, th, td } from '../components/ui'
+import { Dropdown } from '../components/primitives'
 import { KpiStat } from '../components/KpiStat'
 import { MetricDrillModal } from '../components/MetricDrill'
 import { EvidenceModal, SeverityBadge, fmtEvidenceTime } from '../components/EvidenceModal'
 import { BruceInsight } from '../components/BruceInsight'
 import { buildBruceContext } from '../lib/bruceContext'
 
-const CHIPS = [{ id: 'all', name: 'All' }, { id: 'PPE', name: 'PPE' }, { id: 'Restricted Area', name: 'Restricted Area' }, { id: 'Vehicle Safety', name: 'Vehicle Safety' }, { id: 'Other', name: 'Other' }]
+const CAT_OPTS = [{ id: 'all', name: 'All categories' }, { id: 'PPE', name: 'PPE' }, { id: 'Restricted Area', name: 'Restricted Area' }, { id: 'Vehicle Safety', name: 'Vehicle Safety' }, { id: 'Other', name: 'Other' }]
+const STATUS_OPTS = [{ id: 'all', name: 'All evidence' }, { id: 'open', name: 'Open only' }]
 
 export function Safety() {
   const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
@@ -24,7 +26,7 @@ export function Safety() {
   const sf = useMemo(() => buildSafety({ range, mineId, areaId, equipTypeId, settings }), [range, mineId, areaId, equipTypeId, settings])
   const ctx = useMemo(() => buildBruceContext({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan, safetyActions: actions }), [range, mineId, areaId, equipTypeId, shiftMode, settings, plan, actions])
   const [cat, setCat] = useState('all')
-  const [openOnly, setOpenOnly] = useState(false)
+  const [status, setStatus] = useState('all')   // all | open
   const [selected, setSelected] = useState(null)
   const [drill, setDrill] = useState(null)   // null | 'compliance' | 'violations'
 
@@ -32,12 +34,12 @@ export function Safety() {
   const catLabel = cat !== 'all' ? ` — ${cat}` : ''
 
   const catEvidence = useMemo(() => sf.evidence.filter(e => cat === 'all' || e.cat === cat), [sf.evidence, cat])
-  const rows = useMemo(() => catEvidence.filter(e => !openOnly || !actions[e.id]), [catEvidence, openOnly, actions])
+  const rows = useMemo(() => catEvidence.filter(e => status !== 'open' || !actions[e.id]), [catEvidence, status, actions])
   const highCrit = catEvidence.filter(e => e.severity === 'High' || e.severity === 'Critical').length
   const raisedCount = catEvidence.filter(e => actions[e.id]).length
   const openCount = catEvidence.length - raisedCount
   const capped = sf.evidenceTotal > sf.evidence.length
-  const ev = usePagination(rows, { resetKey: `${cat}|${openOnly}` })
+  const ev = usePagination(rows, { resetKey: `${cat}|${status}` })
 
   const shiftWells = sf.shifts.map(s => ({ label: s.name, value: `${fmt(s.compliancePct, 1)} %`, sub: `${fmt(s.violations)} violations · ${fmt(s.checks)} checks` }))
 
@@ -51,13 +53,10 @@ export function Safety() {
         task="In 15-20 words, say what is driving safety violations — name the top category and the specific pattern/location — and what needs action."
         detail="Explain the safety situation — the main violation types, where they occur, and which need actions raised." />
 
-      {/* pill category filters + open-only chip */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        {CHIPS.map(c => (
-          <FilterChip key={c.id} active={cat === c.id} onClick={() => setCat(c.id)}>{c.name}</FilterChip>
-        ))}
-        <span style={{ flex: 1 }} />
-        <FilterChip active={openOnly} onClick={() => setOpenOnly(o => !o)}>Open only</FilterChip>
+      {/* dropdown filters — category + status */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <Dropdown value={cat} options={CAT_OPTS} onChange={setCat} width={190} />
+        <Dropdown value={status} options={STATUS_OPTS} onChange={setStatus} width={160} />
       </div>
 
       {/* KPI row — Compliance & Violations drill; the two counts are context */}
@@ -131,7 +130,7 @@ export function Safety() {
               })}
               {!rows.length && (
                 <tr><td colSpan={5} style={{ ...td(), textAlign: 'center', color: 'var(--text-gray-tertiary)', padding: '28px 0' }}>
-                  {openOnly ? 'No open evidence — all actioned 🎉' : 'No safety evidence for this filter.'}
+                  {status === 'open' ? 'No open evidence — all actioned 🎉' : 'No safety evidence for this filter.'}
                 </td></tr>
               )}
             </tbody>
