@@ -30,6 +30,7 @@ export function DepthProfile() {
   const [view, setView] = useState('profile')
   const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
   const strataByHole = useDash(s => s.boreholeStrata)
+  const openPlan = useDash(s => s.openPlan)
   const ctx = useMemo(() => buildBruceContext({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan }), [range, mineId, areaId, equipTypeId, shiftMode, settings, plan])
   const anyUnreliable = useMemo(() => BOREHOLES.some(b => !boreholeDetail(b.id, strataByHole[b.id]).reliable), [strataByHole])
 
@@ -42,7 +43,17 @@ export function DepthProfile() {
         task="In 15-20 words, compare drilling performance across the boreholes — name the biggest speed or fuel outlier and any survey-depth mismatch to check."
         detail="Explain drilling performance across boreholes — rate of penetration, fuel intensity, geology differences, and any survey/recorded-depth mismatches." />
 
-      <Segmented options={SUBTABS} value={view} onChange={setView} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <Segmented options={SUBTABS} value={view} onChange={setView} />
+        <span style={{ flex: 1 }} />
+        <button onClick={() => openPlan('strata')} className="BodySmallSemibold"
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--background-surface-subtle)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 999, border: '1px solid var(--border-gray-default)', background: 'transparent', color: 'var(--text-gray-primary)', cursor: 'pointer', font: 'inherit', fontSize: 12.5, transition: 'background 150ms' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+          Manage strata
+        </button>
+      </div>
 
       {view === 'profile' && <ProfileView />}
       {view === 'formation' && <FormationView />}
@@ -192,7 +203,6 @@ function HoleRankModal({ mode, holes, onClose }) {
 // ── 2) Formation ──────────────────────────────────────────────────────────────
 function FormationView() {
   const strataByHole = useDash(s => s.boreholeStrata)
-  const openPlan = useDash(s => s.openPlan)
   const settings = useDash(s => s.settings)
   const [id, setId] = useState(BOREHOLES[0].id)
   const detail = useMemo(() => boreholeDetail(id, strataByHole[id]), [id, strataByHole])
@@ -238,18 +248,6 @@ function FormationView() {
           <Pager {...pg} />
         </Panel>
       )}
-
-      {/* strata are edited in Plan Management */}
-      <Panel style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-        <span className="BodySmallRegular" style={{ color: 'var(--text-gray-secondary)' }}>Strata are managed in Plan Management — add layers manually or import them from Excel.</span>
-        <button onClick={() => openPlan('strata')} className="BodySmallSemibold"
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--background-surface-subtle)' }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 999, border: '1px solid var(--border-gray-default)', background: 'transparent', color: 'var(--text-gray-primary)', cursor: 'pointer', font: 'inherit', fontSize: 12.5, transition: 'background 150ms' }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
-          Manage strata
-        </button>
-      </Panel>
     </div>
   )
 }

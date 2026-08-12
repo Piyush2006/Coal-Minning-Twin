@@ -105,9 +105,9 @@ export function MiniKpi({ label, value, unit, dp, kpi, tone, onClick, title }) {
 
 // status dot + label (tables/rows) — colour only ever encodes state
 const DOT = { positive: 'var(--background-positive-default)', warning: 'var(--background-warning-default)', critical: 'var(--background-error-default)', info: 'var(--background-info-default)', neutral: 'var(--text-gray-tertiary)' }
-export const StatusDot = ({ tone = 'neutral', label, size = 9 }) => (
+export const StatusDot = ({ tone = 'neutral', label, size = 9, color }) => (
   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
-    <span style={{ width: size, height: size, borderRadius: '50%', background: DOT[tone] || DOT.neutral, flexShrink: 0 }} />
+    <span style={{ width: size, height: size, borderRadius: '50%', background: color || DOT[tone] || DOT.neutral, flexShrink: 0 }} />
     {label != null && <span className="BodySmallRegular">{label}</span>}
   </span>
 )
@@ -129,23 +129,6 @@ export function HealthBar({ value, width = 44 }) {
 // ── card + table style tokens (import into components) ──
 // v2: BORDERLESS — white on soft canvas, depth from one soft shadow only.
 export const CARD = { background: 'var(--background-surface-intense)', borderRadius: 'var(--global-border-radius-large)', boxShadow: 'var(--fds-shadow-sm)' }
-
-// small tinted icon chip — anchors a KPI card / stat row (reference style)
-const CHIP = {
-  info:     { bg: 'var(--background-info-secondary)',     fg: 'var(--text-info-default)' },
-  positive: { bg: 'var(--background-positive-secondary)', fg: 'var(--text-positive-default)' },
-  warning:  { bg: 'var(--background-warning-secondary)',  fg: 'var(--text-warning-default)' },
-  critical: { bg: 'var(--background-error-secondary)',    fg: 'var(--text-error-default)' },
-  neutral:  { bg: 'var(--background-surface-subtle)',     fg: 'var(--text-gray-secondary)' },
-}
-export function IconChip({ tone = 'info', size = 34, children }) {
-  const t = CHIP[tone] || CHIP.info
-  return (
-    <span style={{ width: size, height: size, borderRadius: size * 0.32, background: t.bg, color: t.fg, display: 'inline-grid', placeItems: 'center', flexShrink: 0 }}>
-      {children}
-    </span>
-  )
-}
 
 // filter chip — single-select pill row (ink when active); optional muted count
 export function FilterChip({ active, onClick, count, children }) {

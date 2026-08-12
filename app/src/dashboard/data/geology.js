@@ -28,13 +28,3 @@ export function rockRates(rockId) {
     costPerM: 180 + h * 95,                  // ₹/m
   }
 }
-
-// SVG <defs> patterns for the stratigraphic column. Rendered once by StrataColumn.
-export const TEXTURE_DEFS = (
-  '<pattern id="tx-dots" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="rgba(0,0,0,0.28)"/></pattern>' +
-  '<pattern id="tx-stipple" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="0.7" fill="rgba(0,0,0,0.22)"/><circle cx="4.5" cy="4" r="0.7" fill="rgba(0,0,0,0.22)"/></pattern>' +
-  '<pattern id="tx-hlines" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="none"/><path d="M0 3 H6" stroke="rgba(0,0,0,0.3)" stroke-width="1"/></pattern>' +
-  '<pattern id="tx-brick" width="12" height="8" patternUnits="userSpaceOnUse"><path d="M0 0 H12 M0 4 H12 M0 0 V4 M6 4 V8 M0 8 H12" stroke="rgba(0,0,0,0.24)" stroke-width="0.8" fill="none"/></pattern>' +
-  '<pattern id="tx-cross" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 0 L8 8 M8 0 L0 8" stroke="rgba(0,0,0,0.28)" stroke-width="0.9"/></pattern>'
-)
-export const TEXTURE_URL = { dots: 'url(#tx-dots)', stipple: 'url(#tx-stipple)', hlines: 'url(#tx-hlines)', brick: 'url(#tx-brick)', cross: 'url(#tx-cross)' }

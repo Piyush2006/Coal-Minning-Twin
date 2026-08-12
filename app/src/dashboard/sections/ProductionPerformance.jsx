@@ -136,7 +136,7 @@ export function ProductionPerformance() {
 
       {shiftMode && (
         <Panel>
-          <div className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8 }}>Shift breakdown</div>
+          <div style={{ marginBottom: 8 }}><span className="eyebrow">Shift breakdown</span></div>
           <div style={{ display: 'grid', gridTemplateColumns: '90px repeat(4, 1fr)', gap: 8, alignItems: 'center' }}>
             {['', 'Actual', 'Throughput', 'Yield', 'Cost/T'].map((h, i) => (
               <span key={i} className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)' }}>{h}</span>

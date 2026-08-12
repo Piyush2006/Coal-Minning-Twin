@@ -5,9 +5,9 @@
 import { useState } from 'react'
 import { useDash } from '../store'
 import { useBruceInsight } from '../lib/bruceInsights'
+import { BRUCE_GRADIENT as GRADIENT } from './ui'
 
 const LOGO = '/bruce-logo.svg'
-const GRADIENT = 'linear-gradient(135deg, #a779f0 0%, #5b5bf0 100%)'
 const DOT = {
   critical: 'var(--background-error-default)', warning: 'var(--background-warning-default)',
   positive: 'var(--background-positive-default)', normal: 'var(--text-gray-tertiary)',

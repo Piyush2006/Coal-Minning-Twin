@@ -4,7 +4,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { DropdownMenu } from '@faclon-labs/design-sdk/DropdownMenu'
 import { ActionListItem } from '@faclon-labs/design-sdk/ActionListItem'
-import { NUM } from '../calc/format'
 
 export function useOutside(ref, cb) {
   const saved = useRef(cb); saved.current = cb
@@ -145,24 +144,6 @@ export function Panel({ children, style, pad = 20 }) {
   return (
     <div style={{ background: 'var(--background-surface-intense)', borderRadius: 'var(--global-border-radius-large)', boxShadow: 'var(--fds-shadow-sm)', padding: pad, ...style }}>
       {children}
-    </div>
-  )
-}
-
-// KPI tile — same borderless card language
-export function KpiTile({ children, style }) {
-  return (
-    <div style={{ background: 'var(--background-surface-intense)', borderRadius: 'var(--global-border-radius-large)', boxShadow: 'var(--fds-shadow-sm)', padding: 18, display: 'grid', gap: 6, alignContent: 'start', ...style }}>
-      {children}
-    </div>
-  )
-}
-
-export function SectionHeading({ n, title }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-      {n != null && <span className="BodySmallSemibold" style={{ color: 'var(--text-brand-default)', ...NUM }}>{String(n).padStart(2, '0')}</span>}
-      <h2 className="HeadingMediumSemibold" style={{ margin: 0 }}>{title}</h2>
     </div>
   )
 }

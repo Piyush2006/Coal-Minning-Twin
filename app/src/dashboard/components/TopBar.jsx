@@ -42,7 +42,7 @@ function AnchoredPopover({ anchorRef, open, onClose, align = 'right', style, chi
   }, [open, onClose, anchorRef])
   if (!open || !pos) return null
   return createPortal(
-    <div ref={popRef} className="dash-theme" style={{ position: 'fixed', top: pos.top, left: pos.left, right: pos.right, zIndex: 9999,
+    <div ref={popRef} className="dash-theme" style={{ position: 'fixed', top: pos.top, left: pos.left, right: pos.right, zIndex: 10500,
       background: 'var(--background-surface-intense)', borderRadius: 16, boxShadow: 'var(--fds-shadow-lg)', padding: 8, ...style }}>
       {children}
     </div>, document.body)

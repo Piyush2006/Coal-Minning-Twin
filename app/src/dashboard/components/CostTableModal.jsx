@@ -2,7 +2,7 @@
 // a modal. In shift mode the header becomes two levels — a shift group spanning
 // its metric columns (Day | Shift 1 [metrics] | Shift 2 [metrics]).
 import { Modal } from './primitives'
-import { usePagination, Pager } from './ui'
+import { usePagination, Pager, th, td } from './ui'
 import { NUM, fmt } from '../calc/format'
 import { CURRENCY } from '../data/taxonomy'
 
@@ -55,20 +55,21 @@ async function exportXlsx(rows, shiftMode, shiftNames) {
   XLSX.writeFile(wb, `blackridge-operating-cost-${shiftMode ? 'shiftwise' : 'daily'}.xlsx`)
 }
 
-const TH = (align, extra) => ({ padding: '8px 12px', textAlign: align, color: 'var(--text-gray-secondary)', fontWeight: 600, whiteSpace: 'nowrap', borderBottom: '1px solid var(--border-gray-default)', ...extra })
-const TD = (align, extra) => ({ padding: '7px 12px', textAlign: align, whiteSpace: 'nowrap', borderBottom: '1px solid var(--border-gray-subtle)', color: 'var(--text-gray-primary)', ...extra })
-const GROUP = { background: 'var(--background-surface-subtle)', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--border-gray-default)', borderLeft: '1px solid var(--border-gray-subtle)' }
+// the two-row shift-group spanning header is the one thing shared th() can't
+// express — keep it bespoke; everything else uses shared th()/td().
+const GROUP = { textAlign: 'center', borderLeft: '1px solid var(--border-gray-subtle)' }
+const LEFTBORDER = { borderLeft: '1px solid var(--border-gray-subtle)' }
 
 export function CostTableModal({ isOpen, onClose, costByDay = [], shiftMode, shiftNames = ['Shift 1', 'Shift 2'] }) {
   const rows = costByDay
   const pg = usePagination(rows, { resetKey: `${isOpen}|${shiftMode}` })
   const metricHead = (prefix) => METRICS.map((m, i) => (
-    <th key={prefix + m.key} style={TH('right', i === 0 ? { borderLeft: '1px solid var(--border-gray-subtle)' } : null)}>
-      {m.label}<span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', fontWeight: 400 }}> ({m.unit})</span>
+    <th key={prefix + m.key} style={{ ...th('right'), ...(i === 0 ? LEFTBORDER : null) }}>
+      {m.label}<span className="BodyXSmallRegular" style={{ color: 'var(--text-gray-tertiary)', fontWeight: 400, textTransform: 'none' }}> ({m.unit})</span>
     </th>
   ))
-  const metricCells = (row, i0) => METRICS.map((m, i) => (
-    <td key={m.key} style={TD('right', { ...NUM, ...(i === 0 ? { borderLeft: '1px solid var(--border-gray-subtle)' } : null) })}>{val(m, row[m.key])}</td>
+  const metricCells = (row) => METRICS.map((m, i) => (
+    <td key={m.key} style={{ ...td('right'), ...NUM, ...(i === 0 ? LEFTBORDER : null) }}>{val(m, row[m.key])}</td>
   ))
 
   return (
@@ -91,27 +92,27 @@ export function CostTableModal({ isOpen, onClose, costByDay = [], shiftMode, shi
           <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
             {shiftMode ? (
               <>
-                <tr style={{ background: 'var(--background-surface-intense)' }}>
-                  <th rowSpan={2} style={TH('left', { background: 'var(--background-surface-subtle)' })}>Day</th>
-                  <th colSpan={METRICS.length} style={{ ...TH('center'), ...GROUP }}>{shiftNames[0]}</th>
-                  <th colSpan={METRICS.length} style={{ ...TH('center'), ...GROUP }}>{shiftNames[1]}</th>
+                <tr>
+                  <th rowSpan={2} style={th('left')}>Day</th>
+                  <th colSpan={METRICS.length} style={{ ...th('center'), ...GROUP }}>{shiftNames[0]}</th>
+                  <th colSpan={METRICS.length} style={{ ...th('center'), ...GROUP }}>{shiftNames[1]}</th>
                 </tr>
-                <tr style={{ background: 'var(--background-surface-intense)' }}>
+                <tr>
                   {metricHead('s0-')}
                   {metricHead('s1-')}
                 </tr>
               </>
             ) : (
-              <tr style={{ background: 'var(--background-surface-subtle)' }}>
-                <th style={TH('left')}>Day</th>
+              <tr>
+                <th style={th('left')}>Day</th>
                 {metricHead('t-')}
               </tr>
             )}
           </thead>
           <tbody>
-            {pg.pageItems.map((r, idx) => (
-              <tr key={r.date} style={{ background: idx % 2 ? 'var(--background-surface-subtle)' : 'transparent' }}>
-                <td style={TD('left', { fontWeight: 600 })}>{r.date}</td>
+            {pg.pageItems.map((r) => (
+              <tr key={r.date}>
+                <td style={{ ...td('left'), fontWeight: 600 }}>{r.date}</td>
                 {shiftMode
                   ? <>{metricCells(r.shifts[0])}{metricCells(r.shifts[1])}</>
                   : metricCells(r.total)}
@@ -119,16 +120,16 @@ export function CostTableModal({ isOpen, onClose, costByDay = [], shiftMode, shi
             ))}
           </tbody>
           <tfoot>
-            <tr style={{ background: 'var(--background-surface-intense)', borderTop: '2px solid var(--border-gray-default)' }}>
-              <td style={TD('left', { fontWeight: 700 })}>Total</td>
+            <tr style={{ background: 'var(--background-surface-intense)' }}>
+              <td style={{ ...td('left'), fontWeight: 700 }}>Total</td>
               {shiftMode
                 ? [0, 1].map(si => METRICS.map((m, i) => (
-                    <td key={si + m.key} style={TD('right', { ...NUM, fontWeight: 700, ...(i === 0 ? { borderLeft: '1px solid var(--border-gray-subtle)' } : null) })}>
+                    <td key={si + m.key} style={{ ...td('right'), ...NUM, fontWeight: 700, ...(i === 0 ? LEFTBORDER : null) }}>
                       {val(m, sumBy(rows, r => r.shifts[si], m.key))}
                     </td>
                   )))
                 : METRICS.map(m => (
-                    <td key={m.key} style={TD('right', { ...NUM, fontWeight: 700 })}>{val(m, sumBy(rows, r => r.total, m.key))}</td>
+                    <td key={m.key} style={{ ...td('right'), ...NUM, fontWeight: 700 }}>{val(m, sumBy(rows, r => r.total, m.key))}</td>
                   ))}
             </tr>
           </tfoot>

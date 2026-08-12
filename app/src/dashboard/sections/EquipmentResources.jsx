@@ -8,13 +8,10 @@ import { buildResources } from '../calc/resources'
 import { rosterById, EQUIP_STATE, RESOURCE_TYPE_OPTIONS } from '../data/resources'
 import { NUM, fmt } from '../calc/format'
 import { Panel, Dropdown } from '../components/primitives'
-import { CARD, Eyebrow, Pill, HealthBar, th, td, usePagination, Pager } from '../components/ui'
+import { CARD, Eyebrow, Pill, HealthBar, StatusDot, th, td, usePagination, Pager } from '../components/ui'
 import { EquipmentDrawer } from '../components/EquipmentDrawer'
 
-const StatusPill = ({ status }) => {
-  const e = EQUIP_STATE[status] || EQUIP_STATE.Idle
-  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><span style={{ width: 9, height: 9, borderRadius: '50%', background: e.color, flexShrink: 0 }} /><span className="BodySmallRegular">{status}</span></span>
-}
+const StatusPill = ({ status }) => <StatusDot color={(EQUIP_STATE[status] || EQUIP_STATE.Idle).color} label={status} />
 
 export function EquipmentResources() {
   const { range, mineId, areaId, equipTypeId, settings } = useDash()
