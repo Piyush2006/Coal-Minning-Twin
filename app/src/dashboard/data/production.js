@@ -23,14 +23,15 @@ export function productionDay(date, scope, s, plannedCoalForDay = null, plannedS
   const plannedOpH = s.plannedOperatingHoursPerDay
   const nominalRate = basis / plannedOpH                            // T/hr around which actual is built
 
-  const bad = r() < 0.16                                            // ~1 in 6 days runs rough
+  const bad = r() < 0.10                                            // ~1 in 10 days runs rough
   // downtime hours: baseline wear + a bad-day event + Sunday maintenance
-  let downH = 0.6 + r() * 1.8 + (bad ? 2.4 + r() * 3.4 : 0) + (dow === 0 ? 1.4 + r() * 1.4 : 0)
+  let downH = 0.15 + r() * 0.5 + (bad ? 0.8 + r() * 1.2 : 0) + (dow === 0 ? 0.3 + r() * 0.3 : 0)
   downH = Math.min(downH, plannedOpH * 0.55)
   const operatingHours = Math.max(plannedOpH * 0.35, plannedOpH - downH)
 
-  // throughput efficiency (achieved rate vs the rate needed for plan)
-  const rateEff = bad ? 0.82 + r() * 0.08 : 0.94 + r() * 0.10
+  // throughput efficiency (achieved rate vs the rate needed for plan) — the
+  // operation runs on-plan (~99%); a rough day still bites.
+  const rateEff = bad ? 0.92 + r() * 0.05 : 1.005 + r() * 0.05
   const actualRate = nominalRate * rateEff
   const actualTonnes = operatingHours * actualRate
 

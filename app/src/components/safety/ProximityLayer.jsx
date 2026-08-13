@@ -1,10 +1,10 @@
-// Collision & Proximity layer. A staged, legible story around the real Stage-2
-// AUTO-STOP: raised "fence" detection zones follow each HEMM; entering the warn
-// zone fires an amber pulse ring; entering the danger zone fires a red shockwave,
-// snaps a thick tether to the worker, and raises an AUTO-STOP banner + brake glow
-// over the truck while vehicleMotion actually brings it to a halt; clearing it
-// shows RESUMING. Detection is always on (feeds liveSafety → safety-1); the
-// visuals are gated on the safety layer OR a live breach.
+// Worker–Vehicle Proximity layer. WORKER safety only — a vehicle reacts when a
+// WORKER enters its detection zone (vehicle-vs-vehicle proximity is intentionally
+// not modelled). Entering the warn zone slows the truck + shows a soft underglow;
+// entering the danger zone snaps a thick tether to the worker, fires a shockwave
+// + brake glow, and vehicleMotion brings the truck to an AUTO-STOP. Detection is
+// always on (feeds liveSafety → safety-1); visuals gate on the safety layer OR a
+// live breach.
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
@@ -13,11 +13,11 @@ import { useSceneStore } from '../../store/sceneStore'
 import { useSafetyLayer } from '../../lib/safetyLayer'
 import { workerPosMap } from '../../lib/workerPosMap'
 import { vehicleState, setSpeedTarget, clearSpeedTarget, requestStop, releaseStop } from '../../lib/vehicleMotion'
-import { proximityStateMap, workerBreach, zonesFor, zoneTest, zoneOutline } from '../../lib/proximity'
+import { proximityStateMap, workerBreach, zonesFor, zoneTest } from '../../lib/proximity'
 import { liveSafety, seedCounters } from '../../lib/liveSafety'
 import { phantom } from '../../lib/nearMissDirector'
 import { SiteWorker } from '../assets/SiteWorker'
-import { fenceMat, shockMat, flowMat } from './safetyShaders'
+import { shockMat, flowMat } from './safetyShaders'
 
 // The near-miss "phantom": a real worker figure the director places on a haul
 // road, module-controlled so the sim can't revert it. Parked far when idle.
@@ -38,58 +38,32 @@ export function NearMissActor() {
 }
 
 const WARN_COLOR = '#F79009', DANGER_COLOR = '#F04438', OK_COLOR = '#2E90FA'
-const WALL_H = 0.42
-
-// Egg-zone geometry: line + filled fan + a vertical "fence" wall around the
-// outline. Shared per (f,r,s).
-const _geoCache = new Map()
-function zoneGeo(f, r, s) {
-  const key = `${f},${r},${s}`
-  let g = _geoCache.get(key)
-  if (g) return g
-  const pts = zoneOutline(f, r, s, 48)
-  const n = pts.length
-  const line = new Float32Array(n * 3)
-  pts.forEach(([x, z], i) => { line[i * 3] = x; line[i * 3 + 1] = 0; line[i * 3 + 2] = z })
-  const lineGeo = new THREE.BufferGeometry(); lineGeo.setAttribute('position', new THREE.BufferAttribute(line, 3))
-  const pos = new Float32Array((n + 1) * 3)
-  pts.forEach(([x, z], i) => { pos[(i + 1) * 3] = x; pos[(i + 1) * 3 + 1] = 0; pos[(i + 1) * 3 + 2] = z })
-  const idx = []; for (let i = 1; i < n; i++) idx.push(0, i, i + 1)
-  const fillGeo = new THREE.BufferGeometry(); fillGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); fillGeo.setIndex(idx)
-  // wall ribbon (vertical quads along the outline) with aY (0 bottom→1 top) and
-  // aU (0..1 around the loop) so the fence shader can top-fade + flow energy
-  const wv = [], wy = [], wu = []
-  for (let i = 0; i < n; i++) {
-    const [x0, z0] = pts[i], [x1, z1] = pts[(i + 1) % n]
-    const u0 = i / n, u1 = (i + 1) / n
-    wv.push(x0, 0, z0, x1, 0, z1, x1, WALL_H, z1, x0, 0, z0, x1, WALL_H, z1, x0, WALL_H, z0)
-    wy.push(0, 0, 1, 0, 1, 1)
-    wu.push(u0, u1, u1, u0, u1, u0)
-  }
-  const wallGeo = new THREE.BufferGeometry()
-  wallGeo.setAttribute('position', new THREE.Float32BufferAttribute(wv, 3))
-  wallGeo.setAttribute('aY', new THREE.Float32BufferAttribute(wy, 1))
-  wallGeo.setAttribute('aU', new THREE.Float32BufferAttribute(wu, 1))
-  const topLine = new Float32Array(n * 3)
-  pts.forEach(([x, z], i) => { topLine[i * 3] = x; topLine[i * 3 + 1] = WALL_H; topLine[i * 3 + 2] = z })
-  const topGeo = new THREE.BufferGeometry(); topGeo.setAttribute('position', new THREE.BufferAttribute(topLine, 3))
-  g = { lineGeo, fillGeo, wallGeo, topGeo }; _geoCache.set(key, g)
-  return g
-}
 
 const SHOCK_GEO = new THREE.RingGeometry(0.86, 1.0, 44)
 const BRAKE_GEO = new THREE.BoxGeometry(1.0, 0.14, 0.14)
 
+// soft radial underglow — bright centre fading to transparent, laid flat under the
+// vehicle. Colour + opacity are driven per-frame; only shown in warn/breach.
+const GLOW_GEO = new THREE.PlaneGeometry(1, 1)
+const GLOW_TEX = (() => {
+  const s = 128, cv = document.createElement('canvas'); cv.width = cv.height = s
+  const ctx = cv.getContext('2d')
+  const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2)
+  g.addColorStop(0, 'rgba(255,255,255,0.95)')
+  g.addColorStop(0.4, 'rgba(255,255,255,0.40)')
+  g.addColorStop(1, 'rgba(255,255,255,0)')
+  ctx.fillStyle = g; ctx.fillRect(0, 0, s, s)
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t
+})()
+
 // ── one vehicle's pod + zones + fence + shockwave + banner ──
 function VehicleZone({ id, type }) {
-  const grp = useRef(), podLed = useRef()
-  const outerLine = useRef(), outerFill = useRef(), outerWall = useRef(), innerLine = useRef(), innerFill = useRef()
-  const shock = useRef(), brake = useRef(), bannerGrp = useRef(), bannerDiv = useRef()
+  const grp = useRef(), podLed = useRef(), zonesGrp = useRef(), glow = useRef()
+  const shock = useRef(), brake = useRef()
   const wave = useRef({ t: 99, kind: 'warn' }), prevState = useRef('ok')
   const z = zonesFor(type)
-  const outer = zoneGeo(z.outer.f, z.outer.r, z.outer.s)
-  const inner = zoneGeo(z.inner.f, z.inner.r, z.inner.s)
-  const mats = useMemo(() => ({ fence: fenceMat('#2E90FA'), shock: shockMat() }), [])
+  const glowR = Math.max(5, z.inner.r * 0.7)   // underglow radius — hugs the chassis base
+  const mats = useMemo(() => ({ shock: shockMat() }), [])
 
   useFrame(({ clock }, dt) => {
     const st = vehicleState(id)
@@ -110,16 +84,15 @@ function VehicleZone({ id, type }) {
       prevState.current = state
     }
 
-    // zones — flat rings/fills + the energy-fence wall (shader)
-    const zc = warn || breach ? WARN_COLOR : OK_COLOR
-    if (outerLine.current) { outerLine.current.material.color.set(zc); outerLine.current.material.opacity = warn || breach ? 0.55 + 0.4 * pulse : 0.34 }
-    if (outerFill.current) outerFill.current.material.opacity = warn || breach ? 0.13 : 0.05
-    mats.fence.uniforms.uColor.value.set(zc)
-    mats.fence.uniforms.uTime.value = clock.elapsedTime
-    mats.fence.uniforms.uOpacity.value = warn || breach ? 0.34 : 0.16
-    mats.fence.uniforms.uFlow.value = warn || breach ? 1.0 : 0.35
-    if (innerLine.current) { innerLine.current.material.color.set(DANGER_COLOR); innerLine.current.material.opacity = breach ? 0.7 + 0.3 * pulse : 0.32 }
-    if (innerFill.current) innerFill.current.material.opacity = breach ? 0.20 : 0.05
+    // proximity — a soft underglow hugging the vehicle's base, drawn only while
+    // this vehicle is in a warn/breach state (amber → red). It's attached to the
+    // vehicle (no ground ring), so tight clusters never stack into overlapping
+    // soup. Idle trucks show just the cab radar pod.
+    if (zonesGrp.current) zonesGrp.current.visible = warn || breach
+    if ((warn || breach) && glow.current) {
+      glow.current.material.color.set(breach ? DANGER_COLOR : WARN_COLOR)
+      glow.current.material.opacity = (breach ? 0.5 : 0.34) + 0.22 * pulse
+    }
     if (podLed.current) podLed.current.material.color.set(col)
 
     // shockwave ring on zone entry
@@ -135,16 +108,8 @@ function VehicleZone({ id, type }) {
       } else shock.current.visible = false
     }
 
-    // brake glow + AUTO-STOP / RESUMING banner
+    // brake glow while halted
     if (brake.current) { brake.current.visible = breach; brake.current.material.opacity = breach ? 0.5 + 0.5 * pulse : 0 }
-    if (bannerGrp.current) {
-      const show = breach
-      bannerGrp.current.visible = show
-      if (show && bannerDiv.current && bannerDiv.current._s !== 'stop') {
-        bannerDiv.current.textContent = '■ AUTO-STOP · proximity'
-        bannerDiv.current.style.background = 'rgba(200,32,24,0.94)'; bannerDiv.current._s = 'stop'
-      }
-    }
   })
 
   return (
@@ -159,23 +124,14 @@ function VehicleZone({ id, type }) {
       <mesh ref={brake} geometry={BRAKE_GEO} position={[-2.6, 0.9, 0]} visible={false}>
         <meshBasicMaterial color={DANGER_COLOR} transparent opacity={0} toneMapped={false} />
       </mesh>
-      {/* AUTO-STOP banner over the truck */}
-      <group ref={bannerGrp} position={[0, 3.5, 0]} visible={false}>
-        <Html center distanceFactor={10} style={{ pointerEvents: 'none' }} zIndexRange={[50, 0]}>
-          <div ref={bannerDiv} style={{ fontFamily: "'SF Mono', ui-monospace, monospace", fontSize: 12, fontWeight: 800, letterSpacing: 0.3,
-            color: '#fff', background: 'rgba(200,32,24,0.94)', border: '1px solid rgba(255,150,130,0.8)', borderRadius: 6,
-            padding: '3px 9px', whiteSpace: 'nowrap', boxShadow: '0 2px 10px rgba(180,20,15,0.5)' }}>■ AUTO-STOP · proximity</div>
-        </Html>
-      </group>
       {/* shockwave ring on zone entry */}
       <mesh ref={shock} geometry={SHOCK_GEO} material={mats.shock} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} visible={false} renderOrder={3} />
-      {/* ground zones + energy-fence wall */}
-      <lineLoop ref={outerLine} geometry={outer.lineGeo}><lineBasicMaterial color={OK_COLOR} transparent opacity={0.34} toneMapped={false} depthWrite={false} /></lineLoop>
-      <mesh ref={outerFill} geometry={outer.fillGeo}><meshBasicMaterial color={WARN_COLOR} transparent opacity={0.05} side={THREE.DoubleSide} depthWrite={false} toneMapped={false} /></mesh>
-      <mesh ref={outerWall} geometry={outer.wallGeo} material={mats.fence} />
-      <lineLoop geometry={outer.topGeo}><lineBasicMaterial color={OK_COLOR} transparent opacity={0.12} toneMapped={false} depthWrite={false} /></lineLoop>
-      <lineLoop ref={innerLine} geometry={inner.lineGeo}><lineBasicMaterial color={DANGER_COLOR} transparent opacity={0.32} toneMapped={false} depthWrite={false} /></lineLoop>
-      <mesh ref={innerFill} geometry={inner.fillGeo}><meshBasicMaterial color={DANGER_COLOR} transparent opacity={0.05} side={THREE.DoubleSide} depthWrite={false} toneMapped={false} /></mesh>
+      {/* proximity underglow — soft glow at the vehicle base, hidden until warn/breach */}
+      <group ref={zonesGrp} visible={false}>
+        <mesh ref={glow} geometry={GLOW_GEO} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} scale={[glowR * 2, glowR * 2, 1]} renderOrder={2}>
+          <meshBasicMaterial map={GLOW_TEX} color={WARN_COLOR} transparent opacity={0.4} depthWrite={false} toneMapped={false} />
+        </mesh>
+      </group>
     </group>
   )
 }
@@ -217,19 +173,19 @@ export function ProximityLayer() {
     for (const veh of vs) {
       const z = zonesFor(veh.type)
       let worst = 'ok', closestDangerDist = Infinity, closestTarget = null
-      const consider = (tx, tz, isWorker, tid) => {
+      // WORKERS ONLY — vehicle-vs-vehicle proximity is intentionally not modelled.
+      const consider = (tx, tz, tid) => {
         const dx = tx - veh.x, dz = tz - veh.z, dist = Math.hypot(dx, dz)
-        if (isWorker && dist < siteMinWorker) siteMinWorker = dist
+        if (dist < siteMinWorker) siteMinWorker = dist
         if (zoneTest(veh.x, veh.z, veh.yaw, tx, tz, z.inner).inside) {
           worst = 'danger'
-          if (isWorker) { anyInnerWorker = true; noteWorker(tid, 2, veh.id, dist) }
+          anyInnerWorker = true; noteWorker(tid, 2, veh.id, dist)
           if (dist < closestDangerDist) { closestDangerDist = dist; closestTarget = { x: tx, z: tz } }
           return
         }
-        if (zoneTest(veh.x, veh.z, veh.yaw, tx, tz, z.outer).inside) { if (worst === 'ok') worst = 'warn'; if (isWorker) noteWorker(tid, 1, veh.id, dist) }
+        if (zoneTest(veh.x, veh.z, veh.yaw, tx, tz, z.outer).inside) { if (worst === 'ok') worst = 'warn'; noteWorker(tid, 1, veh.id, dist) }
       }
-      for (const w of workers) consider(w.x, w.z, true, w.id)
-      for (const o of vs) if (o.id !== veh.id) consider(o.x, o.z, false, o.id)
+      for (const w of workers) consider(w.x, w.z, w.id)
 
       proximityStateMap.set(veh.id, worst)
       if (worst === 'danger') { requestStop(veh.id, 'proximity-danger'); clearSpeedTarget(veh.id, 'proximity-warning') }

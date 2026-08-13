@@ -85,8 +85,29 @@ export function safetyDay(date, scope) {
         camera: `CV-${String(1 + Math.floor(rng() * 18)).padStart(2, '0')}`,
         confidence: Math.round((0.82 + rng() * 0.16) * 100),
         image: `/vision/${conf.image}`,
+        resolved: false,               // open until an action is raised (or curated resolved)
       })
     }
   }
+
+  // Curated demo — TODAY's live board: a single PPE violation that has already
+  // been actioned (resolved), and nothing open right now. Past days keep their
+  // procedural events so the trend/log still tell a real story.
+  if (dayKey(date) === dayKey(new Date())) {
+    const conf = EVIDENCE.PPE
+    const item = pick(rng, conf.items)
+    const today = new Date()
+    return {
+      date, cats, s1,
+      events: [{
+        id: `${dayKey(date)}-PPE-curated`,
+        ts: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 8, 12).getTime(),
+        cat: 'PPE', severity: item.sev, description: item.text,
+        location: pick(rng, conf.loc), camera: 'CV-04',
+        confidence: 94, image: `/vision/${conf.image}`, resolved: true,
+      }],
+    }
+  }
+
   return { date, cats, s1, events }
 }

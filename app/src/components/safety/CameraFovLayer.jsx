@@ -8,6 +8,7 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useSceneStore } from '../../store/sceneStore'
+import { useSafetyLayer } from '../../lib/safetyLayer'
 import { ppeCameraDetections } from '../../lib/ppeVision'
 import { coneMat, sweepMat } from './safetyShaders'
 
@@ -85,10 +86,12 @@ function CameraFov({ cam }) {
 }
 
 export function CameraFovLayer() {
+  const on = useSafetyLayer(s => s.on)   // gated like the other safety overlays — the projector beam in DetectionBoxLayer conveys scanning
   const camKey = useSceneStore(s => Object.keys(s.objects).filter(id => s.objects[id].type === 'ppe_camera').sort().join(','))
   const cams = useMemo(() => {
     const o = useSceneStore.getState().objects
     return (camKey ? camKey.split(',') : []).map(id => ({ id, position: o[id].position, config: o[id].config }))
   }, [camKey])
+  if (!on) return null
   return <>{cams.map(c => <CameraFov key={c.id} cam={c} />)}</>
 }

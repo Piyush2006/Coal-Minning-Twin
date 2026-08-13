@@ -12,7 +12,7 @@
 import { RATED, YIELD, BUFFERS } from './chainSim'
 import { createMotorThermal } from './motorThermal'
 
-const COAL_TRUCKS = ['truck-1', 'truck-2', 'truck-4', 'truck-5', 'truck-7']
+const COAL_TRUCKS = ['truck-1', 'truck-2', 'truck-3']
 const isDown = (o) => !o || o.status === 'fault' || o.status === 'idle' || o.status === 'off'
 const num = (o, k, d = 0) => { const v = Number(o?.parameters?.[k]); return Number.isFinite(v) ? v : d }
 

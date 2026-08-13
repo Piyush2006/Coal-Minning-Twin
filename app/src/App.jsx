@@ -24,6 +24,8 @@ import { CameraFeedRenderer, CameraFeedPanel } from './components/CameraFeed'
 import { RestrictedZones } from './components/safety/RestrictedZones'
 import { ProximityLayer, NearMissActor } from './components/safety/ProximityLayer'
 import { DetectionBoxLayer } from './components/safety/DetectionBoxLayer'
+import { PdmBadgeLayer } from './components/PdmBadgeLayer'
+import { PdmDrawerHost } from './components/PdmDrawerHost'
 import { CameraFovLayer } from './components/safety/CameraFovLayer'
 import { proximityState, workerBreachInfo as _workerBreachInfo } from './lib/proximity'
 import { startNearMiss, stopNearMiss, nearMissActive, phantom as _phantom } from './lib/nearMissDirector'
@@ -1531,6 +1533,7 @@ export default function App() {
                 <RestrictedZones />
                 <ProximityLayer />
                 <DetectionBoxLayer />
+                <PdmBadgeLayer editMode={editMode} />
                 <CameraFovLayer />
                 <NearMissActor />
                 <CameraController orbitRef={orbitRef} />
@@ -1559,6 +1562,9 @@ export default function App() {
 
               {/* viewport controls — zoom / reset view / undo / redo */}
               {<ViewportControls orbitRef={orbitRef} leftEdge={leftEdge} />}
+
+              {/* PdM drawer — dashboard's Predictive side panel over the twin */}
+              <PdmDrawerHost />
             </div>
 
             {/* Process Flow fully replaces the 3D view when active */}

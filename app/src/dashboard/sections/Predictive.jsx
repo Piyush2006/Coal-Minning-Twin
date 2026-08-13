@@ -126,7 +126,8 @@ const CountTile = ({ label, value, status, total, onClick, active }) => {
   )
 }
 
-function AlertDrawer({ a, onClose }) {
+// exported: the 3D twin reuses this drawer for its PdM badges (see PdmDrawerHost)
+export function AlertDrawer({ a, onClose }) {
   const [sensorsOpen, setSensorsOpen] = useState(false)
   const sc = STATUS[SEV_COLOR[a.severity]]
   const eSt = FLEET_STATE[a.status]

@@ -6,7 +6,7 @@ import { useSceneStore } from '../store/sceneStore'
 import { useActiveAlerts, alertSeverityMap, ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
 import { useFeedStore } from './CameraFeed'
 import { pathFillMap } from '../lib/loadStateMap'
-import { vehicleMotion, accelFor, effectiveCap, integrate, stoppingSpeed } from '../lib/vehicleMotion'
+import { vehicleMotion, accelFor, effectiveCap, integrate, stoppingSpeed, convoyFor, convoyLeave } from '../lib/vehicleMotion'
 import { MACHINE_COMPONENTS, getPorts } from '../lib/machineLibrary'
 import { CompositeAsset } from './CompositeAsset'
 import { SubComponentsLayer } from './SubComponentsLayer'
@@ -169,7 +169,13 @@ function PathDrive({ obj, editMode, children }) {
     return { curve, len, curv, N }
   }, [key]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useFrame((_, delta) => {
+  // convoy membership cleanup on unmount / path change
+  useEffect(() => {
+    if (!path?.convoy) return
+    return () => convoyLeave(key, obj.id)
+  }, [key, obj.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useFrame((rootState, delta) => {
     const g = ref.current
     if (!g || !geom) return
     const st = vehicleMotion(obj.id)
@@ -186,45 +192,98 @@ function PathDrive({ obj, editMode, children }) {
     const dwell = Math.max(0, Number(path.dwell) || 0)
     const { accel, decel } = accelFor(obj.type)
     const ls = path.loadState
+    const convoy = !!path.convoy
+    const crawl = path.crawl || {}
+    const cBefore = Math.max(0, Number(crawl.before) || 0)   // crawl-zone metres before wp0
+    const cAfter = Math.max(0, Number(crawl.after) || 0)     // …and after it
+    const cSpeed = Number(crawl.speed) || 0.7
 
-    // first running frame: distribute along the loop from path.phase and start
-    // at cruise (so the fleet doesn't visibly spin up from a standstill on load).
-    if (!st.initDone) {
-      st.arc = (((path.phase ?? 0) % 1) + 1) % 1 * len
-      curve.getTangentAt(_clampf(st.arc / len, 0, 0.999999), _pdTan)
-      st.yaw = Math.atan2(-_pdTan.z, _pdTan.x) - (obj.rotation?.[1] ?? 0)
-      st.v = maxSpeed
-      st.initDone = true
+    if (convoy) {
+      // ── convoy mode: all members ride ONE master arc-clock at equal offsets —
+      //    constant spacing by construction, overlap impossible. The dwell stop
+      //    is replaced by the loading-crawl zone around wp0.
+      const cv = convoyFor(key)
+      cv.members.set(obj.id, true)
+      const ids = [...cv.members.keys()].sort()
+      const n = ids.length
+      const slot = ids.indexOf(obj.id)
+      // advance the master exactly once per frame (first member to tick it)
+      if (cv.frame !== rootState.clock.elapsedTime) {
+        cv.frame = rootState.clock.elapsedTime
+        if (!cv.inited) { cv.arc = 0; cv.v = maxSpeed; cv.inited = true }
+        // master target = MIN over members of (curvature cap, crawl zone, external caps/stops)
+        let target = maxSpeed
+        for (let i = 0; i < n; i++) {
+          const ai = (cv.arc + (i * len) / n) % len
+          const kappa = curv[Math.min(N - 1, Math.floor((ai / len) * N))] || 0
+          let cap = maxSpeed * _clampf(1 - kappa * CURVE_K, CURVE_FLOOR, 1)
+          if ((cBefore > 0 || cAfter > 0) && (ai > len - cBefore || ai < cAfter)) cap = Math.min(cap, cSpeed)
+          cap = effectiveCap(vehicleMotion(ids[i]), cap)   // folds proximity stops + director caps
+          if (cap < target) target = cap
+        }
+        const dv = target - cv.v
+        const a = dv >= 0 ? accel : decel
+        cv.v += Math.sign(dv) * Math.min(Math.abs(dv), a * dtc)
+        if (cv.v < 0) cv.v = 0
+        cv.arc = (cv.arc + cv.v * dtc) % len
+      }
+      st.prevV = st.v
+      st.v = cv.v
+      st.arc = (cv.arc + (slot * len) / n) % len
+      if (!st.initDone) {
+        curve.getTangentAt(_clampf(st.arc / len, 0, 0.999999), _pdTan)
+        st.yaw = Math.atan2(-_pdTan.z, _pdTan.x) - (obj.rotation?.[1] ?? 0)
+        st.initDone = true
+      }
+    } else {
+      // ── independent mode (original): own integration + dwell at wp0 ──
+      // first running frame: distribute along the loop from path.phase and start
+      // at cruise (so the fleet doesn't visibly spin up from a standstill on load).
+      if (!st.initDone) {
+        st.arc = (((path.phase ?? 0) % 1) + 1) % 1 * len
+        curve.getTangentAt(_clampf(st.arc / len, 0, 0.999999), _pdTan)
+        st.yaw = Math.atan2(-_pdTan.z, _pdTan.x) - (obj.rotation?.[1] ?? 0)
+        st.v = maxSpeed
+        st.initDone = true
+      }
+
+      // ── speed target = MIN of cruise / loadedSlow / curvature / dwell-approach,
+      //    then folded with any external caps + hard stops (proximity, director) ─
+      const f0 = st.arc / len
+      let cruise = maxSpeed
+      const slow = Number(path.loadedSlow) || 0
+      if (ls && slow > 1 && f0 < (ls.dumpAt ?? 0.5)) cruise = maxSpeed / slow   // slower while loaded
+      const kappa = curv[Math.min(N - 1, Math.floor(f0 * N))] || 0
+      let cap = Math.min(cruise, maxSpeed * _clampf(1 - kappa * CURVE_K, CURVE_FLOOR, 1))
+      // anticipate the dwell stop at waypoint 0 (ease OUT, not screech to a halt)
+      if (dwell > 0 && st.dwellT <= 0) cap = Math.min(cap, stoppingSpeed(len - st.arc, decel))
+      // hold during the dwell
+      if (st.dwellT > 0) { st.dwellT = Math.max(0, st.dwellT - dtc); cap = 0 }
+
+      integrate(st, effectiveCap(st, cap), accel, decel, dtc)
+
+      // arrival at wp0 → begin the dwell; plain loop wrap otherwise
+      if (dwell > 0 && st.dwellT <= 0 && (len - st.arc) < 0.25 && st.v < 0.4) {
+        st.arc = 0; st.v = 0; st.dwellT = dwell
+      }
+      if (st.arc >= len) st.arc = path.loop !== false ? st.arc - len : len
     }
-
-    // ── speed target = MIN of cruise / loadedSlow / curvature / dwell-approach,
-    //    then folded with any external caps + hard stops (proximity, director) ─
-    const f0 = st.arc / len
-    let cruise = maxSpeed
-    const slow = Number(path.loadedSlow) || 0
-    if (ls && slow > 1 && f0 < (ls.dumpAt ?? 0.5)) cruise = maxSpeed / slow   // slower while loaded
-    const kappa = curv[Math.min(N - 1, Math.floor(f0 * N))] || 0
-    let cap = Math.min(cruise, maxSpeed * _clampf(1 - kappa * CURVE_K, CURVE_FLOOR, 1))
-    // anticipate the dwell stop at waypoint 0 (ease OUT, not screech to a halt)
-    if (dwell > 0 && st.dwellT <= 0) cap = Math.min(cap, stoppingSpeed(len - st.arc, decel))
-    // hold during the dwell
-    if (st.dwellT > 0) { st.dwellT = Math.max(0, st.dwellT - dtc); cap = 0 }
-
     const prevYaw = st.yaw
-    integrate(st, effectiveCap(st, cap), accel, decel, dtc)
-
-    // arrival at wp0 → begin the dwell; plain loop wrap otherwise
-    if (dwell > 0 && st.dwellT <= 0 && (len - st.arc) < 0.25 && st.v < 0.4) {
-      st.arc = 0; st.v = 0; st.dwellT = dwell
-    }
-    if (st.arc >= len) st.arc = path.loop !== false ? st.arc - len : len
     const f = _clampf(st.arc / len, 0, 0.999999)
 
-    // ── load fill (unchanged semantics): ramps 0→1 while parked, then 1 until
-    //    dumpAt, then 0 for the return leg. Rising edge kicks a load-settle dip.
+    // ── load fill: convoy → ramps 0→1 while creeping through the loading-crawl
+    //    zone; independent → ramps while parked at the dwell. Then 1 until
+    //    dumpAt, 0 for the return leg. Rising edge kicks a load-settle dip.
     if (ls) {
-      const fill = st.dwellT > 0 ? Math.min(1, (1 - st.dwellT / dwell) / 0.85)
-        : f < (ls.dumpAt ?? 0.5) ? 1 : 0
+      let fill
+      if (convoy) {
+        const zone = cBefore + cAfter
+        const dIn = st.arc > len - cBefore ? st.arc - (len - cBefore) : (st.arc < cAfter ? st.arc + cBefore : -1)
+        fill = zone > 0 && dIn >= 0 ? Math.min(1, dIn / (zone * 0.85)) : (f < (ls.dumpAt ?? 0.5) ? 1 : 0)
+      } else {
+        fill = st.dwellT > 0 ? Math.min(1, (1 - st.dwellT / dwell) / 0.85)
+          : f < (ls.dumpAt ?? 0.5) ? 1 : 0
+      }
       if ((st._fill ?? 0) < 0.9 && fill >= 0.9) st.settle = 1
       st._fill = fill
       pathFillMap[obj.id] = fill

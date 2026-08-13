@@ -26,6 +26,8 @@ import { useViewTab } from '../lib/viewTab'
 import { triggerScenario, clearScenario, clearAllScenarios, setScenarioExclusive } from '../lib/demoScenarios'
 import { useSafetyLayer } from '../lib/safetyLayer'
 import { startNearMiss, stopNearMiss } from '../lib/nearMissDirector'
+import { rescanWorkers } from './safety/DetectionBoxLayer'
+import { openPdmForTour, closePdm } from '../lib/pdmBridge'
 import { C, R, FONT, glass, SHADOW } from '../ui/theme'
 
 export const useTourStore = create((set) => ({
@@ -54,6 +56,7 @@ function tourCleanupUI() {
     useSceneStore.getState().clearSelection?.()
     useViewTab.getState().setTab('overview')
     stopNearMiss()                          // director never leaks past its beat
+    closePdm()                              // PdM drawer never leaks past its beat
     useSafetyLayer.getState().setOn(false)  // safety overlay off between beats / on exit
   } catch { /* never stall the tour */ }
 }
@@ -117,6 +120,16 @@ function runTourAction(a, segIndex) {
         ok = useSafetyLayer.getState().on === (a.params?.on !== false)
         assert = `safety=${useSafetyLayer.getState().on}`
         break
+      case 'rescan':
+        // synchronized PPE re-scan: clearing several workers together makes
+        // their scan sweeps run in lock-step, verdicts landing together
+        rescanWorkers(a.params?.ids || (a.target ? [a.target] : []))
+        ok = true; assert = `rescan ${(a.params?.ids || []).join('+')}`
+        break
+      case 'pdm':
+        if (a.params?.open !== false) { ok = openPdmForTour(a.target || 'CR-01'); assert = ok ? 'pdm drawer open' : 'no pdm asset' }
+        else { closePdm(); ok = true; assert = 'pdm drawer closed' }
+        break
       case 'director':
         if (a.target === 'near-miss') { ok = !!startNearMiss(a.params); assert = ok ? 'near-miss armed' : 'no rolling truck' }
         else if (a.target === 'stop') { stopNearMiss(); ok = true; assert = 'director stopped' }
@@ -178,7 +191,7 @@ export function TourDriver({ orbitRef }) {
       const hold = Math.max(0, Number(b.hold) || 6)
       const seg = {
         i, p0: prevP, t0: prevT, p1, t1, start, travel, hold,
-        dist: prevP.distanceTo(p1), title: fill(b.title), subtitle: fill(b.subtitle), tag: b.tag ?? null, night: !!b.night, blast: !!b.blast, actions: Array.isArray(b.actions) ? b.actions : null,
+        dist: prevP.distanceTo(p1), title: fill(b.title), subtitle: fill(b.subtitle), tag: b.tag ?? null, blast: !!b.blast, actions: Array.isArray(b.actions) ? b.actions : null,
       }
       start += travel + hold
       prevP = driftEnd(new THREE.Vector3(), p1, t1, hold)
@@ -197,6 +210,7 @@ export function TourDriver({ orbitRef }) {
     mem.current.fired = new Set()
     clearAllScenarios()
     setScenarioExclusive(!!useSceneStore.getState().tour?.presentation)
+    useDayNight.getState().setNight(false)          // night mode retired — the tour never darkens the scene
     tourCleanupUI()
     return () => {
       ctrl.enabled = mem.current.prevEnabled        // handback — camera stays put
@@ -253,14 +267,10 @@ export function TourDriver({ orbitRef }) {
       ctrl.target.copy(seg.t1)
     }
     ctrl.update()
-    // Night beats: flip the mode when a beat is entered — the ~5 s cross-fade
-    // runs inside the beat's travel, so night arrives with the framing.
     if (seg.i !== mem.current.lastSegI) {
       mem.current.lastSegI = seg.i
       tourCleanupUI()                               // previous beat's panels/feeds close as the move starts
       clearAllScenarios()                           // beats fully reset scenarios even if a clear action was skipped
-      const { night, setNight } = useDayNight.getState()
-      if (night !== seg.night) setNight(seg.night)
       if (seg.blast) useBlastStore.getState().trigger()   // legacy blast flag (actions preferred)
     }
     // timed beat actions — each fires once at its offset into the beat

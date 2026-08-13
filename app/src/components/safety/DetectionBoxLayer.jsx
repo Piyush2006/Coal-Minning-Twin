@@ -64,6 +64,13 @@ function DetectionSlot({ reg }) {
 
 const scanState = new Map()   // wid -> { phase, t0, camId, compliant, gone }
 
+// Tour hook: clear the given workers' scan state so their full see→scan→verdict
+// sequence replays on the next detection tick — deleting several at once makes
+// their sweeps run SYNCHRONIZED (same t0), verdicts landing together.
+export function rescanWorkers(ids = []) {
+  for (const id of ids) scanState.delete(id)
+}
+
 export function DetectionBoxLayer() {
   const slots = useRef(new Array(SLOTS).fill(null))
   const camKey = useSceneStore(s => Object.keys(s.objects).filter(id => s.objects[id].type === 'ppe_camera').sort().join(','))

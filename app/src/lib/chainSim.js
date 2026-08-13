@@ -19,7 +19,7 @@
 export const YIELD = 0.78
 
 export const STAGES = [
-  { id: 'face', bucket: 'faceLoading', assets: ['exc-coal-1', 'wl-1'] },
+  { id: 'face', bucket: 'faceLoading', assets: ['exc-coal-1'] },
   { id: 'haul', bucket: 'haulage', assets: ['truck-1', 'truck-2', 'truck-3'] },
   { id: 'crush', bucket: 'crushing', assets: ['crusher-1'] },
   { id: 'chp', bucket: 'chp', assets: ['screen-1', 'chpp-1'] },

@@ -7,8 +7,8 @@
 const H = 3600e3
 
 export const PLANNED_DOWNTIME = [
-  { id: 'PD-1', unitId: 'HT-04', kind: 'One-time', reason: 'Brake system overhaul', offStart: -3, durH: 10 },       // active now
-  { id: 'PD-2', unitId: 'CR-02', kind: 'One-time', reason: 'Annual liner change & load test', offStart: -1, durH: 8 }, // active now
+  { id: 'PD-1', unitId: 'HT-04', kind: 'One-time', reason: 'Brake system overhaul', offStart: 20, durH: 10 },       // scheduled (upcoming)
+  { id: 'PD-2', unitId: 'CR-02', kind: 'One-time', reason: 'Annual liner change & load test', offStart: 44, durH: 8 }, // scheduled (upcoming)
   { id: 'PD-3', unitId: 'EX-02', kind: 'One-time', reason: 'Hydraulic service', offStart: 26, durH: 6 },
   { id: 'PD-4', unitId: 'BD-03', kind: 'Recurring', reason: 'Weekly inspection & greasing', cadence: 'Every Saturday (Weekly)', window: '06:00 — 10:00' },
   { id: 'PD-5', unitId: 'CV-02', kind: 'Recurring', reason: 'Belt tracking & idler check', cadence: 'Every Monday (Weekly)', window: '07:00 — 09:00' },

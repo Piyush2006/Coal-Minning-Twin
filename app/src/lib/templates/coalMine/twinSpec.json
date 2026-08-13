@@ -741,13 +741,13 @@
       "type": "mining_excavator",
       "name": "Excavator EX-01 (Overburden)",
       "position": [
-        -141.34,
+        -186.72,
         -7.2,
-        41.51
+        -6.53
       ],
       "rotation": [
         0,
-        -0.9,
+        -4.99,
         0
       ],
       "parentId": "grp_extraction",
@@ -944,29 +944,6 @@
           ],
           "decimals": 1
         }
-      }
-    },
-    "loader-1": {
-      "type": "wheel_loader",
-      "name": "Wheel Loader WL-01",
-      "position": [
-        -88,
-        0,
-        26
-      ],
-      "rotation": [
-        0,
-        -0.5,
-        0
-      ],
-      "parentId": "grp_haulage",
-      "order": 0,
-      "parameters": {
-        "payload": 11,
-        "hydraulicPressure": 205,
-        "fuelLevel": 58,
-        "engineHealth": 86,
-        "rulHours": 880
       }
     },
     "truck-1": {
@@ -1276,11 +1253,12 @@
           ],
           "speed": 6,
           "loop": true,
-          "dwell": 14,
           "loadState": {
             "dumpAt": 0.504
           },
-          "loadedSlow": 1.45
+          "loadedSlow": 1.45,
+          "dwell": 14,
+          "phase": 0
         },
         "alertRules": [
           {
@@ -1411,254 +1389,60 @@
         "path": {
           "waypoints": [
             [
-              -169.33,
-              -14.4,
-              -4.21
-            ],
-            [
-              -163.38,
-              -14.4,
-              -10.86
-            ],
-            [
-              -158.99,
-              -14.4,
-              -14.43
-            ],
-            [
-              -153.84,
-              -14.4,
-              -17.76
-            ],
-            [
-              -161.27,
-              -13.56,
-              -17.65
-            ],
-            [
-              -168.9,
-              -12.72,
-              -14.9
-            ],
-            [
-              -175.76,
-              -11.88,
-              -9.41
-            ],
-            [
-              -180.88,
-              -11.04,
-              -1.44
-            ],
-            [
-              -183.38,
-              -10.2,
-              8.39
-            ],
-            [
-              -182.61,
-              -9.36,
-              19.21
-            ],
-            [
-              -179.86,
-              -8.76,
-              26.91
-            ],
-            [
-              -175.25,
-              -8.16,
-              34.09
-            ],
-            [
-              -168.75,
-              -7.68,
-              40.02
-            ],
-            [
-              -160.85,
-              -7.2,
-              44.5
-            ],
-            [
-              -150,
-              -6,
-              49.23
-            ],
-            [
-              -137.44,
-              -4.8,
-              50.88
-            ],
-            [
-              -124.08,
-              -3.6,
-              48.9
-            ],
-            [
-              -111,
-              -2.4,
-              43
-            ],
-            [
-              -99.13,
-              -1.2,
-              32.78
-            ],
-            [
-              -90.08,
-              0,
-              18.94
-            ],
-            [
-              -86,
-              0,
-              15.5
-            ],
-            [
-              -66,
-              0,
-              10
-            ],
-            [
-              -50,
-              0,
-              5
-            ],
-            [
-              -42,
-              0,
-              1
-            ],
-            [
-              -39.5,
-              0,
-              0
-            ],
-            [
-              -44,
-              0,
-              -3.5
-            ],
-            [
               -58,
               0,
-              1.5
+              -20
+            ],
+            [
+              -75,
+              0,
+              -30
+            ],
+            [
+              -95,
+              0,
+              -42
+            ],
+            [
+              -115,
+              0,
+              -54
+            ],
+            [
+              -132,
+              0,
+              -62
+            ],
+            [
+              -120,
+              0,
+              -74
+            ],
+            [
+              -98,
+              0,
+              -72
             ],
             [
               -76,
               0,
-              9
+              -58
             ],
             [
-              -87.5,
+              -60,
               0,
-              16.8
+              -38
             ],
             [
-              -92.21,
+              -52,
               0,
-              18.41
-            ],
-            [
-              -101.04,
-              -1.2,
-              31.7
-            ],
-            [
-              -112.56,
-              -2.4,
-              41.44
-            ],
-            [
-              -125.18,
-              -3.6,
-              46.99
-            ],
-            [
-              -138.01,
-              -4.8,
-              48.76
-            ],
-            [
-              -150,
-              -6,
-              47.03
-            ],
-            [
-              -160.28,
-              -7.2,
-              42.38
-            ],
-            [
-              -167.73,
-              -7.68,
-              38.07
-            ],
-            [
-              -173.84,
-              -8.16,
-              32.41
-            ],
-            [
-              -178.11,
-              -8.76,
-              25.57
-            ],
-            [
-              -180.62,
-              -9.36,
-              18.28
-            ],
-            [
-              -181.2,
-              -10.2,
-              8.11
-            ],
-            [
-              -178.71,
-              -11.04,
-              -1.06
-            ],
-            [
-              -173.81,
-              -11.88,
-              -8.39
-            ],
-            [
-              -167.34,
-              -12.72,
-              -13.34
-            ],
-            [
-              -160.26,
-              -13.56,
-              -15.7
-            ],
-            [
-              -153.46,
-              -14.4,
-              -15.6
-            ],
-            [
-              -158.34,
-              -14.4,
-              -14.73
-            ],
-            [
-              -164.59,
-              -14.4,
-              -11.11
+              -24
             ]
           ],
-          "speed": 6,
+          "speed": 5,
           "loop": true,
-          "dwell": 14,
-          "phase": 0.5,
-          "loadState": {
-            "dumpAt": 0.504
-          },
-          "loadedSlow": 1.45
+          "dwell": 8,
+          "phase": 0
         },
         "alertRules": [
           {
@@ -1793,154 +1577,88 @@
         "path": {
           "waypoints": [
             [
-              -144.36,
+              -188.83,
               -7.2,
-              44.11
+              -7.87
             ],
             [
-              -148.59,
+              -190.1,
               -7.2,
-              44.48
+              -2.35
             ],
             [
-              -154.23,
+              -190.59,
               -7.2,
-              44.28
+              4.71
             ],
             [
-              -160.17,
+              -189.85,
               -7.2,
-              44.78
+              11.75
             ],
             [
-              -160.88,
+              -189.52,
               -7.2,
-              44.6
+              17.61
             ],
             [
-              -150,
-              -6,
-              49.33
-            ],
-            [
-              -137.41,
-              -4.8,
-              50.98
-            ],
-            [
-              -124.03,
-              -3.6,
-              48.98
-            ],
-            [
-              -110.93,
-              -2.4,
-              43.07
-            ],
-            [
-              -99.04,
-              -1.2,
-              32.83
-            ],
-            [
-              -89.98,
-              0,
-              18.96
-            ],
-            [
-              -84,
-              0,
-              8
-            ],
-            [
-              -87,
-              0,
-              -18
-            ],
-            [
-              -97,
-              0,
-              -44
-            ],
-            [
-              -108.5,
-              0,
-              -63.5
-            ],
-            [
-              -99,
-              0,
-              -42
-            ],
-            [
-              -89,
-              0,
-              -14
-            ],
-            [
-              -86,
-              0,
-              13
-            ],
-            [
-              -92.31,
-              0,
-              18.38
-            ],
-            [
-              -101.13,
-              -1.2,
-              31.65
-            ],
-            [
-              -112.63,
-              -2.4,
-              41.37
-            ],
-            [
-              -125.23,
-              -3.6,
-              46.91
-            ],
-            [
-              -138.03,
-              -4.8,
-              48.66
-            ],
-            [
-              -150,
-              -6,
-              46.93
-            ],
-            [
-              -160.26,
+              -191.53,
               -7.2,
-              42.28
+              15.13
             ],
             [
-              -159.07,
+              -192.94,
               -7.2,
-              43.3
+              6.25
             ],
             [
-              -154.23,
+              -192.47,
               -7.2,
-              44.28
+              -2.73
             ],
             [
-              -148.59,
+              -190.14,
               -7.2,
-              44.48
+              -11.41
+            ],
+            [
+              -186.06,
+              -7.2,
+              -19.42
+            ],
+            [
+              -182.45,
+              -7.2,
+              -24.21
+            ],
+            [
+              -179.56,
+              -7.2,
+              -25.56
+            ],
+            [
+              -180.64,
+              -7.2,
+              -22.64
+            ],
+            [
+              -184.05,
+              -7.2,
+              -18.11
+            ],
+            [
+              -186.8,
+              -7.2,
+              -13.16
             ]
           ],
-          "speed": 6.5,
+          "speed": 4.5,
           "loop": true,
           "dwell": 12,
-          "phase": 0.3,
+          "phase": 0,
           "loadState": {
-            "dumpAt": 0.505
-          },
-          "loadedSlow": 1.4
+            "dumpAt": 0.62
+          }
         },
         "alertRules": [
           {
@@ -4024,29 +3742,19 @@
               35
             ],
             [
-              -26,
+              -20,
               0,
-              16
+              22
             ],
             [
-              -55,
+              -26,
               0,
               6
             ],
             [
-              -82,
+              -22,
               0,
-              16
-            ],
-            [
-              -58,
-              0,
-              11
-            ],
-            [
-              -42,
-              0,
-              -9
+              -8
             ],
             [
               -24,
@@ -4126,13 +3834,13 @@
       "type": "site_worker",
       "name": "Worker 02",
       "position": [
-        7,
+        11.6,
         0,
-        6.5
+        -18
       ],
       "rotation": [
         0,
-        -2.2,
+        3.14,
         0
       ],
       "scale": [
@@ -4194,31 +3902,6 @@
       "parentId": "grp_personnel",
       "config": {
         "animPhase": 0.15
-      }
-    },
-    "worker-5": {
-      "id": "worker-5",
-      "type": "site_worker",
-      "name": "Worker 05",
-      "position": [
-        -100,
-        0,
-        42
-      ],
-      "rotation": [
-        0,
-        -2.3,
-        0
-      ],
-      "scale": [
-        1,
-        1,
-        1
-      ],
-      "status": "running",
-      "parentId": "grp_personnel",
-      "config": {
-        "animPhase": 0.5
       }
     },
     "worker-6": {
@@ -4374,9 +4057,9 @@
       "type": "blasthole_drill_rig",
       "name": "Blast-Hole Drill BD-03",
       "position": [
-        -99.44,
-        0,
-        46.42
+        -124.2,
+        -3.6,
+        -40.7
       ],
       "rotation": [
         0,
@@ -4503,1739 +4186,30 @@
         ]
       }
     },
-    "truck-4": {
-      "type": "haul_truck",
-      "name": "Haul Truck HT-04",
+    "worker-8": {
+      "id": "worker-8",
+      "type": "site_worker",
+      "name": "Worker 08",
       "position": [
-        -169.33,
-        -14.4,
-        -4.21
+        9.6,
+        0,
+        -18
       ],
       "rotation": [
         0,
-        -0.2,
+        3.14,
         0
       ],
-      "parentId": "grp_haulage",
-      "order": 4,
-      "parameters": {
-        "payload": 196,
-        "speed": 33,
-        "fuelLevel": 48,
-        "tyreTemp": 74,
-        "engineTemp": 90,
-        "idleTime": 8,
-        "cycleTime": 24,
-        "fuelBurn": 172,
-        "engineHealth": 85,
-        "hydraulicHealth": 90,
-        "faultCode": 0,
-        "rulHours": 720,
-        "tyrePressure": 8.6,
-        "tkph": 328
-      },
-      "rules": [
-        {
-          "enabled": true,
-          "parameter": "fuelLevel",
-          "operator": "<",
-          "compareMode": "constant",
-          "value": 15,
-          "color": "#ff9f0a"
-        }
+      "scale": [
+        1,
+        1,
+        1
       ],
-      "tooltip": {
-        "enabled": true,
-        "params": [
-          "payload",
-          "speed",
-          "fuelLevel"
-        ]
-      },
-      "connections": [
-        {
-          "targetId": "crusher-1",
-          "sourcePort": "dump_out",
-          "targetPort": "feed_in",
-          "connectorConfig": {
-            "color": "#6f7681",
-            "radius": 0.09,
-            "flowing": true
-          }
-        }
-      ],
+      "status": "running",
+      "parentId": "grp_personnel",
       "config": {
-        "path": {
-          "waypoints": [
-            [
-              -169.33,
-              -14.4,
-              -4.21
-            ],
-            [
-              -163.38,
-              -14.4,
-              -10.86
-            ],
-            [
-              -158.99,
-              -14.4,
-              -14.43
-            ],
-            [
-              -153.84,
-              -14.4,
-              -17.76
-            ],
-            [
-              -161.27,
-              -13.56,
-              -17.65
-            ],
-            [
-              -168.9,
-              -12.72,
-              -14.9
-            ],
-            [
-              -175.76,
-              -11.88,
-              -9.41
-            ],
-            [
-              -180.88,
-              -11.04,
-              -1.44
-            ],
-            [
-              -183.38,
-              -10.2,
-              8.39
-            ],
-            [
-              -182.61,
-              -9.36,
-              19.21
-            ],
-            [
-              -179.86,
-              -8.76,
-              26.91
-            ],
-            [
-              -175.25,
-              -8.16,
-              34.09
-            ],
-            [
-              -168.75,
-              -7.68,
-              40.02
-            ],
-            [
-              -160.85,
-              -7.2,
-              44.5
-            ],
-            [
-              -150,
-              -6,
-              49.23
-            ],
-            [
-              -137.44,
-              -4.8,
-              50.88
-            ],
-            [
-              -124.08,
-              -3.6,
-              48.9
-            ],
-            [
-              -111,
-              -2.4,
-              43
-            ],
-            [
-              -99.13,
-              -1.2,
-              32.78
-            ],
-            [
-              -90.08,
-              0,
-              18.94
-            ],
-            [
-              -86,
-              0,
-              15.5
-            ],
-            [
-              -66,
-              0,
-              10
-            ],
-            [
-              -50,
-              0,
-              5
-            ],
-            [
-              -42,
-              0,
-              1
-            ],
-            [
-              -39.5,
-              0,
-              0
-            ],
-            [
-              -44,
-              0,
-              -3.5
-            ],
-            [
-              -58,
-              0,
-              1.5
-            ],
-            [
-              -76,
-              0,
-              9
-            ],
-            [
-              -87.5,
-              0,
-              16.8
-            ],
-            [
-              -92.21,
-              0,
-              18.41
-            ],
-            [
-              -101.04,
-              -1.2,
-              31.7
-            ],
-            [
-              -112.56,
-              -2.4,
-              41.44
-            ],
-            [
-              -125.18,
-              -3.6,
-              46.99
-            ],
-            [
-              -138.01,
-              -4.8,
-              48.76
-            ],
-            [
-              -150,
-              -6,
-              47.03
-            ],
-            [
-              -160.28,
-              -7.2,
-              42.38
-            ],
-            [
-              -167.73,
-              -7.68,
-              38.07
-            ],
-            [
-              -173.84,
-              -8.16,
-              32.41
-            ],
-            [
-              -178.11,
-              -8.76,
-              25.57
-            ],
-            [
-              -180.62,
-              -9.36,
-              18.28
-            ],
-            [
-              -181.2,
-              -10.2,
-              8.11
-            ],
-            [
-              -178.71,
-              -11.04,
-              -1.06
-            ],
-            [
-              -173.81,
-              -11.88,
-              -8.39
-            ],
-            [
-              -167.34,
-              -12.72,
-              -13.34
-            ],
-            [
-              -160.26,
-              -13.56,
-              -15.7
-            ],
-            [
-              -153.46,
-              -14.4,
-              -15.6
-            ],
-            [
-              -158.34,
-              -14.4,
-              -14.73
-            ],
-            [
-              -164.59,
-              -14.4,
-              -11.11
-            ]
-          ],
-          "speed": 6.1,
-          "loop": true,
-          "dwell": 12,
-          "loadState": {
-            "dumpAt": 0.504
-          },
-          "loadedSlow": 1.45,
-          "phase": 0.2
-        },
-        "alertRules": [
-          {
-            "id": "idle-high",
-            "param": "idleTime",
-            "op": ">",
-            "threshold": 20,
-            "severity": "warn",
-            "useCase": "Haulage",
-            "message": "Truck idling {idleTime} min (target < 20)"
-          },
-          {
-            "id": "overspeed",
-            "param": "speed",
-            "op": ">",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "Haulage",
-            "message": "Over-speed {speed} km/h on haul road (limit 40)"
-          },
-          {
-            "id": "engine-health",
-            "param": "engineHealth",
-            "op": "<",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "HEMM PdM",
-            "message": "HEMM engine fault risk, RUL {rulHours} h"
-          },
-          {
-            "id": "hyd-health",
-            "param": "hydraulicHealth",
-            "op": "<",
-            "threshold": 45,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Hydraulic degradation, RUL {rulHours} h"
-          },
-          {
-            "id": "fault-code",
-            "param": "faultCode",
-            "op": ">",
-            "threshold": 0.5,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Active fault code {faultCode}"
-          },
-          {
-            "id": "tyre-temp",
-            "param": "tyreTemp",
-            "op": ">",
-            "threshold": 85,
-            "severity": "critical",
-            "useCase": "TPMS",
-            "message": "Tyre over-temp {tyreTemp} degC"
-          },
-          {
-            "id": "tyre-under",
-            "param": "tyrePressure",
-            "op": "<",
-            "threshold": 7,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre under-inflation {tyrePressure} bar"
-          },
-          {
-            "id": "tyre-over",
-            "param": "tyrePressure",
-            "op": ">",
-            "threshold": 10,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre over-inflation {tyrePressure} bar"
-          }
-        ]
+        "animPhase": 0.7
       }
-    },
-    "truck-5": {
-      "type": "haul_truck",
-      "name": "Haul Truck HT-05",
-      "position": [
-        -169.33,
-        -14.4,
-        -4.21
-      ],
-      "rotation": [
-        0,
-        -0.2,
-        0
-      ],
-      "parentId": "grp_haulage",
-      "order": 5,
-      "parameters": {
-        "payload": 196,
-        "speed": 33.8,
-        "fuelLevel": 44,
-        "tyreTemp": 75.6,
-        "engineTemp": 90,
-        "idleTime": 9,
-        "cycleTime": 24,
-        "fuelBurn": 172,
-        "engineHealth": 88,
-        "hydraulicHealth": 90,
-        "faultCode": 0,
-        "rulHours": 720,
-        "tyrePressure": 8.6,
-        "tkph": 328
-      },
-      "rules": [
-        {
-          "enabled": true,
-          "parameter": "fuelLevel",
-          "operator": "<",
-          "compareMode": "constant",
-          "value": 15,
-          "color": "#ff9f0a"
-        }
-      ],
-      "tooltip": {
-        "enabled": true,
-        "params": [
-          "payload",
-          "speed",
-          "fuelLevel"
-        ]
-      },
-      "connections": [
-        {
-          "targetId": "crusher-1",
-          "sourcePort": "dump_out",
-          "targetPort": "feed_in",
-          "connectorConfig": {
-            "color": "#6f7681",
-            "radius": 0.09,
-            "flowing": true
-          }
-        }
-      ],
-      "config": {
-        "path": {
-          "waypoints": [
-            [
-              -169.33,
-              -14.4,
-              -4.21
-            ],
-            [
-              -163.38,
-              -14.4,
-              -10.86
-            ],
-            [
-              -158.99,
-              -14.4,
-              -14.43
-            ],
-            [
-              -153.84,
-              -14.4,
-              -17.76
-            ],
-            [
-              -161.27,
-              -13.56,
-              -17.65
-            ],
-            [
-              -168.9,
-              -12.72,
-              -14.9
-            ],
-            [
-              -175.76,
-              -11.88,
-              -9.41
-            ],
-            [
-              -180.88,
-              -11.04,
-              -1.44
-            ],
-            [
-              -183.38,
-              -10.2,
-              8.39
-            ],
-            [
-              -182.61,
-              -9.36,
-              19.21
-            ],
-            [
-              -179.86,
-              -8.76,
-              26.91
-            ],
-            [
-              -175.25,
-              -8.16,
-              34.09
-            ],
-            [
-              -168.75,
-              -7.68,
-              40.02
-            ],
-            [
-              -160.85,
-              -7.2,
-              44.5
-            ],
-            [
-              -150,
-              -6,
-              49.23
-            ],
-            [
-              -137.44,
-              -4.8,
-              50.88
-            ],
-            [
-              -124.08,
-              -3.6,
-              48.9
-            ],
-            [
-              -111,
-              -2.4,
-              43
-            ],
-            [
-              -99.13,
-              -1.2,
-              32.78
-            ],
-            [
-              -90.08,
-              0,
-              18.94
-            ],
-            [
-              -86,
-              0,
-              15.5
-            ],
-            [
-              -66,
-              0,
-              10
-            ],
-            [
-              -50,
-              0,
-              5
-            ],
-            [
-              -42,
-              0,
-              1
-            ],
-            [
-              -39.5,
-              0,
-              0
-            ],
-            [
-              -44,
-              0,
-              -3.5
-            ],
-            [
-              -58,
-              0,
-              1.5
-            ],
-            [
-              -76,
-              0,
-              9
-            ],
-            [
-              -87.5,
-              0,
-              16.8
-            ],
-            [
-              -92.21,
-              0,
-              18.41
-            ],
-            [
-              -101.04,
-              -1.2,
-              31.7
-            ],
-            [
-              -112.56,
-              -2.4,
-              41.44
-            ],
-            [
-              -125.18,
-              -3.6,
-              46.99
-            ],
-            [
-              -138.01,
-              -4.8,
-              48.76
-            ],
-            [
-              -150,
-              -6,
-              47.03
-            ],
-            [
-              -160.28,
-              -7.2,
-              42.38
-            ],
-            [
-              -167.73,
-              -7.68,
-              38.07
-            ],
-            [
-              -173.84,
-              -8.16,
-              32.41
-            ],
-            [
-              -178.11,
-              -8.76,
-              25.57
-            ],
-            [
-              -180.62,
-              -9.36,
-              18.28
-            ],
-            [
-              -181.2,
-              -10.2,
-              8.11
-            ],
-            [
-              -178.71,
-              -11.04,
-              -1.06
-            ],
-            [
-              -173.81,
-              -11.88,
-              -8.39
-            ],
-            [
-              -167.34,
-              -12.72,
-              -13.34
-            ],
-            [
-              -160.26,
-              -13.56,
-              -15.7
-            ],
-            [
-              -153.46,
-              -14.4,
-              -15.6
-            ],
-            [
-              -158.34,
-              -14.4,
-              -14.73
-            ],
-            [
-              -164.59,
-              -14.4,
-              -11.11
-            ]
-          ],
-          "speed": 5.9,
-          "loop": true,
-          "dwell": 13,
-          "loadState": {
-            "dumpAt": 0.504
-          },
-          "loadedSlow": 1.45,
-          "phase": 0.7
-        },
-        "alertRules": [
-          {
-            "id": "idle-high",
-            "param": "idleTime",
-            "op": ">",
-            "threshold": 20,
-            "severity": "warn",
-            "useCase": "Haulage",
-            "message": "Truck idling {idleTime} min (target < 20)"
-          },
-          {
-            "id": "overspeed",
-            "param": "speed",
-            "op": ">",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "Haulage",
-            "message": "Over-speed {speed} km/h on haul road (limit 40)"
-          },
-          {
-            "id": "engine-health",
-            "param": "engineHealth",
-            "op": "<",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "HEMM PdM",
-            "message": "HEMM engine fault risk, RUL {rulHours} h"
-          },
-          {
-            "id": "hyd-health",
-            "param": "hydraulicHealth",
-            "op": "<",
-            "threshold": 45,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Hydraulic degradation, RUL {rulHours} h"
-          },
-          {
-            "id": "fault-code",
-            "param": "faultCode",
-            "op": ">",
-            "threshold": 0.5,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Active fault code {faultCode}"
-          },
-          {
-            "id": "tyre-temp",
-            "param": "tyreTemp",
-            "op": ">",
-            "threshold": 85,
-            "severity": "critical",
-            "useCase": "TPMS",
-            "message": "Tyre over-temp {tyreTemp} degC"
-          },
-          {
-            "id": "tyre-under",
-            "param": "tyrePressure",
-            "op": "<",
-            "threshold": 7,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre under-inflation {tyrePressure} bar"
-          },
-          {
-            "id": "tyre-over",
-            "param": "tyrePressure",
-            "op": ">",
-            "threshold": 10,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre over-inflation {tyrePressure} bar"
-          }
-        ]
-      }
-    },
-    "truck-6": {
-      "type": "haul_truck",
-      "name": "Haul Truck HT-06",
-      "position": [
-        -144.36,
-        -7.2,
-        44.11
-      ],
-      "rotation": [
-        0,
-        -0.71,
-        0
-      ],
-      "parentId": "grp_haulage",
-      "order": 6,
-      "parameters": {
-        "payload": 0,
-        "speed": 34.6,
-        "fuelLevel": 24,
-        "tyreTemp": 77.2,
-        "engineTemp": 86,
-        "idleTime": 10,
-        "cycleTime": 30,
-        "fuelBurn": 188,
-        "engineHealth": 71,
-        "hydraulicHealth": 83,
-        "faultCode": 0,
-        "rulHours": 430,
-        "tyrePressure": 8.4,
-        "tkph": 366
-      },
-      "rules": [
-        {
-          "enabled": true,
-          "parameter": "fuelLevel",
-          "operator": "<",
-          "compareMode": "constant",
-          "value": 15,
-          "color": "#ff9f0a"
-        }
-      ],
-      "config": {
-        "path": {
-          "waypoints": [
-            [
-              -144.36,
-              -7.2,
-              44.11
-            ],
-            [
-              -148.59,
-              -7.2,
-              44.48
-            ],
-            [
-              -154.23,
-              -7.2,
-              44.28
-            ],
-            [
-              -160.17,
-              -7.2,
-              44.78
-            ],
-            [
-              -160.88,
-              -7.2,
-              44.6
-            ],
-            [
-              -150,
-              -6,
-              49.33
-            ],
-            [
-              -137.41,
-              -4.8,
-              50.98
-            ],
-            [
-              -124.03,
-              -3.6,
-              48.98
-            ],
-            [
-              -110.93,
-              -2.4,
-              43.07
-            ],
-            [
-              -99.04,
-              -1.2,
-              32.83
-            ],
-            [
-              -89.98,
-              0,
-              18.96
-            ],
-            [
-              -84,
-              0,
-              8
-            ],
-            [
-              -87,
-              0,
-              -18
-            ],
-            [
-              -97,
-              0,
-              -44
-            ],
-            [
-              -108.5,
-              0,
-              -63.5
-            ],
-            [
-              -99,
-              0,
-              -42
-            ],
-            [
-              -89,
-              0,
-              -14
-            ],
-            [
-              -86,
-              0,
-              13
-            ],
-            [
-              -92.31,
-              0,
-              18.38
-            ],
-            [
-              -101.13,
-              -1.2,
-              31.65
-            ],
-            [
-              -112.63,
-              -2.4,
-              41.37
-            ],
-            [
-              -125.23,
-              -3.6,
-              46.91
-            ],
-            [
-              -138.03,
-              -4.8,
-              48.66
-            ],
-            [
-              -150,
-              -6,
-              46.93
-            ],
-            [
-              -160.26,
-              -7.2,
-              42.28
-            ],
-            [
-              -159.07,
-              -7.2,
-              43.3
-            ],
-            [
-              -154.23,
-              -7.2,
-              44.28
-            ],
-            [
-              -148.59,
-              -7.2,
-              44.48
-            ]
-          ],
-          "speed": 6.4,
-          "loop": true,
-          "dwell": 11,
-          "phase": 0.55,
-          "loadState": {
-            "dumpAt": 0.505
-          },
-          "loadedSlow": 1.4
-        },
-        "alertRules": [
-          {
-            "id": "idle-high",
-            "param": "idleTime",
-            "op": ">",
-            "threshold": 20,
-            "severity": "warn",
-            "useCase": "Haulage",
-            "message": "Truck idling {idleTime} min (target < 20)"
-          },
-          {
-            "id": "overspeed",
-            "param": "speed",
-            "op": ">",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "Haulage",
-            "message": "Over-speed {speed} km/h on haul road (limit 40)"
-          },
-          {
-            "id": "engine-health",
-            "param": "engineHealth",
-            "op": "<",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "HEMM PdM",
-            "message": "HEMM engine fault risk, RUL {rulHours} h"
-          },
-          {
-            "id": "hyd-health",
-            "param": "hydraulicHealth",
-            "op": "<",
-            "threshold": 45,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Hydraulic degradation, RUL {rulHours} h"
-          },
-          {
-            "id": "fault-code",
-            "param": "faultCode",
-            "op": ">",
-            "threshold": 0.5,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Active fault code {faultCode}"
-          },
-          {
-            "id": "tyre-temp",
-            "param": "tyreTemp",
-            "op": ">",
-            "threshold": 85,
-            "severity": "critical",
-            "useCase": "TPMS",
-            "message": "Tyre over-temp {tyreTemp} degC"
-          },
-          {
-            "id": "tyre-under",
-            "param": "tyrePressure",
-            "op": "<",
-            "threshold": 7,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre under-inflation {tyrePressure} bar"
-          },
-          {
-            "id": "tyre-over",
-            "param": "tyrePressure",
-            "op": ">",
-            "threshold": 10,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre over-inflation {tyrePressure} bar"
-          }
-        ]
-      },
-      "connections": [
-        {
-          "targetId": "dump-1",
-          "sourcePort": "dump_out",
-          "targetPort": "waste_in",
-          "connectorConfig": {
-            "color": "#6f7681",
-            "radius": 0.09,
-            "flowing": true
-          }
-        }
-      ]
-    },
-    "truck-7": {
-      "type": "haul_truck",
-      "name": "Haul Truck HT-07",
-      "position": [
-        -169.33,
-        -14.4,
-        -4.21
-      ],
-      "rotation": [
-        0,
-        -0.2,
-        0
-      ],
-      "parentId": "grp_haulage",
-      "order": 7,
-      "parameters": {
-        "payload": 196,
-        "speed": 35.4,
-        "fuelLevel": 36,
-        "tyreTemp": 78.8,
-        "engineTemp": 90,
-        "idleTime": 11,
-        "cycleTime": 24,
-        "fuelBurn": 172,
-        "engineHealth": 85,
-        "hydraulicHealth": 90,
-        "faultCode": 0,
-        "rulHours": 720,
-        "tyrePressure": 8.6,
-        "tkph": 328
-      },
-      "rules": [
-        {
-          "enabled": true,
-          "parameter": "fuelLevel",
-          "operator": "<",
-          "compareMode": "constant",
-          "value": 15,
-          "color": "#ff9f0a"
-        }
-      ],
-      "tooltip": {
-        "enabled": true,
-        "params": [
-          "payload",
-          "speed",
-          "fuelLevel"
-        ]
-      },
-      "connections": [
-        {
-          "targetId": "crusher-1",
-          "sourcePort": "dump_out",
-          "targetPort": "feed_in",
-          "connectorConfig": {
-            "color": "#6f7681",
-            "radius": 0.09,
-            "flowing": true
-          }
-        }
-      ],
-      "config": {
-        "path": {
-          "waypoints": [
-            [
-              -169.33,
-              -14.4,
-              -4.21
-            ],
-            [
-              -163.38,
-              -14.4,
-              -10.86
-            ],
-            [
-              -158.99,
-              -14.4,
-              -14.43
-            ],
-            [
-              -153.84,
-              -14.4,
-              -17.76
-            ],
-            [
-              -161.27,
-              -13.56,
-              -17.65
-            ],
-            [
-              -168.9,
-              -12.72,
-              -14.9
-            ],
-            [
-              -175.76,
-              -11.88,
-              -9.41
-            ],
-            [
-              -180.88,
-              -11.04,
-              -1.44
-            ],
-            [
-              -183.38,
-              -10.2,
-              8.39
-            ],
-            [
-              -182.61,
-              -9.36,
-              19.21
-            ],
-            [
-              -179.86,
-              -8.76,
-              26.91
-            ],
-            [
-              -175.25,
-              -8.16,
-              34.09
-            ],
-            [
-              -168.75,
-              -7.68,
-              40.02
-            ],
-            [
-              -160.85,
-              -7.2,
-              44.5
-            ],
-            [
-              -150,
-              -6,
-              49.23
-            ],
-            [
-              -137.44,
-              -4.8,
-              50.88
-            ],
-            [
-              -124.08,
-              -3.6,
-              48.9
-            ],
-            [
-              -111,
-              -2.4,
-              43
-            ],
-            [
-              -99.13,
-              -1.2,
-              32.78
-            ],
-            [
-              -90.08,
-              0,
-              18.94
-            ],
-            [
-              -86,
-              0,
-              15.5
-            ],
-            [
-              -66,
-              0,
-              10
-            ],
-            [
-              -50,
-              0,
-              5
-            ],
-            [
-              -42,
-              0,
-              1
-            ],
-            [
-              -39.5,
-              0,
-              0
-            ],
-            [
-              -44,
-              0,
-              -3.5
-            ],
-            [
-              -58,
-              0,
-              1.5
-            ],
-            [
-              -76,
-              0,
-              9
-            ],
-            [
-              -87.5,
-              0,
-              16.8
-            ],
-            [
-              -92.21,
-              0,
-              18.41
-            ],
-            [
-              -101.04,
-              -1.2,
-              31.7
-            ],
-            [
-              -112.56,
-              -2.4,
-              41.44
-            ],
-            [
-              -125.18,
-              -3.6,
-              46.99
-            ],
-            [
-              -138.01,
-              -4.8,
-              48.76
-            ],
-            [
-              -150,
-              -6,
-              47.03
-            ],
-            [
-              -160.28,
-              -7.2,
-              42.38
-            ],
-            [
-              -167.73,
-              -7.68,
-              38.07
-            ],
-            [
-              -173.84,
-              -8.16,
-              32.41
-            ],
-            [
-              -178.11,
-              -8.76,
-              25.57
-            ],
-            [
-              -180.62,
-              -9.36,
-              18.28
-            ],
-            [
-              -181.2,
-              -10.2,
-              8.11
-            ],
-            [
-              -178.71,
-              -11.04,
-              -1.06
-            ],
-            [
-              -173.81,
-              -11.88,
-              -8.39
-            ],
-            [
-              -167.34,
-              -12.72,
-              -13.34
-            ],
-            [
-              -160.26,
-              -13.56,
-              -15.7
-            ],
-            [
-              -153.46,
-              -14.4,
-              -15.6
-            ],
-            [
-              -158.34,
-              -14.4,
-              -14.73
-            ],
-            [
-              -164.59,
-              -14.4,
-              -11.11
-            ]
-          ],
-          "speed": 6,
-          "loop": true,
-          "dwell": 14,
-          "loadState": {
-            "dumpAt": 0.504
-          },
-          "loadedSlow": 1.45,
-          "phase": 0.35
-        },
-        "alertRules": [
-          {
-            "id": "idle-high",
-            "param": "idleTime",
-            "op": ">",
-            "threshold": 20,
-            "severity": "warn",
-            "useCase": "Haulage",
-            "message": "Truck idling {idleTime} min (target < 20)"
-          },
-          {
-            "id": "overspeed",
-            "param": "speed",
-            "op": ">",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "Haulage",
-            "message": "Over-speed {speed} km/h on haul road (limit 40)"
-          },
-          {
-            "id": "engine-health",
-            "param": "engineHealth",
-            "op": "<",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "HEMM PdM",
-            "message": "HEMM engine fault risk, RUL {rulHours} h"
-          },
-          {
-            "id": "hyd-health",
-            "param": "hydraulicHealth",
-            "op": "<",
-            "threshold": 45,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Hydraulic degradation, RUL {rulHours} h"
-          },
-          {
-            "id": "fault-code",
-            "param": "faultCode",
-            "op": ">",
-            "threshold": 0.5,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Active fault code {faultCode}"
-          },
-          {
-            "id": "tyre-temp",
-            "param": "tyreTemp",
-            "op": ">",
-            "threshold": 85,
-            "severity": "critical",
-            "useCase": "TPMS",
-            "message": "Tyre over-temp {tyreTemp} degC"
-          },
-          {
-            "id": "tyre-under",
-            "param": "tyrePressure",
-            "op": "<",
-            "threshold": 7,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre under-inflation {tyrePressure} bar"
-          },
-          {
-            "id": "tyre-over",
-            "param": "tyrePressure",
-            "op": ">",
-            "threshold": 10,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre over-inflation {tyrePressure} bar"
-          }
-        ]
-      }
-    },
-    "truck-8": {
-      "type": "haul_truck",
-      "name": "Haul Truck HT-08",
-      "position": [
-        -144.36,
-        -7.2,
-        44.11
-      ],
-      "rotation": [
-        0,
-        -0.71,
-        0
-      ],
-      "parentId": "grp_haulage",
-      "order": 8,
-      "parameters": {
-        "payload": 0,
-        "speed": 36.2,
-        "fuelLevel": 20,
-        "tyreTemp": 80.4,
-        "engineTemp": 86,
-        "idleTime": 8,
-        "cycleTime": 30,
-        "fuelBurn": 188,
-        "engineHealth": 77,
-        "hydraulicHealth": 83,
-        "faultCode": 0,
-        "rulHours": 430,
-        "tyrePressure": 8.4,
-        "tkph": 366
-      },
-      "rules": [
-        {
-          "enabled": true,
-          "parameter": "fuelLevel",
-          "operator": "<",
-          "compareMode": "constant",
-          "value": 15,
-          "color": "#ff9f0a"
-        }
-      ],
-      "config": {
-        "path": {
-          "waypoints": [
-            [
-              -144.36,
-              -7.2,
-              44.11
-            ],
-            [
-              -148.59,
-              -7.2,
-              44.48
-            ],
-            [
-              -154.23,
-              -7.2,
-              44.28
-            ],
-            [
-              -160.17,
-              -7.2,
-              44.78
-            ],
-            [
-              -160.88,
-              -7.2,
-              44.6
-            ],
-            [
-              -150,
-              -6,
-              49.33
-            ],
-            [
-              -137.41,
-              -4.8,
-              50.98
-            ],
-            [
-              -124.03,
-              -3.6,
-              48.98
-            ],
-            [
-              -110.93,
-              -2.4,
-              43.07
-            ],
-            [
-              -99.04,
-              -1.2,
-              32.83
-            ],
-            [
-              -89.98,
-              0,
-              18.96
-            ],
-            [
-              -84,
-              0,
-              8
-            ],
-            [
-              -87,
-              0,
-              -18
-            ],
-            [
-              -97,
-              0,
-              -44
-            ],
-            [
-              -108.5,
-              0,
-              -63.5
-            ],
-            [
-              -99,
-              0,
-              -42
-            ],
-            [
-              -89,
-              0,
-              -14
-            ],
-            [
-              -86,
-              0,
-              13
-            ],
-            [
-              -92.31,
-              0,
-              18.38
-            ],
-            [
-              -101.13,
-              -1.2,
-              31.65
-            ],
-            [
-              -112.63,
-              -2.4,
-              41.37
-            ],
-            [
-              -125.23,
-              -3.6,
-              46.91
-            ],
-            [
-              -138.03,
-              -4.8,
-              48.66
-            ],
-            [
-              -150,
-              -6,
-              46.93
-            ],
-            [
-              -160.26,
-              -7.2,
-              42.28
-            ],
-            [
-              -159.07,
-              -7.2,
-              43.3
-            ],
-            [
-              -154.23,
-              -7.2,
-              44.28
-            ],
-            [
-              -148.59,
-              -7.2,
-              44.48
-            ]
-          ],
-          "speed": 6.3,
-          "loop": true,
-          "dwell": 12,
-          "phase": 0.8,
-          "loadState": {
-            "dumpAt": 0.505
-          },
-          "loadedSlow": 1.4
-        },
-        "alertRules": [
-          {
-            "id": "idle-high",
-            "param": "idleTime",
-            "op": ">",
-            "threshold": 20,
-            "severity": "warn",
-            "useCase": "Haulage",
-            "message": "Truck idling {idleTime} min (target < 20)"
-          },
-          {
-            "id": "overspeed",
-            "param": "speed",
-            "op": ">",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "Haulage",
-            "message": "Over-speed {speed} km/h on haul road (limit 40)"
-          },
-          {
-            "id": "engine-health",
-            "param": "engineHealth",
-            "op": "<",
-            "threshold": 40,
-            "severity": "critical",
-            "useCase": "HEMM PdM",
-            "message": "HEMM engine fault risk, RUL {rulHours} h"
-          },
-          {
-            "id": "hyd-health",
-            "param": "hydraulicHealth",
-            "op": "<",
-            "threshold": 45,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Hydraulic degradation, RUL {rulHours} h"
-          },
-          {
-            "id": "fault-code",
-            "param": "faultCode",
-            "op": ">",
-            "threshold": 0.5,
-            "severity": "warn",
-            "useCase": "HEMM PdM",
-            "message": "Active fault code {faultCode}"
-          },
-          {
-            "id": "tyre-temp",
-            "param": "tyreTemp",
-            "op": ">",
-            "threshold": 85,
-            "severity": "critical",
-            "useCase": "TPMS",
-            "message": "Tyre over-temp {tyreTemp} degC"
-          },
-          {
-            "id": "tyre-under",
-            "param": "tyrePressure",
-            "op": "<",
-            "threshold": 7,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre under-inflation {tyrePressure} bar"
-          },
-          {
-            "id": "tyre-over",
-            "param": "tyrePressure",
-            "op": ">",
-            "threshold": 10,
-            "severity": "warn",
-            "useCase": "TPMS",
-            "message": "Tyre over-inflation {tyrePressure} bar"
-          }
-        ]
-      },
-      "connections": [
-        {
-          "targetId": "dump-1",
-          "sourcePort": "dump_out",
-          "targetPort": "waste_in",
-          "connectorConfig": {
-            "color": "#6f7681",
-            "radius": 0.09,
-            "flowing": true
-          }
-        }
-      ]
     }
   },
   "environment": {
@@ -6445,14 +4419,14 @@
         "title": "Fleet Health",
         "subtitle": "Engine telemetry flags failures before they stop production.",
         "position": [
-          -118,
-          24,
-          64
+          -160,
+          6,
+          -30
         ],
         "target": [
-          -141,
-          -7,
-          42
+          -186,
+          -4,
+          -6
         ],
         "travel": 1.6,
         "hold": 10,
@@ -6703,56 +4677,24 @@
         "hold": 6
       },
       {
-        "title": "Night Shift",
-        "subtitle": "Around-the-clock operations, the same live telemetry.",
-        "position": [
-          18,
-          10,
-          -34
-        ],
-        "target": [
-          4,
-          5,
-          -4
-        ],
-        "travel": 4.5,
-        "hold": 11,
-        "night": true
-      },
-      {
         "title": "Real-Time Worker Monitoring",
-        "subtitle": "AI vision at every gate and walkway \u2014 hard hat, hi-vis, boots, gloves. Any lapse flags in real time.",
+        "subtitle": "AI vision at every gate \u2014 two workers scanned head to toe; compliant clears green, a missing hard hat flags red.",
         "position": [
-          13,
-          5,
-          16
+          10.6,
+          2.2,
+          -10.5
         ],
         "target": [
-          3,
-          1.3,
-          6.8
+          10.6,
+          1.15,
+          -18
         ],
         "travel": 2.4,
         "hold": 13,
         "tag": "Real-Time Worker Monitoring",
         "actions": [
           {
-            "at": 0,
-            "type": "safetyLayer",
-            "params": {
-              "on": true
-            }
-          },
-          {
-            "at": 2,
-            "type": "openFeed",
-            "target": "ppe-cam-4",
-            "params": {
-              "size": 2
-            }
-          },
-          {
-            "at": 4,
+            "at": 0.2,
             "type": "patchConfig",
             "target": "worker-2",
             "params": {
@@ -6761,17 +4703,14 @@
             }
           },
           {
-            "at": 10,
-            "type": "patchConfig",
-            "target": "worker-2",
+            "at": 3,
+            "type": "rescan",
             "params": {
-              "path": "ppe.helmet",
-              "value": true
+              "ids": [
+                "worker-2",
+                "worker-8"
+              ]
             }
-          },
-          {
-            "at": 11.5,
-            "type": "closeFeed"
           }
         ]
       },
@@ -6805,6 +4744,40 @@
             "target": "near-miss",
             "params": {
               "holdMs": 8000
+            }
+          }
+        ]
+      },
+      {
+        "title": "Predictive Maintenance",
+        "subtitle": "Sensor fusion flags failing assets before they fail \u2014 diagnosis, evidence and the recommended fix, one click away.",
+        "position": [
+          -16,
+          9,
+          14
+        ],
+        "target": [
+          -33,
+          5,
+          -2
+        ],
+        "travel": 2.6,
+        "hold": 14,
+        "tag": "Predictive Maintenance",
+        "actions": [
+          {
+            "at": 3,
+            "type": "pdm",
+            "target": "CR-01",
+            "params": {
+              "open": true
+            }
+          },
+          {
+            "at": 12.5,
+            "type": "pdm",
+            "params": {
+              "open": false
             }
           }
         ]

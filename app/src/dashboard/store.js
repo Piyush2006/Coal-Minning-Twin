@@ -14,7 +14,7 @@ export const useDash = create(persist((set, get) => ({
   shiftMode: false,
   lastUpdated: new Date(),
   settings: DEFAULT_SETTINGS,
-  tab: 'production',
+  tab: 'usecases',
   // The active operational plan (null until uploaded/entered). Shape:
   // { level, source:'upload'|'manual', createdAt, fileName?, rows:[{period,isMonth,shift?,plannedCoal,...}] }
   plan: null,

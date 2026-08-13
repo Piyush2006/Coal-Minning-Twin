@@ -83,3 +83,21 @@ export function integrate(st, target, accel, decel, dt) {
 // to a full stop within `dist` metres (v² = 2·decel·dist). Used to ease INTO
 // the dwell at waypoint 0 instead of screeching to a halt on top of it.
 export const stoppingSpeed = (dist, decel) => Math.sqrt(Math.max(0, 2 * decel * dist))
+
+// ── convoy master clocks — one per shared loop (path.convoy) ──────────────
+// All members of a loop are pinned at EQUAL arc offsets from a single master
+// arc-clock, so their spacing is constant by construction: they can never
+// catch up, lap, or overlap. The clock's speed is the MIN of every member's
+// local allowance (curvature, loading-crawl zone, external caps/hard stops),
+// so a worker AUTO-STOP on any one truck freezes the whole circuit — exactly
+// what a blocked one-lane haul road does.
+const CONVOYS = new Map()   // pathKey -> { arc, v, members: Map, frame, inited }
+export function convoyFor(key) {
+  let c = CONVOYS.get(key)
+  if (!c) { c = { arc: 0, v: 0, members: new Map(), frame: -1, inited: false }; CONVOYS.set(key, c) }
+  return c
+}
+export function convoyLeave(key, id) {
+  const c = CONVOYS.get(key)
+  if (c) { c.members.delete(id); if (!c.members.size) CONVOYS.delete(key) }
+}

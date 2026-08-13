@@ -53,10 +53,22 @@ function sensorValue(t, rng, elevate) {
 const round = (v, dp = 1) => Math.round(v * 10 ** dp) / 10 ** dp
 
 // current condition for one asset (stable snapshot)
+// ── Curated demo state ────────────────────────────────────────────────────
+// Pins the few assets the Use-Cases board narrates so Predictive, Equipment and
+// the board tell ONE coherent story; every other asset stays fully procedural.
+//   CURATED_KLASS — forces severity class (the ONLY criticals in the fleet)
+//   CURATED_HEALTH — overrides the health score for a specific asset
+//   CURATED_DOWN  — the assets physically in Breakdown (drives availability)
+export const CURATED_KLASS = { 'EX-01': 'critical', 'HT-05': 'critical', 'BD-02': 'critical', 'CR-01': 'warning' }
+export const CURATED_HEALTH = { 'CR-01': 55 }
+export const CURATED_DOWN = new Set(['EX-01'])
+
 export function assetCondition(u, settings) {
   const rng = mulberry(hash(`${u.id}|cond`) ^ 0x2b1d)
   const bucket = hash(u.id) % 100
-  const klass = bucket < 16 ? 'critical' : bucket < 42 ? 'warning' : 'normal'
+  const natural = bucket < 16 ? 'critical' : bucket < 42 ? 'warning' : 'normal'
+  // non-curated assets never go critical → exactly the CURATED_KLASS criticals
+  const klass = CURATED_KLASS[u.id] ?? (natural === 'critical' ? 'warning' : natural)
   const pattern = PATTERNS[hash(u.id + 'p') % PATTERNS.length]
 
   // decide which sensors to elevate
@@ -96,7 +108,8 @@ export function assetCondition(u, settings) {
   if (maintenance === 'Overdue') add('Maintenance overdue', 12, 'service schedule')
   else if (maintenance === 'Due') add('Maintenance due', 5, 'service schedule')
   const fuelBase = TYPE_FUEL[u.type] || 0
-  const health = Math.max(30, Math.round(score))
+  let health = Math.max(30, Math.round(score))
+  if (CURATED_HEALTH[u.id] != null) health = CURATED_HEALTH[u.id]
   const healthBand = health >= 85 ? 'good' : health >= 70 ? 'watch' : 'alert'
   const healthStatus = health >= 85 ? 'positive' : health >= 70 ? 'warning' : 'critical'
   contributors.sort((a, b) => b.impact - a.impact)
@@ -109,8 +122,11 @@ export function assetCondition(u, settings) {
   const severity = abnormal.some(s => s.state === 'crit') ? 'Critical' : abnormal.length ? 'Warning' : 'Normal'
   const dx = abnormal.length ? diagnose(abnormal.map(s => s.key)) : null
 
-  // live status (coherent with alert/health)
-  const status = pickStatus(rng, severity, health)
+  // live status (coherent with alert/health). Curated demo: only CURATED_DOWN
+  // assets are in Breakdown, so fleet availability is deterministic.
+  let status = pickStatus(rng, severity, health)
+  if (CURATED_DOWN.has(u.id)) status = 'Breakdown'
+  else if (status === 'Breakdown') status = 'Idle — Off Job'
 
   return {
     ...u, sensors, abnormal, severity, diagnosis: dx,

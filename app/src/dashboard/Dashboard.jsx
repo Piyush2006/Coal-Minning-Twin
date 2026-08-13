@@ -12,6 +12,7 @@ import { TopBar } from './components/TopBar'
 import { Sidebar } from './components/Sidebar'
 import { PlanManager } from './components/PlanManager'
 import { BruceChat } from './components/BruceChat'
+import { UseCases } from './sections/UseCases'
 import { ProductionPerformance } from './sections/ProductionPerformance'
 import { Efficiency } from './sections/Efficiency'
 import { EquipmentHub } from './sections/EquipmentHub'
@@ -19,8 +20,9 @@ import { Predictive } from './sections/Predictive'
 import { Safety } from './sections/Safety'
 import { DepthProfile } from './sections/DepthProfile'
 
-const COMPONENTS = { production: ProductionPerformance, efficiency: Efficiency, equipment: EquipmentHub, predictive: Predictive, safety: Safety, depth: DepthProfile }
+const COMPONENTS = { usecases: UseCases, production: ProductionPerformance, efficiency: Efficiency, equipment: EquipmentHub, predictive: Predictive, safety: Safety, depth: DepthProfile }
 const SECTIONS = [
+  { id: 'usecases', label: 'Use Cases', title: 'Use Cases', question: 'How is every operational use case doing right now?' },
   { id: 'production', label: 'Production', title: 'Production', question: 'Are we achieving our production target, and if not, why?' },
   { id: 'efficiency', label: 'Efficiency & Cost', title: 'Efficiency & Cost', question: 'Are we operating efficiently and within the expected cost?' },
   { id: 'equipment', label: 'Equipment', title: 'Equipment', question: 'Are machines effective, available, scheduled and healthy?' },

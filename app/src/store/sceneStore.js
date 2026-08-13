@@ -13,6 +13,7 @@ import { setCustomTypes } from '../lib/customTypesRef'
 import { getLibraryComponents } from '../lib/libraryRef'
 import { THERMAL_POWER_PLANT, TOOLTIP_DEFAULTS, MAIN_MACHINES } from '../lib/templates/thermalPowerPlant'
 import { BOTTLING_PLANT } from '../lib/templates/bottlingPlant'
+import { COAL_MINE } from '../lib/templates/coalMine'
 import { MEDIUM_STYLE, mediumOf, LEGACY_PIPE_COLORS } from '../lib/pipeMedia'
 
 // Derive the connector kind from the source port type:
@@ -856,6 +857,15 @@ const store = (set, get) => ({
     // "Plant Grade" apron) so existing saved projects drop them on load.
     const RETIRED_TYPES = new Set(['pp_grade'])
     for (const t of RETIRED_TYPES) delete customAssetTypes[t]
+    // Retired coal-mine scene extras (id -> expected type, so no other template
+    // is affected): trucks 4-8 were fleet/proximity showcase additions that
+    // crowded the pit; worker-5 stood at the pit mouth and was cut on review.
+    const RETIRED_IDS = new Map([
+      ['truck-4', 'haul_truck'], ['truck-5', 'haul_truck'], ['truck-6', 'haul_truck'],
+      ['truck-7', 'haul_truck'], ['truck-8', 'haul_truck'],
+      ['worker-5', 'site_worker'],
+      ['loader-1', 'wheel_loader'],
+    ])
 
     // Refresh ALL template-owned component specs from the current templates — their
     // geometry/materials are baked into the saved scene, so design fixes (e.g. the
@@ -864,6 +874,30 @@ const store = (set, get) => ({
       const fresh = { ...THERMAL_POWER_PLANT().customAssetTypes, ...BOTTLING_PLANT().customAssetTypes }
       for (const id in fresh) if (customAssetTypes[id]) customAssetTypes[id] = fresh[id]
     } catch { /* template optional */ }
+
+    // Refresh the coal-mine FLEET PATHS from the current template — the convoy
+    // motion redesign (one shared circuit, master-clock spacing, loading-crawl)
+    // lives in path config that is baked into saved scenes, so like the spec
+    // refresh above it only reaches existing projects here. Guarded by id+type,
+    // so non-coal templates and renamed objects are untouched.
+    let _coalTpl = null
+    const coalTpl = () => {
+      if (_coalTpl === null) { try { _coalTpl = COAL_MINE().objects } catch { _coalTpl = {} } }
+      return _coalTpl
+    }
+    const coalPathFor = (id) => {
+      const t = coalTpl()[id]
+      return t?.config?.path?.waypoints ? t : undefined
+    }
+
+    // Additive template migration: brand-new coal-template objects that existing
+    // saved scenes must GAIN (the fill loop below only covers objects already in
+    // the save). Guarded by anchors so no other template is affected.
+    if (rawObjects['worker-2'] && rawObjects['ppe-cam-4']) {
+      for (const nid of ['worker-8']) {
+        if (!rawObjects[nid] && coalTpl()[nid]) rawObjects[nid] = coalTpl()[nid]
+      }
+    }
 
     // Upgrade legacy smoke/vapour parts to the rising-plume animation so existing
     // projects pick it up without re-creating from the template.
@@ -884,15 +918,46 @@ const store = (set, get) => ({
     const filled = {}
     for (const [id, o] of Object.entries(rawObjects)) {
       if (RETIRED_TYPES.has(o.type)) continue   // skip retired objects
+      if (RETIRED_IDS.get(id) === o.type) continue   // retired scene extras
       const st = o.state ?? defaultState(o.type)
+      // BD-03 was authored above the pit rim at surface level (y=0), not on a
+      // bench like BD-01/02 — relocate it onto the bench-3 tread with the other
+      // rigs. Baked into saved scenes, so like the fixes above it only reaches
+      // existing projects here. Guarded to the exact old coords, so a user who
+      // moved it deliberately is left untouched.
+      let position = Array.isArray(o.position) ? o.position : [0, 0, 0]
+      let rotation = Array.isArray(o.rotation) ? o.rotation : [0, 0, 0]
+      if (id === 'bh-drill-3' && Math.abs(position[0] + 99.44) < 0.05 && Math.abs(position[1]) < 0.05 && Math.abs(position[2] - 46.42) < 0.05) {
+        position = [-124.2, -3.6, -40.7]
+      }
+      // exc-ob-1 moved with truck-3's disjoint bench shuttle (SW bench, θ196) —
+      // same guarded one-time relocation pattern as bh-drill-3 above. Matches
+      // both the original spot and the short-lived intermediate one.
+      if (id === 'exc-ob-1' && ((Math.abs(position[0] + 141.34) < 0.05 && Math.abs(position[2] - 41.51) < 0.05) ||
+                                (Math.abs(position[0] + 127.92) < 0.05 && Math.abs(position[2] - 35.54) < 0.05))) {
+        position = [-186.72, -7.2, -6.53]
+        rotation = [0, -4.99, 0]
+      }
+      // worker-2 (PPE-beat violation worker) moved to the isolated pit-side gate
+      // so only it + worker-8 are in the scan frame. Guarded to its original spot.
+      if (id === 'worker-2' && ((Math.abs(position[0] - 7) < 0.05 && Math.abs(position[2] - 6.5) < 0.05) ||
+                                (Math.abs(position[0] - 13.2) < 0.05 && Math.abs(position[2] + 15.4) < 0.05))) {
+        position = [11.6, 0, -18]
+        rotation = [0, 3.14, 0]
+      }
+      // fleet-path refresh (see coalPathFor above): template path is authoritative
+      // for the coal-mine movers so the convoy redesign reaches saved scenes.
+      let config0 = o.config
+      const tplMover = o.config?.path?.waypoints ? coalPathFor(id) : null
+      if (tplMover && tplMover.type === o.type) config0 = { ...o.config, path: JSON.parse(JSON.stringify(tplMover.config.path)) }
       filled[id] = {
         ...o,
         // Defensive defaults so partial / imported specs (which often omit these)
         // still render — SceneObject bails on missing `visible`/`layer`.
         id,
         name: o.name ?? o.type,
-        position: Array.isArray(o.position) ? o.position : [0, 0, 0],
-        rotation: Array.isArray(o.rotation) ? o.rotation : [0, 0, 0],
+        position,
+        rotation,
         scale: Array.isArray(o.scale) ? o.scale : [1, 1, 1],
         layer: o.layer ?? defaultLayerForType(o.type),
         visible: o.visible ?? true,
@@ -906,7 +971,7 @@ const store = (set, get) => ({
         // by an earlier version), but keep any user-customised selection.
         tooltip: resolveTooltip(o.type, o.tooltip),
         config: (() => {
-          const cfg = withConfigDefaults(o.type, o.config, customAssetTypes)
+          const cfg = withConfigDefaults(o.type, config0, customAssetTypes)
           // Floor default re-tinted (old blue-grey read as dirty) — migrate floors
           // still on the old default; hand-picked colours are left alone.
           if (o.type === 'Floor' && (cfg.color || '').toLowerCase() === '#e7eaef') return { ...cfg, color: '#f2f2f3' }
