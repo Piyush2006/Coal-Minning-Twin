@@ -4357,23 +4357,76 @@
     "presentation": true,
     "beats": [
       {
-        "title": "Open-Pit Mining",
-        "subtitle": "Excavator EX-01 loads the haul fleet \u2014 a predictive-maintenance flag already open on its engine.",
+        "title": "Predictive Maintenance",
+        "subtitle": "EX-01 flags an engine fault before it fails \u2014 the maintenance case opens with diagnosis, evidence and the fix.",
         "position": [
-          -160,
-          6,
-          -30
+          -170,
+          5,
+          -18
         ],
         "target": [
           -186,
-          -4,
-          -6
+          0,
+          -6.5
+        ],
+        "travel": 2.0,
+        "hold": 8.0,
+        "chips": [
+          "Predictive Maintenance"
+        ],
+        "actions": [
+          {
+            "at": 3,
+            "type": "pdm",
+            "target": "EX-01",
+            "params": {
+              "open": true
+            }
+          },
+          {
+            "at": 8.5,
+            "type": "pdm",
+            "params": {
+              "open": false
+            }
+          }
+        ]
+      },
+      {
+        "title": "Open-Pit Mining",
+        "subtitle": "Pull back to the full west cut \u2014 excavators digging, the haul fleet cycling, live ops KPIs on every asset.",
+        "position": [
+          -100,
+          16,
+          58
+        ],
+        "target": [
+          -172,
+          -6,
+          -18
         ],
         "travel": 2.5,
-        "hold": 9.5,
+        "hold": 5.5,
         "chips": [
-          "Mine Operations Optimization",
-          "Predictive Maintenance",
+          "Mine Operations Optimization"
+        ]
+      },
+      {
+        "title": "Drill & Blast",
+        "subtitle": "A production blast fires \u2014 dust monitoring flags the PM10 spike in real time.",
+        "position": [
+          -140,
+          20,
+          -8
+        ],
+        "target": [
+          -176,
+          -4,
+          -40
+        ],
+        "travel": 2.0,
+        "hold": 6.0,
+        "chips": [
           "Environmental Monitoring"
         ],
         "actions": [
@@ -4383,11 +4436,52 @@
             "params": {
               "beaconSec": 3
             }
+          },
+          {
+            "at": 1.5,
+            "type": "triggerScenario",
+            "target": "pm10"
+          },
+          {
+            "at": 7.5,
+            "type": "clearScenario",
+            "target": "pm10"
           }
         ]
       },
       {
-        "title": "Haul Road",
+        "title": "ROM Haul Circuit",
+        "subtitle": "The loaded truck runs the ROM circuit \u2014 cycle time and TPMS tracked across the fleet.",
+        "position": [
+          -86,
+          37,
+          68
+        ],
+        "target": [
+          -128,
+          -5,
+          38
+        ],
+        "travel": 2.0,
+        "hold": 6.0,
+        "chips": [
+          "Fleet & Equipment Management"
+        ],
+        "actions": [
+          {
+            "at": 1,
+            "type": "triggerScenario",
+            "target": "ht03-tyre"
+          },
+          {
+            "at": 7.5,
+            "type": "clearScenario",
+            "target": "ht03-tyre"
+          }
+        ]
+      },
+      {
+        "title": "Collision & Proximity Safety",
         "subtitle": "A light vehicle strays into a haul truck\u2019s blind side \u2014 proximity AI brings the truck to an AUTO-STOP.",
         "position": [
           -70,
@@ -4400,13 +4494,13 @@
           -5
         ],
         "travel": 2.5,
-        "hold": 13.5,
+        "hold": 11.5,
         "chips": [
-          "Fleet & Equipment Management"
+          "Collision & Proximity Safety"
         ],
         "actions": [
           {
-            "at": 5,
+            "at": 3,
             "type": "director",
             "target": "near-miss",
             "params": {
@@ -4415,16 +4509,7 @@
             }
           },
           {
-            "at": 6,
-            "type": "chips",
-            "params": {
-              "chips": [
-                "Collision & Proximity Safety"
-              ]
-            }
-          },
-          {
-            "at": 13,
+            "at": 12,
             "type": "director",
             "target": "stop"
           }
@@ -4432,7 +4517,7 @@
       },
       {
         "title": "Crushing & Overland Conveying",
-        "subtitle": "ROM tips into the primary crusher; AI vision watches every metre of CV-01.",
+        "subtitle": "CR-01 flags rising vibration; AI vision watches every metre of CV-01.",
         "position": [
           -25,
           6.5,
@@ -4443,14 +4528,19 @@
           1.5,
           -0.5
         ],
-        "travel": 2.5,
-        "hold": 10.5,
+        "travel": 2.0,
+        "hold": 8.0,
         "chips": [
           "Asset Performance Management"
         ],
         "actions": [
           {
-            "at": 2,
+            "at": 1,
+            "type": "triggerScenario",
+            "target": "crusher-vib"
+          },
+          {
+            "at": 3,
             "type": "openFeed",
             "target": "cam-2",
             "params": {
@@ -4458,14 +4548,19 @@
             }
           },
           {
-            "at": 10,
+            "at": 9,
             "type": "closeFeed"
+          },
+          {
+            "at": 9.5,
+            "type": "clearScenario",
+            "target": "crusher-vib"
           }
         ]
       },
       {
         "title": "Real-Time Worker Monitoring",
-        "subtitle": "Two workers scanned head to toe at the gate camera \u2014 compliant clears green, a missing hard hat flags red.",
+        "subtitle": "Two workers scanned head to toe at the gate \u2014 compliant clears green, a missing hard hat flags red.",
         "position": [
           10.6,
           2.2,
@@ -4476,8 +4571,8 @@
           1.15,
           -18
         ],
-        "travel": 2.5,
-        "hold": 10.5,
+        "travel": 2.0,
+        "hold": 8.0,
         "chips": [
           "Real-Time Worker Monitoring"
         ],
@@ -4510,26 +4605,76 @@
             }
           },
           {
-            "at": 10,
+            "at": 9,
             "type": "closeFeed"
           }
         ]
       },
       {
-        "title": "Stockyard & Rail Load-Out",
-        "subtitle": "Blended product to the stockyard, then wagons fill and the train departs for port.",
+        "title": "Processing \u2014 CHPP",
+        "subtitle": "Inside the wash plant \u2014 specific-energy deviation flags on SC-01 against target.",
         "position": [
-          94,
+          -6,
           17,
-          -2
+          32
         ],
         "target": [
-          58,
-          3,
-          -24
+          6,
+          4,
+          9
         ],
-        "travel": 2.5,
-        "hold": 9.5,
+        "travel": 2.0,
+        "hold": 6.0,
+        "chips": [
+          "Energy & Sustainability Management"
+        ],
+        "actions": [
+          {
+            "at": 1,
+            "type": "triggerScenario",
+            "target": "sec-dev"
+          },
+          {
+            "at": 7.5,
+            "type": "clearScenario",
+            "target": "sec-dev"
+          }
+        ]
+      },
+      {
+        "title": "Product Flow",
+        "subtitle": "Washed product streams along the belts to the stockyard \u2014 tonnage tracked end to end.",
+        "position": [
+          10,
+          14,
+          26
+        ],
+        "target": [
+          24,
+          3,
+          3
+        ],
+        "travel": 2.0,
+        "hold": 6.0,
+        "chips": [
+          "Production & Productivity Management"
+        ]
+      },
+      {
+        "title": "Stockyard & Rail Load-Out",
+        "subtitle": "The stacker builds the blended pile; wagons fill and the loaded train departs for port.",
+        "position": [
+          42,
+          26,
+          44
+        ],
+        "target": [
+          52,
+          2,
+          -10
+        ],
+        "travel": 2.0,
+        "hold": 10.0,
         "chips": [
           "Supply Chain & Logistics"
         ]
