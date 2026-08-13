@@ -4443,6 +4443,11 @@
             "target": "pm10"
           },
           {
+            "at": 1.5,
+            "type": "openDrilldown",
+            "target": "pm-1"
+          },
+          {
             "at": 7.5,
             "type": "clearScenario",
             "target": "pm10"
@@ -4472,6 +4477,11 @@
             "at": 1,
             "type": "triggerScenario",
             "target": "ht03-tyre"
+          },
+          {
+            "at": 1.5,
+            "type": "openDrilldown",
+            "target": "truck-1"
           },
           {
             "at": 7.5,
@@ -4538,6 +4548,11 @@
             "at": 1,
             "type": "triggerScenario",
             "target": "crusher-vib"
+          },
+          {
+            "at": 1.5,
+            "type": "openDrilldown",
+            "target": "crusher-1"
           },
           {
             "at": 3,
@@ -4635,6 +4650,11 @@
             "target": "sec-dev"
           },
           {
+            "at": 1.5,
+            "type": "openDrilldown",
+            "target": "screen-1"
+          },
+          {
             "at": 7.5,
             "type": "clearScenario",
             "target": "sec-dev"
@@ -4677,6 +4697,13 @@
         "hold": 10.0,
         "chips": [
           "Supply Chain & Logistics"
+        ],
+        "actions": [
+          {
+            "at": 1.5,
+            "type": "openDrilldown",
+            "target": "loadout-1"
+          }
         ]
       },
       {

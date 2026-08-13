@@ -22,6 +22,7 @@ import { useSceneStore } from '../store/sceneStore'
 import { useDayNight } from '../lib/dayNight'
 import { useBlastStore } from './effects/BlastFX'
 import { useFeedStore } from './CameraFeed'
+import { useUIStore } from '../store/uiStore'
 import { useViewTab } from '../lib/viewTab'
 import { triggerScenario, clearScenario, clearAllScenarios, setScenarioExclusive } from '../lib/demoScenarios'
 import { useSafetyLayer } from '../lib/safetyLayer'
@@ -55,6 +56,7 @@ function tourCleanupUI() {
     if (feed.scale !== 1) useFeedStore.setState({ scale: 1 })
     useSceneStore.getState().clearSelection?.()
     useViewTab.getState().setTab('overview')
+    useUIStore.setState({ rightCollapsed: true })   // KPI panel collapsed by default; a beat opens it on cue
     stopNearMiss()                          // director never leaks past its beat
     closePdm()                              // PdM drawer never leaks past its beat
     useSafetyLayer.getState().setOn(false)  // safety overlay off between beats / on exit
@@ -106,6 +108,7 @@ function runTourAction(a, segIndex) {
         if (typeof store.selectObject !== 'function') { ok = false; assert = 'selectObject missing'; break }
         store.selectObject(id)
         useViewTab.getState().setTab('asset')
+        useUIStore.setState({ rightCollapsed: false })   // pop the KPI panel open for this beat
         ok = useSceneStore.getState().selectedId === id && useViewTab.getState().tab === 'asset'
         assert = `selected=${useSceneStore.getState().selectedId} tab=${useViewTab.getState().tab}`
         break
@@ -209,6 +212,7 @@ export function TourDriver({ orbitRef }) {
     segs.current = built
     time.current = 0
     mem.current.prevEnabled = ctrl.enabled
+    mem.current.prevRightCollapsed = useUIStore.getState().rightCollapsed   // restore the KPI panel state on exit
     mem.current.lastCardKey = ''
     mem.current.lastSegI = -1
     ctrl.enabled = false                            // block user orbit input
@@ -224,6 +228,7 @@ export function TourDriver({ orbitRef }) {
       segs.current = null
       useDayNight.getState().setNight(false)        // tour always hands back daylight
       tourCleanupUI()                               // close anything a beat opened
+      useUIStore.setState({ rightCollapsed: mem.current.prevRightCollapsed })   // restore KPI panel
       clearAllScenarios()
       setScenarioExclusive(false)                   // demo trends resume
     }
