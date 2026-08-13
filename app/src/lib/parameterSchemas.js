@@ -50,7 +50,13 @@ export const PARAMETER_SCHEMAS = {
   AluminaSilo:     [n('level','Level','%',70,0,100), n('feedRate','Feed Rate','kg/h',420,0,2000)],
   TappingCrucible: [n('metalTemp','Metal Temp','°C',900,700,1000), n('fill','Fill','%',40,0,100)],
 
-  ConveyorBelt: [n('lineSpeed','Line Speed','m/s',0.6,0,3), n('load','Load','%',55,0,100)],
+  ConveyorBelt: [n('lineSpeed','Line Speed','m/s',0.6,0,3), n('load','Load','%',55,0,100),
+    // drive-motor telemetry — the CV-01 thermal diagnosis (Screen 4) reads these
+    // in Live, not only in the recorded fixture. motorTemp is load-aware (see
+    // chainLive); vibration stays flat so a rise is a cooling-path issue, not a bearing.
+    { ...n('motorTemp','Drive Motor Temp','°C',58,20,110), freq: '5s' },
+    { ...n('motorCurrent','Drive Motor Current','A',142,0,260), freq: '5s' },
+    { ...n('vibration','Drive Vibration','mm/s',2.1,0,12), freq: '5s' }],
   Tank:         [n('level','Level','%',60,0,100), n('temp','Temperature','°C',18,0,90), n('pressure','Pressure','bar',1.2,0,10)],
   Pump:         [n('flowRate','Flow Rate','m³/h',24,0,200), n('pressure','Pressure','bar',3.5,0,16), n('vibration','Vibration','mm/s',1.8,0,20)],
   Valve:        [n('position','Open Position','%',100,0,100), n('flowRate','Flow Rate','m³/h',24,0,200)],

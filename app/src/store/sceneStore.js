@@ -323,6 +323,19 @@ const store = (set, get) => ({
     objects: { ...state.objects, [id]: { ...state.objects[id], ...changes } },
   })),
 
+  // Batched parameter patch for the live simulators (chain, mine model) — one
+  // store update for many assets so the per-second tick causes a single render.
+  // patches = { id: { param: value, ... }, ... }. No undo history (live data).
+  patchParams: (patches) => set(state => {
+    const objects = { ...state.objects }
+    for (const id in patches) {
+      const o = objects[id]
+      if (!o) continue
+      objects[id] = { ...o, parameters: { ...o.parameters, ...patches[id] } }
+    }
+    return { objects }
+  }),
+
   // Edit one config field. Snapshots into undo history (like cycleStatus).
   updateConfig: (id, key, value) => {
     set(state => {
