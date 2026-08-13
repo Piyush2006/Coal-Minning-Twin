@@ -15,6 +15,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Html } from '@react-three/drei'
+import { useTourStore } from './TourPlayer'
 import { create } from 'zustand'
 import { useSceneStore } from '../store/sceneStore'
 import { C, FONT, SHADOW } from '../ui/theme'
@@ -71,6 +72,7 @@ function KpiLabel({ id, kpi, position }) {
 export function Kpi3DLayer() {
   const shown = useKpiStore(s => s.shown)
   const editMode = useSceneStore(s => s.editMode)
+  const tourActive = useTourStore(s => s.active)   // hide floating KPI labels during the tour
   const objects = useSceneStore(s => s.objects)
   // Anchors change only when the scene's kpi3d config changes — key by a cheap signature.
   const anchors = useMemo(() => {
@@ -81,6 +83,6 @@ export function Kpi3DLayer() {
     }
     return out
   }, [objects])
-  if (!shown || editMode) return null
+  if (!shown || editMode || tourActive) return null
   return <>{anchors.map(a => <KpiLabel key={a.id} {...a} />)}</>
 }

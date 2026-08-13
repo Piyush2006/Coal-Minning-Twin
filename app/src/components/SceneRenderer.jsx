@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { TransformControls, useHelper, Html } from '@react-three/drei'
 import { BoxHelper, Vector3, Box3, CatmullRomCurve3, RingGeometry, CircleGeometry, SphereGeometry } from 'three'
 import { useSceneStore } from '../store/sceneStore'
+import { useTourStore } from './TourPlayer'
 import { useActiveAlerts, alertSeverityMap, ALERT_SEVERITY_COLOR } from '../lib/alertsEngine'
 import { useFeedStore } from './CameraFeed'
 import { pathFillMap } from '../lib/loadStateMap'
@@ -711,6 +712,7 @@ const SceneObject = memo(SceneObjectImpl, (p, n) =>
 
 export function SceneRenderer({ orbitRef, glowMap = {} }) {
   const objects = useSceneStore(s => s.objects)
+  const tourActive = useTourStore(s => s.active)   // the tour hides all floating asset overlays
   const groups = useSceneStore(s => s.groups)
   const selectedGroupId = useSceneStore(s => s.selectedGroupId)
   const editMode = useSceneStore(s => s.editMode)
@@ -731,11 +733,11 @@ export function SceneRenderer({ orbitRef, glowMap = {} }) {
     <group onClick={(e) => { if (e.object.type === 'Mesh') return; useSceneStore.getState().clearSelection() }}>
       {Object.values(objects).map(obj => (
         <SceneObject key={obj.id} obj={obj} orbitRef={orbitRef}
-          glowColor={glowMap[obj.id] ?? null}
+          glowColor={tourActive ? null : (glowMap[obj.id] ?? null)}
           allowLight={lightAllowed.has(obj.id)}
           inGroup={groupMembers?.has(obj.id) ?? false}
           pointRef={pointRef} setHoveredId={setHoveredId}
-          alertSev={alertMap[obj.id] ?? null} />
+          alertSev={tourActive ? null : (alertMap[obj.id] ?? null)} />
       ))}
       {editMode && selectedGroupId && groupMembers?.size > 0 && (
         <GroupGizmo key={selectedGroupId} groupId={selectedGroupId} orbitRef={orbitRef} />

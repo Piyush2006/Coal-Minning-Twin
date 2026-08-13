@@ -6,6 +6,7 @@
 import { Html } from '@react-three/drei'
 import { useSceneStore } from '../store/sceneStore'
 import { usePdmAlerts, usePdmUI, TWIN_PDM_MAP, BADGE_Y } from '../lib/pdmBridge'
+import { useTourStore } from './TourPlayer'
 
 const SEV = {
   Critical: { ring: '#F04438', bg: 'rgba(240,68,56,0.14)' },
@@ -22,7 +23,11 @@ export function PdmBadgeLayer({ editMode }) {
   const objects = useSceneStore(s => s.objects)
   const alerts = usePdmAlerts()
   const open = usePdmUI(s => s.open)
+  const tourActive = useTourStore(s => s.active)
+  const card = useTourStore(s => s.card)
   if (editMode) return null
+  // during the tour, badges appear ONLY on the Predictive Maintenance beat
+  if (tourActive && !card?.chips?.includes('Predictive Maintenance')) return null
 
   const chips = []
   for (const [tid, did] of Object.entries(TWIN_PDM_MAP)) {
