@@ -13,13 +13,15 @@ export function complianceStatus(pct) {
   return 'critical'
 }
 
-export function buildSafety({ range, mineId, areaId, equipTypeId, settings }) {
+export function buildSafety({ range, mineId, areaId, equipTypeId, settings, liveEvents = [] }) {
   const scope = scopeOf({ mineId, areaId, equipTypeId })
   const days = eachDay(range).map(d => safetyDay(d, scope))
 
   const catTotals = Object.fromEntries(SAFE_CATS.map(c => [c, { checks: 0, violations: 0 }]))
   let checks = 0, violations = 0
   for (const d of days) for (const c of d.cats) { catTotals[c.cat].checks += c.checks; catTotals[c.cat].violations += c.violations; checks += c.checks; violations += c.violations }
+  // live events pushed from the 3D twin (PPE / proximity) count as violations
+  for (const e of liveEvents) { if (catTotals[e.cat]) { catTotals[e.cat].violations += 1; catTotals[e.cat].checks += 1 } checks += 1; violations += 1 }
 
   const byCategory = SAFE_CATS.map(c => ({
     cat: c, checks: catTotals[c].checks, violations: catTotals[c].violations, compliancePct: comp(catTotals[c].checks, catTotals[c].violations),
@@ -49,7 +51,7 @@ export function buildSafety({ range, mineId, areaId, equipTypeId, settings }) {
   // Evidence log — every discrete violation event, newest first, bounded so a
   // long range can't render thousands of rows.
   const EVIDENCE_CAP = 200
-  const evidence = days.flatMap(d => d.events).sort((a, b) => b.ts - a.ts)
+  const evidence = [...liveEvents, ...days.flatMap(d => d.events)].sort((a, b) => b.ts - a.ts)
   const evidenceTotal = evidence.length
 
   return {

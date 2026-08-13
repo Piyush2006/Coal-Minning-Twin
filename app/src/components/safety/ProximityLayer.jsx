@@ -5,34 +5,40 @@
 // + brake glow, and vehicleMotion brings the truck to an AUTO-STOP. Detection is
 // always on (feeds liveSafety → safety-1); visuals gate on the safety layer OR a
 // live breach.
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { useSceneStore } from '../../store/sceneStore'
 import { useSafetyLayer } from '../../lib/safetyLayer'
-import { workerPosMap } from '../../lib/workerPosMap'
+import { workerPosMap, registerWorker, unregisterWorker } from '../../lib/workerPosMap'
 import { vehicleState, setSpeedTarget, clearSpeedTarget, requestStop, releaseStop } from '../../lib/vehicleMotion'
 import { proximityStateMap, workerBreach, zonesFor, zoneTest } from '../../lib/proximity'
 import { liveSafety, seedCounters } from '../../lib/liveSafety'
 import { phantom } from '../../lib/nearMissDirector'
-import { SiteWorker } from '../assets/SiteWorker'
+import { pushLiveSafety } from '../../lib/liveSafetyFeed'
 import { shockMat, flowMat } from './safetyShaders'
 
-// The near-miss "phantom": a real worker figure the director places on a haul
-// road, module-controlled so the sim can't revert it. Parked far when idle.
+// The near-miss "intruder" is a LIGHT VEHICLE (not a worker) straying into a
+// haul truck's path. It's registered in workerPosMap so the truck's proximity
+// system detects it exactly like any ground actor and triggers the AUTO-STOP.
 export function NearMissActor() {
   const grp = useRef()
+  useEffect(() => { registerWorker('nearmiss-actor'); return () => unregisterWorker('nearmiss-actor') }, [])
   useFrame(() => {
     const g = grp.current
     if (!g) return
-    if (phantom.active) { g.position.set(phantom.x, phantom.y, phantom.z); g.visible = true }
-    else { g.position.set(5000, 0, 5000); g.visible = false }
+    const reg = workerPosMap.get('nearmiss-actor')
+    if (phantom.active) { g.position.set(phantom.x, phantom.y, phantom.z); g.visible = true; if (reg) reg.pos.set(phantom.x, phantom.y, phantom.z) }
+    else { g.position.set(5000, 0, 5000); g.visible = false; if (reg) reg.pos.set(5000, 0, 5000) }
   })
   return (
     <group ref={grp} position={[5000, 0, 5000]} visible={false}>
-      <SiteWorker objId="nearmiss-actor" status="running" name="Haul Road Worker"
-        config={{ ppe: { helmet: true, hiVis: true, boots: true, gloves: true } }} />
+      {/* light-vehicle proxy: white ute body + cab + amber roof beacon + hi-vis */}
+      <mesh position={[0, 0.7, 0]} castShadow><boxGeometry args={[2.0, 0.9, 4.4]} /><meshStandardMaterial color="#e8eaed" metalness={0.2} roughness={0.6} /></mesh>
+      <mesh position={[0, 1.35, 0.5]} castShadow><boxGeometry args={[1.8, 0.7, 1.9]} /><meshStandardMaterial color="#dfe3e8" metalness={0.2} roughness={0.5} /></mesh>
+      <mesh position={[0, 1.78, 0.5]}><boxGeometry args={[0.5, 0.16, 0.3]} /><meshStandardMaterial color="#F79009" emissive="#F79009" emissiveIntensity={1.2} toneMapped={false} /></mesh>
+      <mesh position={[0, 0.7, 2.21]}><boxGeometry args={[2.0, 0.32, 0.02]} /><meshStandardMaterial color="#F79009" emissive="#F79009" emissiveIntensity={0.4} toneMapped={false} /></mesh>
     </group>
   )
 }
@@ -150,6 +156,7 @@ export function ProximityLayer() {
   const vehicles = useMemo(() => (vehKey ? vehKey.split(',').map(id => ({ id, type: useSceneStore.getState().objects[id].type })) : []), [vehKey])
   const frame = useRef(0)
   const prevInner = useRef(false)
+  const nmPushed = useRef(false)
   const danger = useRef({ active: false, ax: 0, az: 0, bx: 0, bz: 0, dist: 0 })
   const tether = useRef(), labelRef = useRef(), labelWrapRef = useRef()
   const tetherMat = useMemo(() => flowMat('#FF6B5E'), [])
@@ -207,6 +214,16 @@ export function ProximityLayer() {
     if (anyInnerWorker && !prevInner.current) liveSafety.proximityAlertsToday = (liveSafety.proximityAlertsToday || 0) + 1
     prevInner.current = anyInnerWorker
     danger.current = bestDanger ? { active: true, ...bestDanger } : { active: false }
+
+    // near-miss AUTO-STOP → write a Vehicle-Safety violation to the management
+    // Safety data (once per near-miss activation)
+    if (phantom.active) {
+      const nm = wInfo.get('nearmiss-actor')
+      if (nm && nm.rank === 2 && !nmPushed.current) {
+        nmPushed.current = true
+        pushLiveSafety({ cat: 'Vehicle Safety', severity: 'Critical', description: 'Light-vehicle proximity — haul truck AUTO-STOP', location: 'Haul Road', camera: 'CV-11' })
+      }
+    } else nmPushed.current = false
   })
 
   // ── danger overlay: thick animated tether + distance/AUTO-STOP chip ──

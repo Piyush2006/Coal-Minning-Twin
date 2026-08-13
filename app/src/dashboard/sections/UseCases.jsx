@@ -4,6 +4,7 @@
 // section that owns that use case. No new modals/charts/persisted state.
 import { useMemo } from 'react'
 import { useDash } from '../store'
+import { useLiveSafetyFeed } from '../../lib/liveSafetyFeed'
 import { buildProduction } from '../calc/production'
 import { buildResources } from '../calc/resources'
 import { buildPdm } from '../calc/pdm'
@@ -32,13 +33,14 @@ export function UseCases() {
   const assignments = useDash(s => s.resourceAssignments)
   const jobOverrides = useDash(s => s.jobOverrides)
   const downtimeOverrides = useDash(s => s.downtimeOverrides)
+  const liveEvents = useLiveSafetyFeed(s => s.events)
 
   const rows = useMemo(() => {
     const filt = { range, mineId, areaId, equipTypeId }
     const prod = buildProduction({ ...filt, shiftMode, settings, plan })
     const res = buildResources({ ...filt, settings, assignments, jobOverrides, downtimeOverrides, now: new Date() })
     const pdm = buildPdm({ ...filt, settings })
-    const sf = buildSafety({ ...filt, settings })
+    const sf = buildSafety({ ...filt, settings, liveEvents })
     const env = buildEnvironment(filt)
     const logi = buildLogistics(filt)
 
@@ -90,7 +92,7 @@ export function UseCases() {
       { name: 'Supply Chain & Logistics', tab: 'production', tone: devTone(dev),
         kpi: `${fmt(logi.stockpile)} T`, detail: `stockpile vs ${fmt(logi.stockTarget)} T · dispatch ${fmt(logi.dispatch)} t/h` },
     ]
-  }, [range, mineId, areaId, equipTypeId, shiftMode, settings, plan, safetyActions, assignments, jobOverrides, downtimeOverrides])
+  }, [range, mineId, areaId, equipTypeId, shiftMode, settings, plan, safetyActions, assignments, jobOverrides, downtimeOverrides, liveEvents])
 
   return (
     <div style={{ ...CARD, overflow: 'hidden' }}>

@@ -15,6 +15,7 @@ import { useSceneStore } from '../../store/sceneStore'
 import { workerPosMap } from '../../lib/workerPosMap'
 import { workerBreachInfo } from '../../lib/proximity'
 import { ppeCameraDetections, PPE_LABEL } from '../../lib/ppeVision'
+import { pushLiveSafety } from '../../lib/liveSafetyFeed'
 import { scanMat, flowMat } from './safetyShaders'
 
 const GREEN = '#12B76A', RED = '#F04438', AMBER = '#F79009', SCAN = '#5CC8FF'
@@ -89,7 +90,18 @@ export function DetectionBoxLayer() {
       if (br && (br.state === 'danger' || br.state === 'warn')) { scanState.delete(wid); continue }
       const ss = scanState.get(wid)
       if (!ss || (ss.gone != null && now - ss.gone > RESCAN_GAP) || (ss && ss.compliant !== d.compliant)) scanState.set(wid, { phase: 'scan', t0: now, camId: d.camId, compliant: d.compliant })
-      else { ss.gone = null; ss.camId = d.camId; if (ss.phase === 'scan' && now - ss.t0 > SCAN_S) ss.phase = 'verdict' }
+      else {
+        ss.gone = null; ss.camId = d.camId
+        if (ss.phase === 'scan' && now - ss.t0 > SCAN_S) {
+          ss.phase = 'verdict'
+          // verdict lands → a violation is written to the management Safety data
+          if (!d.compliant && !ss.logged) {
+            ss.logged = true
+            const miss = d.missing.map(m => PPE_LABEL[m]).join(', ')
+            pushLiveSafety({ cat: 'PPE', severity: 'High', description: `Missing ${miss} — CV vision flag`, location: 'CHP Gate', camera: (useSceneStore.getState().objects[d.camId]?.name || d.camId || 'CV-04') })
+          }
+        }
+      }
     }
     for (const [wid, ss] of scanState) if (!ppe.has(wid) && ss.gone == null) ss.gone = now
 

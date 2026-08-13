@@ -120,6 +120,11 @@ function runTourAction(a, segIndex) {
         ok = useSafetyLayer.getState().on === (a.params?.on !== false)
         assert = `safety=${useSafetyLayer.getState().on}`
         break
+      case 'chips':
+        // swap the lower-third chips mid-beat (e.g. Fleet -> Collision on the near-miss)
+        useTourStore.setState(s => ({ card: s.card ? { ...s.card, chips: a.params?.chips || [] } : s.card }))
+        ok = true; assert = 'chips swapped'
+        break
       case 'rescan':
         // synchronized PPE re-scan: clearing several workers together makes
         // their scan sweeps run in lock-step, verdicts landing together
@@ -191,7 +196,9 @@ export function TourDriver({ orbitRef }) {
       const hold = Math.max(0, Number(b.hold) || 6)
       const seg = {
         i, p0: prevP, t0: prevT, p1, t1, start, travel, hold,
-        dist: prevP.distanceTo(p1), title: fill(b.title), subtitle: fill(b.subtitle), tag: b.tag ?? null, blast: !!b.blast, actions: Array.isArray(b.actions) ? b.actions : null,
+        dist: prevP.distanceTo(p1), title: fill(b.title), subtitle: fill(b.subtitle), tag: b.tag ?? null,
+        chips: Array.isArray(b.chips) && b.chips.length ? b.chips : (b.tag ? [b.tag] : null),
+        blast: !!b.blast, actions: Array.isArray(b.actions) ? b.actions : null,
       }
       start += travel + hold
       prevP = driftEnd(new THREE.Vector3(), p1, t1, hold)
@@ -288,7 +295,7 @@ export function TourDriver({ orbitRef }) {
     const key = local >= seg.travel * CARD_IN_AT ? `${seg.i}:hold` : ''
     if (key !== mem.current.lastCardKey) {
       mem.current.lastCardKey = key
-      _setCard(key ? { title: seg.title, subtitle: seg.subtitle, tag: seg.tag } : null)
+      _setCard(key ? { title: seg.title, subtitle: seg.subtitle, tag: seg.tag, chips: seg.chips } : null)
     }
   }, 1)
 
@@ -310,10 +317,12 @@ export function TourOverlay() {
         transition: 'opacity 650ms ease, transform 650ms ease',
         fontFamily: FONT, textAlign: 'center', ...glass, border: `1px solid ${C.line}`,
         borderRadius: R.lg, boxShadow: SHADOW.panel, padding: '13px 28px', maxWidth: 620 }}>
-        {shown?.tag ? (
-          <div style={{ marginBottom: 5 }}>
-            <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: C.text2,
-              background: 'rgba(120,120,128,0.12)', borderRadius: 4, padding: '2px 8px' }}>{shown.tag}</span>
+        {shown?.chips?.length ? (
+          <div style={{ marginBottom: 5, display: 'flex', gap: 5, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {shown.chips.map((c, i) => (
+              <span key={i} style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: C.text2,
+                background: 'rgba(120,120,128,0.12)', borderRadius: 4, padding: '2px 8px' }}>{c}</span>
+            ))}
           </div>
         ) : null}
         <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: 0.2, color: C.text, whiteSpace: 'nowrap' }}>{shown?.title}</div>

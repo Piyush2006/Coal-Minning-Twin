@@ -4357,67 +4357,8 @@
     "presentation": true,
     "beats": [
       {
-        "title": "Blackridge Coal Mine \u2014 Pit to Port",
-        "subtitle": "A living digital twin of the complete operation.",
-        "position": [
-          16,
-          56,
-          138
-        ],
-        "target": [
-          6,
-          1,
-          0
-        ],
-        "travel": 2.2,
-        "hold": 6
-      },
-      {
-        "tag": "IT / OT Integration",
-        "title": "Connected Operation",
-        "subtitle": "Every asset publishes live signals to one unified namespace.",
-        "position": [
-          4,
-          26,
-          52
-        ],
-        "target": [
-          22,
-          3,
-          2
-        ],
-        "travel": 1.6,
-        "hold": 7
-      },
-      {
-        "title": "Mine Operations \u2014 Open Pit",
-        "subtitle": "Drill, blast and excavation across four active benches.",
-        "position": [
-          -100,
-          16,
-          58
-        ],
-        "target": [
-          -172,
-          -6,
-          -18
-        ],
-        "travel": 1.6,
-        "hold": 11,
-        "actions": [
-          {
-            "at": 0.6,
-            "type": "blast",
-            "params": {
-              "beaconSec": 3
-            }
-          }
-        ]
-      },
-      {
-        "tag": "HEMM Predictive Maintenance",
-        "title": "Fleet Health",
-        "subtitle": "Engine telemetry flags failures before they stop production.",
+        "title": "Open-Pit Mining",
+        "subtitle": "Excavator EX-01 loads the haul fleet \u2014 a predictive-maintenance flag already open on its engine.",
         "position": [
           -160,
           6,
@@ -4428,111 +4369,70 @@
           -4,
           -6
         ],
-        "travel": 1.6,
-        "hold": 10,
+        "travel": 2.5,
+        "hold": 9.5,
+        "chips": [
+          "Mine Operations Optimization",
+          "Predictive Maintenance",
+          "Environmental Monitoring"
+        ],
         "actions": [
           {
-            "at": 0.3,
-            "type": "triggerScenario",
-            "target": "ex01-engine"
-          },
-          {
-            "at": 2.2,
-            "type": "openDrilldown",
-            "target": "exc-ob-1"
-          },
-          {
-            "at": 10.6,
-            "type": "closePanels"
-          },
-          {
-            "at": 11.2,
-            "type": "clearScenario",
-            "target": "ex01-engine"
+            "at": 1,
+            "type": "blast",
+            "params": {
+              "beaconSec": 3
+            }
           }
         ]
       },
       {
-        "tag": "Fleet Cycle Time & TPMS",
-        "title": "ROM Haul Circuit",
-        "subtitle": "Cycle time, idle and tyre temperature tracked every trip.",
+        "title": "Haul Road",
+        "subtitle": "A light vehicle strays into a haul truck\u2019s blind side \u2014 proximity AI brings the truck to an AUTO-STOP.",
         "position": [
-          -86,
-          37,
-          68
+          -70,
+          40,
+          60
         ],
         "target": [
-          -128,
-          -5,
-          38
+          -110,
+          5,
+          -5
         ],
-        "travel": 1.6,
-        "hold": 10,
+        "travel": 2.5,
+        "hold": 13.5,
+        "chips": [
+          "Fleet & Equipment Management"
+        ],
         "actions": [
           {
-            "at": 0.3,
-            "type": "triggerScenario",
-            "target": "ht01-idle"
+            "at": 5,
+            "type": "director",
+            "target": "near-miss",
+            "params": {
+              "truckId": "truck-1",
+              "holdMs": 8000
+            }
           },
           {
-            "at": 2,
-            "type": "triggerScenario",
-            "target": "ht03-tyre"
+            "at": 6,
+            "type": "chips",
+            "params": {
+              "chips": [
+                "Collision & Proximity Safety"
+              ]
+            }
           },
           {
-            "at": 11,
-            "type": "clearScenario",
-            "target": "ht01-idle"
-          },
-          {
-            "at": 11.2,
-            "type": "clearScenario",
-            "target": "ht03-tyre"
+            "at": 13,
+            "type": "director",
+            "target": "stop"
           }
         ]
       },
       {
-        "tag": "Condition-Based Maintenance",
-        "title": "Primary Crushing",
-        "subtitle": "Vibration analytics catch bearing faults as they develop.",
-        "position": [
-          -42,
-          12,
-          16
-        ],
-        "target": [
-          -30,
-          4,
-          0
-        ],
-        "travel": 1.6,
-        "hold": 10,
-        "actions": [
-          {
-            "at": 0.3,
-            "type": "triggerScenario",
-            "target": "crusher-vib"
-          },
-          {
-            "at": 2.2,
-            "type": "openDrilldown",
-            "target": "crusher-1"
-          },
-          {
-            "at": 10.6,
-            "type": "closePanels"
-          },
-          {
-            "at": 11.2,
-            "type": "clearScenario",
-            "target": "crusher-vib"
-          }
-        ]
-      },
-      {
-        "tag": "AI Conveyor Vision",
-        "title": "Overland Conveying \u2014 CV-01",
-        "subtitle": "AI vision watches every metre of belt.",
+        "title": "Crushing & Overland Conveying",
+        "subtitle": "ROM tips into the primary crusher; AI vision watches every metre of CV-01.",
         "position": [
           -25,
           6.5,
@@ -4543,14 +4443,12 @@
           1.5,
           -0.5
         ],
-        "travel": 1.6,
-        "hold": 11,
+        "travel": 2.5,
+        "hold": 10.5,
+        "chips": [
+          "Asset Performance Management"
+        ],
         "actions": [
-          {
-            "at": 0.3,
-            "type": "triggerScenario",
-            "target": "cv01-idler"
-          },
           {
             "at": 2,
             "type": "openFeed",
@@ -4560,125 +4458,14 @@
             }
           },
           {
-            "at": 11.6,
+            "at": 10,
             "type": "closeFeed"
-          },
-          {
-            "at": 12.4,
-            "type": "clearScenario",
-            "target": "cv01-idler"
           }
         ]
-      },
-      {
-        "tag": "Specific Energy",
-        "title": "Processing \u2014 CHPP",
-        "subtitle": "Washing, dewatering and energy per tonne, measured live.",
-        "position": [
-          -6,
-          17,
-          32
-        ],
-        "target": [
-          6,
-          4,
-          9
-        ],
-        "travel": 1.6,
-        "hold": 8,
-        "actions": [
-          {
-            "at": 0.5,
-            "type": "triggerScenario",
-            "target": "sec-dev"
-          },
-          {
-            "at": 9.2,
-            "type": "clearScenario",
-            "target": "sec-dev"
-          }
-        ]
-      },
-      {
-        "tag": "Environmental Compliance",
-        "title": "Stockyard",
-        "subtitle": "Stock on ground and dust compliance in real time.",
-        "position": [
-          14,
-          15,
-          27
-        ],
-        "target": [
-          32,
-          3,
-          3
-        ],
-        "travel": 1.6,
-        "hold": 8,
-        "actions": [
-          {
-            "at": 0.5,
-            "type": "triggerScenario",
-            "target": "pm10"
-          },
-          {
-            "at": 9.2,
-            "type": "clearScenario",
-            "target": "pm10"
-          }
-        ]
-      },
-      {
-        "title": "Blending & Rail Load-Out",
-        "subtitle": "Blended to specification, loaded wagon by wagon.",
-        "position": [
-          94,
-          17,
-          -2
-        ],
-        "target": [
-          58,
-          3,
-          -24
-        ],
-        "travel": 1.6,
-        "hold": 8
-      },
-      {
-        "title": "Port Shiploading",
-        "subtitle": "The same coal, tracked from pit to hold.",
-        "position": [
-          68,
-          34,
-          60
-        ],
-        "target": [
-          93,
-          2,
-          27
-        ],
-        "travel": 1.6,
-        "hold": 8
-      },
-      {
-        "title": "Westport Power Station",
-        "subtitle": "Delivery \u2014 one continuous, monitored chain.",
-        "position": [
-          104,
-          15,
-          14
-        ],
-        "target": [
-          128,
-          7,
-          -12
-        ],
-        "travel": 1.6,
-        "hold": 6
       },
       {
         "title": "Real-Time Worker Monitoring",
-        "subtitle": "AI vision at every gate \u2014 two workers scanned head to toe; compliant clears green, a missing hard hat flags red.",
+        "subtitle": "Two workers scanned head to toe at the gate camera \u2014 compliant clears green, a missing hard hat flags red.",
         "position": [
           10.6,
           2.2,
@@ -4689,9 +4476,11 @@
           1.15,
           -18
         ],
-        "travel": 2.4,
-        "hold": 13,
-        "tag": "Real-Time Worker Monitoring",
+        "travel": 2.5,
+        "hold": 10.5,
+        "chips": [
+          "Real-Time Worker Monitoring"
+        ],
         "actions": [
           {
             "at": 0.2,
@@ -4711,80 +4500,43 @@
                 "worker-8"
               ]
             }
-          }
-        ]
-      },
-      {
-        "title": "Collision & Proximity Safety",
-        "subtitle": "RF proximity zones on every machine \u2014 a worker in the blind spot triggers an automatic stop.",
-        "position": [
-          -70,
-          40,
-          60
-        ],
-        "target": [
-          -110,
-          5,
-          -5
-        ],
-        "travel": 2.6,
-        "hold": 13,
-        "tag": "Collision & Proximity Safety",
-        "actions": [
-          {
-            "at": 0,
-            "type": "safetyLayer",
-            "params": {
-              "on": true
-            }
           },
-          {
-            "at": 1.5,
-            "type": "director",
-            "target": "near-miss",
-            "params": {
-              "holdMs": 8000
-            }
-          }
-        ]
-      },
-      {
-        "title": "Predictive Maintenance",
-        "subtitle": "Sensor fusion flags failing assets before they fail \u2014 diagnosis, evidence and the recommended fix, one click away.",
-        "position": [
-          -16,
-          9,
-          14
-        ],
-        "target": [
-          -33,
-          5,
-          -2
-        ],
-        "travel": 2.6,
-        "hold": 14,
-        "tag": "Predictive Maintenance",
-        "actions": [
           {
             "at": 3,
-            "type": "pdm",
-            "target": "CR-01",
+            "type": "openFeed",
+            "target": "ppe-cam-1",
             "params": {
-              "open": true
+              "size": 2
             }
           },
           {
-            "at": 12.5,
-            "type": "pdm",
-            "params": {
-              "open": false
-            }
+            "at": 10,
+            "type": "closeFeed"
           }
+        ]
+      },
+      {
+        "title": "Stockyard & Rail Load-Out",
+        "subtitle": "Blended product to the stockyard, then wagons fill and the train departs for port.",
+        "position": [
+          94,
+          17,
+          -2
+        ],
+        "target": [
+          58,
+          3,
+          -24
+        ],
+        "travel": 2.5,
+        "hold": 9.5,
+        "chips": [
+          "Supply Chain & Logistics"
         ]
       },
       {
         "title": "Blackridge Coal Mine \u2014 Pit to Port",
-        "subtitle": "One living twin \u2014 {assetCount} assets, nine monitoring use cases, end to end.",
+        "subtitle": "{assetCount} assets \u00b7 ten monitoring use cases",
         "position": [
           16,
           56,
@@ -4795,8 +4547,8 @@
           1,
           0
         ],
-        "travel": 2.5,
-        "hold": 9
+        "travel": 2.8,
+        "hold": 11.2
       }
     ]
   },

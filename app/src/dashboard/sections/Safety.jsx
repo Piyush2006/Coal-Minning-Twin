@@ -6,6 +6,7 @@
 import { useMemo, useState } from 'react'
 import { Button } from '@faclon-labs/design-sdk/Button'
 import { useDash } from '../store'
+import { useLiveSafetyFeed } from '../../lib/liveSafetyFeed'
 import { buildSafety, complianceStatus } from '../calc/safety'
 import { NUM, fmt } from '../calc/format'
 import { fmtStamp } from '../data/time'
@@ -23,7 +24,8 @@ const STATUS_OPTS = [{ id: 'all', name: 'All evidence' }, { id: 'open', name: 'O
 export function Safety() {
   const { range, mineId, areaId, equipTypeId, shiftMode, settings, plan } = useDash()
   const actions = useDash(s => s.safetyActions)
-  const sf = useMemo(() => buildSafety({ range, mineId, areaId, equipTypeId, settings }), [range, mineId, areaId, equipTypeId, settings])
+  const liveEvents = useLiveSafetyFeed(s => s.events)
+  const sf = useMemo(() => buildSafety({ range, mineId, areaId, equipTypeId, settings, liveEvents }), [range, mineId, areaId, equipTypeId, settings, liveEvents])
   const ctx = useMemo(() => buildBruceContext({ range, mineId, areaId, equipTypeId, shiftMode, settings, plan, safetyActions: actions }), [range, mineId, areaId, equipTypeId, shiftMode, settings, plan, actions])
   const [cat, setCat] = useState('all')
   const [status, setStatus] = useState('all')   // all | open
