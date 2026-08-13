@@ -945,6 +945,13 @@ const store = (set, get) => ({
         position = [11.6, 0, -18]
         rotation = [0, 3.14, 0]
       }
+      // worker-8 (the COMPLIANT partner) is only injected when missing — but a
+      // saved scene from an earlier iteration has it at an OLD spot and never
+      // relocates it, so only worker-2 was in frame. Relocate it to the gate too.
+      if (id === 'worker-8' && !(Math.abs(position[0] - 9.6) < 0.05 && Math.abs(position[2] + 18) < 0.05)) {
+        position = [9.6, 0, -18]
+        rotation = [0, 3.14, 0]
+      }
       // fleet-path refresh (see coalPathFor above): template path is authoritative
       // for the coal-mine movers so the convoy redesign reaches saved scenes.
       let config0 = o.config
