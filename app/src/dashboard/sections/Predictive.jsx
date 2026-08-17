@@ -16,6 +16,7 @@ import { CARD, Pill, usePagination, Pager, th, td } from '../components/ui'
 import { SensorChartModal } from '../components/SensorChartModal'
 import { BruceInsight } from '../components/BruceInsight'
 import { buildBruceContext } from '../lib/bruceContext'
+import { useMarkDrawer } from '../lib/drawerPresence'
 
 const SENS_TEXT = { normal: 'var(--text-positive-default)', warn: 'var(--text-warning-default)', crit: 'var(--text-error-default)' }
 const SEV_COLOR = { Critical: 'critical', Warning: 'warning', Normal: 'positive' }
@@ -128,6 +129,7 @@ const CountTile = ({ label, value, status, total, onClick, active }) => {
 
 // exported: the 3D twin reuses this drawer for its PdM badges (see PdmDrawerHost)
 export function AlertDrawer({ a, onClose }) {
+  useMarkDrawer()
   const [sensorsOpen, setSensorsOpen] = useState(false)
   const sc = STATUS[SEV_COLOR[a.severity]]
   const eSt = FLEET_STATE[a.status]

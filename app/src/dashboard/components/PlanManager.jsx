@@ -7,6 +7,7 @@ import { Drawer, DrawerHeader, DrawerBody, DrawerFooter } from '@faclon-labs/des
 import { Button } from '@faclon-labs/design-sdk/Button'
 import { Divider } from '@faclon-labs/design-sdk/Divider'
 import { useDash } from '../store'
+import { useMarkDrawer } from '../lib/drawerPresence'
 import { NUM, fmt } from '../calc/format'
 import { Dropdown } from './primitives'
 import { Pill, Segmented, usePagination, Pager, th, td } from './ui'
@@ -46,6 +47,7 @@ const PANELS = [{ id: 'plan', label: 'Operational Plan' }, { id: 'strata', label
 const MODES = [{ id: 'upload', label: 'Upload Plan' }, { id: 'manual', label: 'Add Manually' }]
 
 export function PlanManager({ isOpen, onClose }) {
+  useMarkDrawer(isOpen)
   const { plan, setPlan, clearPlan } = useDash()
   const planPanel = useDash(s => s.planPanel)
   const [mode, setMode] = useState('upload')

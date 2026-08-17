@@ -4,6 +4,7 @@
 // answers about exactly what the user is viewing (current filters + range).
 import { useRef, useState, useEffect } from 'react'
 import { useDash } from '../store'
+import { useDrawerPresence } from '../lib/drawerPresence'
 import { bruceChat } from '../lib/bruceClient'
 import { buildBruceContext } from '../lib/bruceContext'
 import { RichMessage } from './RichMessage'
@@ -24,6 +25,10 @@ const Avatar = ({ size = 26 }) => (
 
 export function BruceChat() {
   const [open, setOpen] = useState(false)
+  // while any side drawer is open, Bruce steps aside (fades out, no clicks)
+  const drawerOpen = useDrawerPresence(s => s.count > 0)
+  const aside = { opacity: drawerOpen ? 0 : 1, pointerEvents: drawerOpen ? 'none' : 'auto',
+    transition: 'opacity 220ms ease' }
   const [messages, setMessages] = useState([{ role: 'bot', text: GREETING }])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
@@ -96,7 +101,7 @@ export function BruceChat() {
         onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(60,50,120,0.30)' }}
         style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9998, width: 50, height: 50, borderRadius: 16, border: 'none',
           background: GRADIENT, display: 'grid', placeItems: 'center', cursor: 'pointer',
-          boxShadow: '0 10px 28px rgba(60,50,120,0.30)', transition: 'transform 150ms, box-shadow 150ms' }}>
+          boxShadow: '0 10px 28px rgba(60,50,120,0.30)', transition: 'transform 150ms, box-shadow 150ms, opacity 220ms ease', ...aside }}>
         <Avatar size={30} />
       </button>
     )
@@ -104,7 +109,7 @@ export function BruceChat() {
 
   // ── Expanded chat panel ──
   return (
-    <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9998, width: 390, maxWidth: 'calc(100vw - 32px)', height: 580, maxHeight: 'calc(100vh - 48px)',
+    <div style={{ ...aside, position: 'fixed', bottom: 24, right: 24, zIndex: 9998, width: 390, maxWidth: 'calc(100vw - 32px)', height: 580, maxHeight: 'calc(100vh - 48px)',
       display: 'flex', flexDirection: 'column', background: 'var(--background-surface-intense)', borderRadius: 16, overflow: 'hidden',
       boxShadow: '0 20px 60px rgba(40,40,90,0.28)', border: '1px solid var(--border-gray-subtle)' }}>
 

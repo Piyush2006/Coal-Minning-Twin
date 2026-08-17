@@ -17,6 +17,7 @@ import { fmtStamp } from '../data/time'
 import { StatusTimeline } from './StatusTimeline'
 import { SensorChartModal } from './SensorChartModal'
 import { Pill, Eyebrow } from './ui'
+import { useMarkDrawer } from '../lib/drawerPresence'
 
 const BASELINE_UTIL = 82
 const HEALTH_LABEL = { positive: 'Normal', warning: 'Warning', critical: 'Critical' }
@@ -24,6 +25,7 @@ const HEALTH_TONE = { positive: 'positive', warning: 'warning', critical: 'criti
 const PRIO_TONE = { P1: 'critical', P2: 'warning', P3: 'neutral' }
 
 export function EquipmentDrawer({ unit, status, range, settings, assignments, now, onClose }) {
+  useMarkDrawer()
   const cond = useMemo(() => assetCondition(unit, settings), [unit, settings])
   const stats = useMemo(() => unitStats(unit, BASELINE_UTIL, eachDay(range).length, settings), [unit, range, settings])
   const timeline = useMemo(() => assetTimeline(unit, range, cond.status), [unit, range, cond.status])
