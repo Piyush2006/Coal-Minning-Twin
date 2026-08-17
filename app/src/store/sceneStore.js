@@ -897,6 +897,11 @@ const store = (set, get) => ({
       for (const nid of ['worker-8', 'worker-9', 'zone-cam-1']) {
         if (!rawObjects[nid] && coalTpl()[nid]) rawObjects[nid] = coalTpl()[nid]
       }
+      // scenes saved before the fix have worker-9 without status — PathDrive
+      // parks non-running objects, so the intruder never walked into the zone
+      if (rawObjects['worker-9'] && rawObjects['worker-9'].status !== 'running') {
+        rawObjects['worker-9'] = { ...rawObjects['worker-9'], status: 'running' }
+      }
     }
 
     // Restricted-zone rework: the Active Blast Area moved off the haul road onto

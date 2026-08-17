@@ -4206,7 +4206,8 @@
       "parentId": "grp_personnel",
       "order": 0,
       "parameters": {},
-      "config": {}
+      "config": {},
+      "status": "running"
     },
     "zone-cam-1": {
       "type": "cv_camera",
@@ -4603,13 +4604,13 @@
         "title": "Real-Time Worker Monitoring",
         "subtitle": "Unauthorized Zone Entry",
         "position": [
-          -124,
-          22,
-          -14
+          -136,
+          13,
+          -24
         ],
         "target": [
-          -162,
-          -4,
+          -160,
+          -3.5,
           -44
         ],
         "travel": 2.5,

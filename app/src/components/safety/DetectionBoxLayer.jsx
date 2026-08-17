@@ -4,7 +4,7 @@
 //   VERDICT (the corner-bracket box locks in with its result).
 //   • PPE compliant   → GREEN  "SAFETY COMPLIANT"
 //   • PPE violation   → RED    "SAFETY VIOLATION DETECTED — missing …"
-//   • zone intrusion  → RED    "UNAUTHORIZED ENTRY — <zone>"   (instant, no scan)
+//   • zone intrusion  → SCAN then RED "UNAUTHORIZED ENTRY — <zone>"
 // Zone intrusion outranks PPE. Bloom does the glow. Fixed slot pool, imperative.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
@@ -62,6 +62,7 @@ function DetectionSlot({ reg }) {
 }
 
 const scanState = new Map()   // wid -> { phase, t0, camId, compliant, gone }
+const zoneScan = new Map()    // wid -> { t0 } — restricted-zone scan, cleared on exit so re-entry rescans
 
 // Tour hook: clear the given workers' scan state so their full see→scan→verdict
 // sequence replays on the next detection tick — deleting several at once makes
@@ -72,9 +73,9 @@ export function rescanWorkers(ids = []) {
 
 export function DetectionBoxLayer() {
   const slots = useRef(new Array(SLOTS).fill(null))
-  const camKey = useSceneStore(s => Object.keys(s.objects).filter(id => s.objects[id].type === 'ppe_camera').sort().join(','))
+  const camKey = useSceneStore(s => Object.keys(s.objects).filter(id => s.objects[id].type === 'ppe_camera' || (s.objects[id].type === 'cv_camera' && s.objects[id].config?.watch?.zone)).sort().join(','))
   const camIds = useMemo(() => (camKey ? camKey.split(',') : []), [camKey])
-  const camPos = useMemo(() => { const o = useSceneStore.getState().objects, m = {}; for (const id of camIds) { const p = o[id]?.position; if (p) m[id] = [p[0], HEAD_Y, p[2]] } return m }, [camIds])
+  const camPos = useMemo(() => { const o = useSceneStore.getState().objects, m = {}; for (const id of camIds) { const p = o[id]?.position; if (p) m[id] = [p[0], (p[1] ?? 0) + HEAD_Y, p[2]] } return m }, [camIds])
   const frame = useRef(0)
 
   useFrame(({ clock }) => {
@@ -101,9 +102,12 @@ export function DetectionBoxLayer() {
     }
     for (const [wid, ss] of scanState) if (!ppe.has(wid) && ss.gone == null) ss.gone = now
 
-    // restricted-zone membership (camera-detection story: worker inside a marked
-    // zone gets an instant red box — same grammar as a PPE verdict, no scan)
-    const zones = useSceneStore.getState().objects['safety-1']?.config?.restrictedZones
+    // restricted-zone membership (camera-detection story: a worker inside a
+    // marked zone gets the same see→scan→verdict sequence as a PPE check,
+    // with the zone camera as the projector source)
+    const allObjs = useSceneStore.getState().objects
+    const zones = allObjs['safety-1']?.config?.restrictedZones
+    const zoneCamId = camIds.find(id => allObjs[id]?.config?.watch?.zone) || null
     const inZone = (w) => {
       if (!Array.isArray(zones)) return null
       for (const z of zones) {
@@ -116,16 +120,24 @@ export function DetectionBoxLayer() {
 
     const boxes = []
     for (const [wid, w] of workerPosMap) {
-      let color = null, label = null, phase = 'verdict', camId = null, conf = 96
+      let color = null, label = null, phase = 'verdict', camId = null, conf = 96, bt0 = 0
       const zHit = inZone(w)
-      if (zHit) { color = RED; label = `UNAUTHORIZED ENTRY · ${zHit.name} · 97%` }
+      if (zHit) {
+        let zs = zoneScan.get(wid)
+        if (!zs) { zs = { t0: now }; zoneScan.set(wid, zs) }
+        camId = zoneCamId; conf = 97; bt0 = zs.t0
+        if (now - zs.t0 < SCAN_S) { color = SCAN; phase = 'scan' }
+        else { color = RED; label = `UNAUTHORIZED ENTRY · ${zHit.name} · 97%` }
+      }
       else if (ppe.has(wid)) {
-        const d = ppe.get(wid), ss = scanState.get(wid); camId = d.camId; conf = d.conf ?? 96
+        zoneScan.delete(wid)
+        const d = ppe.get(wid), ss = scanState.get(wid); camId = d.camId; conf = d.conf ?? 96; bt0 = ss?.t0 ?? 0
         if (ss && ss.phase === 'scan') { color = SCAN; phase = 'scan' }
         else if (d.compliant) { color = GREEN; label = 'SAFETY COMPLIANT' }
         else { color = RED; label = `SAFETY VIOLATION DETECTED · missing ${d.missing.map(m => PPE_LABEL[m]).join(', ')}` }
       }
-      if (color) boxes.push({ x: w.pos.x, y: w.pos.y, z: w.pos.z, color, label, phase, camId, conf, t0: scanState.get(wid)?.t0 ?? 0 })
+      else zoneScan.delete(wid)
+      if (color) boxes.push({ x: w.pos.x, y: w.pos.y, z: w.pos.z, color, label, phase, camId, conf, t0: bt0 })
     }
 
     const pulse = 0.65 + 0.35 * Math.sin(now * 6)
