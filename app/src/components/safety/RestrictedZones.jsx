@@ -13,6 +13,7 @@ import { useSceneStore } from '../../store/sceneStore'
 import { useSafetyLayer } from '../../lib/safetyLayer'
 import { workerPosMap } from '../../lib/workerPosMap'
 import { liveSafety, seedCounters } from '../../lib/liveSafety'
+import { pushLiveSafety } from '../../lib/liveSafetyFeed'
 
 const RING_GEO = new THREE.RingGeometry(0.94, 1, 72)   // unit annulus, scaled to radius
 const FILL_GEO = new THREE.CircleGeometry(0.985, 72)
@@ -38,10 +39,13 @@ export function RestrictedZones() {
         const dx = w.pos.x - cx, dz = w.pos.z - cz
         if (dx * dx + dz * dz <= r * r) { inside = true; break }
       }
-      // edge: worker just entered → one counter increment
+      // edge: worker just entered → one counter increment + one evidence record
+      // on the management dashboard (camera detection → logged, nothing more)
       const was = occupied.current.get(z.name) || false
       if (inside && !was) {
         liveSafety.unauthorizedEntriesToday = (liveSafety.unauthorizedEntriesToday || 0) + 1
+        pushLiveSafety({ cat: 'Restricted Area', severity: 'High', description: `Unauthorized entry — ${z.name}`,
+          location: z.name, camera: 'CV Zone - Blast Bench' })
       }
       occupied.current.set(z.name, inside)
       if (inside) { anyInside = true; hitZone = z.name }

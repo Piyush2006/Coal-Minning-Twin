@@ -894,8 +894,22 @@ const store = (set, get) => ({
     // saved scenes must GAIN (the fill loop below only covers objects already in
     // the save). Guarded by anchors so no other template is affected.
     if (rawObjects['worker-2'] && rawObjects['ppe-cam-4']) {
-      for (const nid of ['worker-8']) {
+      for (const nid of ['worker-8', 'worker-9', 'zone-cam-1']) {
         if (!rawObjects[nid] && coalTpl()[nid]) rawObjects[nid] = coalTpl()[nid]
+      }
+    }
+
+    // Restricted-zone rework: the Active Blast Area moved off the haul road onto
+    // the drill bench (trucks drove straight through the old footprint). Guarded
+    // to the old center so user-authored zones are untouched.
+    {
+      const zones = rawObjects['safety-1']?.config?.restrictedZones
+      if (Array.isArray(zones)) {
+        const z = zones.find(x => x?.name === 'Active Blast Area' && Array.isArray(x.center) && Math.abs(x.center[0] + 155) < 0.5 && Math.abs(x.center[2] + 20) < 0.5)
+        if (z) {
+          rawObjects['safety-1'] = { ...rawObjects['safety-1'], config: { ...rawObjects['safety-1'].config,
+            restrictedZones: zones.map(x => (x === z ? { ...x, center: [-166.0, -3.6, -45.0], radius: 13 } : x)) } }
+        }
       }
     }
 

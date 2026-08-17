@@ -46,10 +46,23 @@ const smootherstep = (u) => u * u * u * (u * (u * 6 - 15) + 10)
 
 const _p = new THREE.Vector3(), _t = new THREE.Vector3(), _off = new THREE.Vector3()
 
+// patchConfig is beat-scoped: the first patch of an object snapshots its whole
+// config, and the snapshot is restored when the beat ends (or the tour exits).
+// So a stripped helmet or an injected intruder path can never leak into
+// free-roam — the scene always hands back exactly as it was.
+const patchSnapshots = new Map()   // objId -> original config (deep clone)
+function revertPatches() {
+  for (const [id, cfg] of patchSnapshots) {
+    try { useSceneStore.getState().updateObject(id, { config: cfg }) } catch { /* noop */ }
+  }
+  patchSnapshots.clear()
+}
+
 // Close everything a beat may have opened — runs between beats and on exit,
 // so panels/feeds never leak past their beat and manual use is untouched after.
 function tourCleanupUI() {
   try {
+    revertPatches()                         // beat-scoped config patches roll back
     const feed = useFeedStore.getState()
     if (feed.feedId) feed.closeFeed()
     if (feed.scale !== 1) useFeedStore.setState({ scale: 1 })
@@ -144,6 +157,7 @@ function runTourAction(a, segIndex) {
         const obj = id && objects[id]
         const path = String(a.params?.path || '').split('.').filter(Boolean)
         if (!obj || !path.length) { ok = false; assert = 'bad target/path'; break }
+        if (!patchSnapshots.has(id)) patchSnapshots.set(id, JSON.parse(JSON.stringify(obj.config || {})))
         const cfg = { ...(obj.config || {}) }
         let node = cfg
         for (let i = 0; i < path.length - 1; i++) { node[path[i]] = { ...(node[path[i]] || {}) }; node = node[path[i]] }

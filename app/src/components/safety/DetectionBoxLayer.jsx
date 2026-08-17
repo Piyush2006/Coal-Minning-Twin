@@ -4,7 +4,8 @@
 //   VERDICT (the corner-bracket box locks in with its result).
 //   • PPE compliant   → GREEN  "SAFETY COMPLIANT"
 //   • PPE violation   → RED    "SAFETY VIOLATION DETECTED — missing …"
-// Bloom does the glow. Fixed slot pool, imperative.
+//   • zone intrusion  → RED    "UNAUTHORIZED ENTRY — <zone>"   (instant, no scan)
+// Zone intrusion outranks PPE. Bloom does the glow. Fixed slot pool, imperative.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
@@ -100,10 +101,25 @@ export function DetectionBoxLayer() {
     }
     for (const [wid, ss] of scanState) if (!ppe.has(wid) && ss.gone == null) ss.gone = now
 
+    // restricted-zone membership (camera-detection story: worker inside a marked
+    // zone gets an instant red box — same grammar as a PPE verdict, no scan)
+    const zones = useSceneStore.getState().objects['safety-1']?.config?.restrictedZones
+    const inZone = (w) => {
+      if (!Array.isArray(zones)) return null
+      for (const z of zones) {
+        if (!Array.isArray(z.center) || !(z.radius > 0)) continue
+        const dx = w.pos.x - z.center[0], dz = w.pos.z - z.center[2]
+        if (dx * dx + dz * dz <= z.radius * z.radius) return z
+      }
+      return null
+    }
+
     const boxes = []
     for (const [wid, w] of workerPosMap) {
       let color = null, label = null, phase = 'verdict', camId = null, conf = 96
-      if (ppe.has(wid)) {
+      const zHit = inZone(w)
+      if (zHit) { color = RED; label = `UNAUTHORIZED ENTRY · ${zHit.name} · 97%` }
+      else if (ppe.has(wid)) {
         const d = ppe.get(wid), ss = scanState.get(wid); camId = d.camId; conf = d.conf ?? 96
         if (ss && ss.phase === 'scan') { color = SCAN; phase = 'scan' }
         else if (d.compliant) { color = GREEN; label = 'SAFETY COMPLIANT' }

@@ -53,8 +53,8 @@ export function UseCases() {
     const isToday = (ts) => { const d = new Date(ts), n = new Date(); return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate() }
     const openBy = (kw) => sf.evidence.filter(e => isToday(e.ts) && new RegExp(kw, 'i').test(e.cat) && !e.resolved && !safetyActions[e.id]).length
     const resolvedBy = (kw) => sf.evidence.filter(e => isToday(e.ts) && new RegExp(kw, 'i').test(e.cat) && (e.resolved || safetyActions[e.id])).length
-    const ppeOpen = openBy('ppe|restricted'), ppeResolved = resolvedBy('ppe|restricted')
-    const proxOpen = openBy('vehicle|proximity')
+    const ppeOpen = openBy('ppe'), ppeResolved = resolvedBy('ppe')
+    const zoneOpen = openBy('restricted|zone')
 
     // worst plant-asset health
     const plantRows = res.rows.filter(r => PLANT_IDS.has(r.id))
@@ -75,8 +75,8 @@ export function UseCases() {
         kpi: `${fmt(prodPct, 1)}%`, detail: `${fmt(actual)} T produced vs ${fmt(planned)} T planned` },
       { name: 'Real-Time Worker Monitoring', tab: 'safety', tone: countTone(ppeOpen),
         kpi: fmt(ppeOpen), detail: `${fmt(ppeOpen)} open person/PPE violation${ppeOpen === 1 ? '' : 's'} · ${fmt(ppeResolved)} resolved today` },
-      { name: 'Collision & Proximity Safety', tab: 'safety', tone: countTone(proxOpen),
-        kpi: fmt(proxOpen), detail: `${fmt(proxOpen)} open vehicle-proximity violation${proxOpen === 1 ? '' : 's'} · today` },
+      { name: 'Restricted Zone Monitoring', tab: 'safety', tone: countTone(zoneOpen),
+        kpi: fmt(zoneOpen), detail: `${fmt(zoneOpen)} open zone-entry violation${zoneOpen === 1 ? '' : 's'} · today` },
       { name: 'Fleet & Equipment Management', tab: 'equipment', tone: availTone(res.overview.availability),
         kpi: `${fmt(res.overview.availability)}%`, detail: `${res.overview.Running} running · ${res.overview.availability}% available` },
       { name: 'Predictive Maintenance', tab: 'predictive', tone: pdm.counts.Critical > 0 ? 'critical' : pdm.counts.Warning > 0 ? 'warning' : 'positive',

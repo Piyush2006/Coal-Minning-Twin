@@ -4136,11 +4136,11 @@
           {
             "name": "Active Blast Area",
             "center": [
-              -155,
-              -8,
-              -20
+              -166.0,
+              -3.6,
+              -45.0
             ],
-            "radius": 20
+            "radius": 13
           }
         ],
         "alertRules": [
@@ -4188,6 +4188,48 @@
       "parentId": "grp_personnel",
       "config": {
         "animPhase": 0.7
+      }
+    },
+    "worker-9": {
+      "type": "site_worker",
+      "name": "Contractor W-09",
+      "position": [
+        -150.0,
+        -3.6,
+        -45.0
+      ],
+      "rotation": [
+        0,
+        -1.57,
+        0
+      ],
+      "parentId": "grp_personnel",
+      "order": 0,
+      "parameters": {},
+      "config": {}
+    },
+    "zone-cam-1": {
+      "type": "cv_camera",
+      "name": "CV Zone - Blast Bench",
+      "position": [
+        -151.0,
+        -3.6,
+        -36.0
+      ],
+      "rotation": [
+        0,
+        3.6,
+        0
+      ],
+      "parentId": "grp_cvvision",
+      "order": 99,
+      "parameters": {
+        "intrusionConf": 0
+      },
+      "config": {
+        "watch": {
+          "zone": "Active Blast Area"
+        }
       }
     }
   },
@@ -4566,6 +4608,68 @@
           {
             "at": 9,
             "type": "closeFeed"
+          }
+        ]
+      },
+      {
+        "title": "Restricted Zone Monitoring",
+        "subtitle": "A contractor crosses into the active blast area \u2014 CCTV flags the entry and logs it to the safety record.",
+        "position": [
+          -124,
+          22,
+          -14
+        ],
+        "target": [
+          -162,
+          -4,
+          -44
+        ],
+        "travel": 2.5,
+        "hold": 13.0,
+        "chips": [
+          "Restricted Zone Monitoring"
+        ],
+        "actions": [
+          {
+            "at": 0.4,
+            "type": "safetyLayer",
+            "params": {
+              "on": true
+            }
+          },
+          {
+            "at": 1.0,
+            "type": "patchConfig",
+            "target": "worker-9",
+            "params": {
+              "path": "path",
+              "value": {
+                "waypoints": [
+                  [
+                    -150.0,
+                    -3.6,
+                    -45.0
+                  ],
+                  [
+                    -159.0,
+                    -3.6,
+                    -45.0
+                  ],
+                  [
+                    -163.0,
+                    -3.6,
+                    -42.0
+                  ],
+                  [
+                    -158.0,
+                    -3.6,
+                    -40.0
+                  ]
+                ],
+                "speed": 1.3,
+                "loop": true
+              }
+            }
           }
         ]
       },
