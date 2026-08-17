@@ -46,7 +46,10 @@ export default function Dashboard() {
   // red dot on the Predictive item when critical alerts exist
   const pdmCritical = useMemo(() => buildPdm({ range, mineId, areaId, equipTypeId, settings }).counts.Critical, [range, mineId, areaId, equipTypeId, settings])
 
-  useEffect(() => { if (!didInit.current) { didInit.current = true; refresh() } }, [refresh])
+  // Every dashboard OPEN lands on Use Cases — the executive front door. The
+  // store is module-scoped, so without this a return visit within the session
+  // would resume whatever section was open last.
+  useEffect(() => { if (!didInit.current) { didInit.current = true; setActive('usecases'); refresh() } }, [refresh, setActive])
   // reset scroll to the top whenever the section changes
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0 }, [active])
   // Highcharts only reflows on WINDOW resize — when the content area itself

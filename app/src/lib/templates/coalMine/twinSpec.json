@@ -4414,8 +4414,8 @@
         ]
       },
       {
-        "title": "Open-Pit Mining",
-        "subtitle": "Pull back to the full west cut \u2014 excavators digging, the haul fleet cycling, live ops KPIs on every asset.",
+        "title": "Mine Operations Optimization",
+        "subtitle": "Open Pit",
         "position": [
           -100,
           16,
@@ -4427,14 +4427,11 @@
           -18
         ],
         "travel": 2.5,
-        "hold": 5.5,
-        "chips": [
-          "Mine Operations Optimization"
-        ]
+        "hold": 5.5
       },
       {
-        "title": "Drill & Blast",
-        "subtitle": "A production blast fires \u2014 dust monitoring flags the PM10 spike in real time.",
+        "title": "Environmental Monitoring",
+        "subtitle": "Drill & Blast",
         "position": [
           -140,
           20,
@@ -4447,9 +4444,6 @@
         ],
         "travel": 2.0,
         "hold": 6.0,
-        "chips": [
-          "Environmental Monitoring"
-        ],
         "actions": [
           {
             "at": 1,
@@ -4476,8 +4470,8 @@
         ]
       },
       {
-        "title": "ROM Haul Circuit",
-        "subtitle": "The loaded truck runs the ROM circuit \u2014 cycle time and TPMS tracked across the fleet.",
+        "title": "Fleet & Equipment Management",
+        "subtitle": "ROM Haul Circuit",
         "position": [
           -86,
           37,
@@ -4490,9 +4484,6 @@
         ],
         "travel": 2.0,
         "hold": 6.0,
-        "chips": [
-          "Fleet & Equipment Management"
-        ],
         "actions": [
           {
             "at": 1,
@@ -4512,8 +4503,8 @@
         ]
       },
       {
-        "title": "Crushing & Overland Conveying",
-        "subtitle": "CR-01 flags rising vibration; AI vision watches every metre of CV-01.",
+        "title": "Asset Performance Management",
+        "subtitle": "Crushing & Conveying",
         "position": [
           -25,
           6.5,
@@ -4526,9 +4517,6 @@
         ],
         "travel": 2.0,
         "hold": 8.0,
-        "chips": [
-          "Asset Performance Management"
-        ],
         "actions": [
           {
             "at": 1,
@@ -4612,8 +4600,8 @@
         ]
       },
       {
-        "title": "Restricted Zone Monitoring",
-        "subtitle": "A contractor crosses into the active blast area \u2014 CCTV flags the entry and logs it to the safety record.",
+        "title": "Real-Time Worker Monitoring",
+        "subtitle": "Unauthorized Zone Entry",
         "position": [
           -124,
           22,
@@ -4626,9 +4614,6 @@
         ],
         "travel": 2.5,
         "hold": 13.0,
-        "chips": [
-          "Restricted Zone Monitoring"
-        ],
         "actions": [
           {
             "at": 0.4,
@@ -4674,8 +4659,8 @@
         ]
       },
       {
-        "title": "Processing \u2014 CHPP",
-        "subtitle": "Inside the wash plant \u2014 specific-energy deviation flags on SC-01 against target.",
+        "title": "Energy & Sustainability Management",
+        "subtitle": "CHPP",
         "position": [
           -6,
           17,
@@ -4688,9 +4673,6 @@
         ],
         "travel": 2.0,
         "hold": 6.0,
-        "chips": [
-          "Energy & Sustainability Management"
-        ],
         "actions": [
           {
             "at": 1,
@@ -4710,8 +4692,8 @@
         ]
       },
       {
-        "title": "Product Flow",
-        "subtitle": "Washed product streams along the belts to the stockyard \u2014 tonnage tracked end to end.",
+        "title": "Production & Productivity Management",
+        "subtitle": "Product Flow",
         "position": [
           10,
           14,
@@ -4723,14 +4705,11 @@
           3
         ],
         "travel": 2.0,
-        "hold": 6.0,
-        "chips": [
-          "Production & Productivity Management"
-        ]
+        "hold": 6.0
       },
       {
-        "title": "Stockyard & Rail Load-Out",
-        "subtitle": "The stacker builds the blended pile; wagons fill and the loaded train departs for port.",
+        "title": "Supply Chain & Logistics",
+        "subtitle": "Rail Load-Out",
         "position": [
           42,
           26,
@@ -4743,9 +4722,6 @@
         ],
         "travel": 2.0,
         "hold": 10.0,
-        "chips": [
-          "Supply Chain & Logistics"
-        ],
         "actions": [
           {
             "at": 1.5,

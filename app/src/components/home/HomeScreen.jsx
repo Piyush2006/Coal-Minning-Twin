@@ -107,20 +107,29 @@ export function HomeScreen() {
     <div style={{ width: '100vw', height: '100vh', overflowY: 'auto', background: C.bg, color: C.text, fontFamily: FONT }}>
       <input ref={fileRef} type="file" accept="application/json,.json" onChange={onUpload} style={{ display: 'none' }} />
 
-      {/* Dashboard — navigates to the (in-progress) analytics dashboard */}
-      <button onClick={() => { window.location.hash = '#/dashboard' }} title="Open dashboard"
-        style={{ position: 'fixed', top: 18, right: 140, zIndex: 50, display: 'inline-flex', alignItems: 'center', gap: 7,
-          height: 36, padding: '0 14px', borderRadius: R.pill, ...glass, border: `1px solid ${C.line}`, boxShadow: SHADOW.card,
-          color: C.text2, cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>
-        <span style={{ fontSize: 15 }}>📊</span> Dashboard
+      {/* Management dashboard — icon-only glass pill (opens on Use Cases) */}
+      <button onClick={() => { window.location.hash = '#/dashboard' }} title="Management dashboard" aria-label="Management dashboard"
+        style={{ position: 'fixed', top: 18, right: 66, zIndex: 50, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 36, height: 36, padding: 0, borderRadius: R.pill, ...glass, border: `1px solid ${C.line}`, boxShadow: SHADOW.card,
+          color: C.text2, cursor: 'pointer' }}>
+        {/* dashboard glyph: 2×2 panel grid, line style */}
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3.5" y="3.5" width="7.2" height="9.4" rx="1.6" />
+          <rect x="13.3" y="3.5" width="7.2" height="5.4" rx="1.6" />
+          <rect x="13.3" y="11.3" width="7.2" height="9.2" rx="1.6" />
+          <rect x="3.5" y="15.3" width="7.2" height="5.2" rx="1.6" />
+        </svg>
       </button>
 
-      {/* Settings (AI model + key) */}
-      <button onClick={() => setSettings(true)} title="AI settings"
-        style={{ position: 'fixed', top: 18, right: 22, zIndex: 50, display: 'inline-flex', alignItems: 'center', gap: 7,
-          height: 36, padding: '0 14px', borderRadius: R.pill, ...glass, border: `1px solid ${C.line}`, boxShadow: SHADOW.card,
-          color: C.text2, cursor: 'pointer', fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>
-        <span style={{ fontSize: 15 }}>⚙</span> Settings
+      {/* Settings (AI model + key) — matching icon-only pill */}
+      <button onClick={() => setSettings(true)} title="AI settings" aria-label="AI settings"
+        style={{ position: 'fixed', top: 18, right: 22, zIndex: 50, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 36, height: 36, padding: 0, borderRadius: R.pill, ...glass, border: `1px solid ${C.line}`, boxShadow: SHADOW.card,
+          color: C.text2, cursor: 'pointer' }}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3.1" />
+          <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10.05 3V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01c.26.63.87 1.04 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.05z" />
+        </svg>
       </button>
       <AnimatePresence>{settings && <SettingsModal onClose={() => setSettings(false)} />}</AnimatePresence>
 
