@@ -72,7 +72,7 @@ export function zoneWorkers(objects, zone) {
 }
 export function zoneAlerts(objects, zone, alerts) {
   const ids = new Set(zoneAssetIds(objects, zone))
-  // the safety monitor is hidden but its Proximity/Worker alerts belong to the Pit
+  // the safety monitor is hidden but its Worker-safety alerts belong to the Pit
   if (zone.id === 'pit') ids.add('safety-1')
   const za = alerts.filter(a => ids.has(a.objId))
   return { list: za, warn: za.filter(a => a.severity === 'warn').length, crit: za.filter(a => a.severity === 'critical').length }

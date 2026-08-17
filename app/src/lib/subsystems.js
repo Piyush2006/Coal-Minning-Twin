@@ -28,7 +28,7 @@ export function partSubsystem(name, type) {
 const ALERT_SUB = {
   'HEMM PdM': 'Engine', 'TPMS': 'Undercarriage & Tyres', 'Vibration CBM': 'Drivetrain',
   'Conveyor Vision': 'Belt & Idlers', 'CHP SEC': 'Drivetrain',
-  'Haulage': 'Operational', 'Proximity': 'Operational', 'Worker Safety': 'Operational',
+  'Haulage': 'Operational', 'Worker Safety': 'Operational',
   'Dust & Env': 'Structure',
 }
 export const alertSubsystem = (a) => ALERT_SUB[a.useCase] ?? 'Structure'

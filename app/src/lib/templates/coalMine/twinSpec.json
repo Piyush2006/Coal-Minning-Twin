@@ -4105,11 +4105,8 @@
         "workersPlant": 3,
         "workersRail": 2,
         "workersPort": 2,
-        "minWorkerVehicleDistance": 34,
-        "proximityAlertsToday": 2,
         "geofenceViolationsToday": 0,
         "unauthorizedEntriesToday": 1,
-        "proximityEvent": 0,
         "unauthorizedEvent": 0,
         "geofenceEvent": 0,
         "restrictedZone": "Active Blast Area"
@@ -4147,24 +4144,6 @@
           }
         ],
         "alertRules": [
-          {
-            "id": "prox-crit",
-            "param": "proximityEvent",
-            "op": ">",
-            "threshold": 0.5,
-            "severity": "critical",
-            "useCase": "Proximity",
-            "message": "Proximity incident \u2014 worker within {minWorkerVehicleDistance} m of a vehicle"
-          },
-          {
-            "id": "prox-near",
-            "param": "minWorkerVehicleDistance",
-            "op": "<",
-            "threshold": 15,
-            "severity": "warn",
-            "useCase": "Proximity",
-            "message": "Reduced worker\u2013vehicle clearance: {minWorkerVehicleDistance} m"
-          },
           {
             "id": "geofence",
             "param": "geofenceEvent",
@@ -4487,41 +4466,6 @@
             "at": 7.5,
             "type": "clearScenario",
             "target": "ht03-tyre"
-          }
-        ]
-      },
-      {
-        "title": "Collision & Proximity Safety",
-        "subtitle": "A light vehicle strays into a haul truck\u2019s blind side \u2014 proximity AI brings the truck to an AUTO-STOP.",
-        "position": [
-          -70,
-          40,
-          60
-        ],
-        "target": [
-          -110,
-          5,
-          -5
-        ],
-        "travel": 2.5,
-        "hold": 11.5,
-        "chips": [
-          "Collision & Proximity Safety"
-        ],
-        "actions": [
-          {
-            "at": 3,
-            "type": "director",
-            "target": "near-miss",
-            "params": {
-              "truckId": "truck-1",
-              "holdMs": 8000
-            }
-          },
-          {
-            "at": 12,
-            "type": "director",
-            "target": "stop"
           }
         ]
       },

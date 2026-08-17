@@ -4,21 +4,18 @@
 //   VERDICT (the corner-bracket box locks in with its result).
 //   • PPE compliant   → GREEN  "SAFETY COMPLIANT"
 //   • PPE violation   → RED    "SAFETY VIOLATION DETECTED — missing …"
-//   • proximity warn  → AMBER  "ENTERING PROXIMITY ZONE — <vehicle>"   (no scan)
-//   • proximity danger→ RED    "PROXIMITY DANGER — <vehicle> · N m · AUTO-STOP"
-// Proximity outranks PPE. Bloom does the glow. Fixed slot pool, imperative.
+// Bloom does the glow. Fixed slot pool, imperative.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { useSceneStore } from '../../store/sceneStore'
 import { workerPosMap } from '../../lib/workerPosMap'
-import { workerBreachInfo } from '../../lib/proximity'
 import { ppeCameraDetections, PPE_LABEL } from '../../lib/ppeVision'
 import { pushLiveSafety } from '../../lib/liveSafetyFeed'
 import { scanMat, flowMat } from './safetyShaders'
 
-const GREEN = '#12B76A', RED = '#F04438', AMBER = '#F79009', SCAN = '#5CC8FF'
+const GREEN = '#12B76A', RED = '#F04438', SCAN = '#5CC8FF'
 const SLOTS = 8
 const SCAN_S = 1.6, RESCAN_GAP = 8, HEAD_Y = 3.6
 const mono = "'SF Mono', ui-monospace, Menlo, monospace"
@@ -84,10 +81,8 @@ export function DetectionBoxLayer() {
     const now = clock.elapsedTime
     const ppe = new Map()
     for (const cid of camIds) for (const d of ppeCameraDetections(cid)) { if (!ppe.has(d.id) || !d.compliant) ppe.set(d.id, { ...d, camId: cid }) }
-    // scan state machine (PPE only; proximity skips to a box)
+    // scan state machine
     for (const [wid, d] of ppe) {
-      const br = workerBreachInfo(wid)
-      if (br && (br.state === 'danger' || br.state === 'warn')) { scanState.delete(wid); continue }
       const ss = scanState.get(wid)
       if (!ss || (ss.gone != null && now - ss.gone > RESCAN_GAP) || (ss && ss.compliant !== d.compliant)) scanState.set(wid, { phase: 'scan', t0: now, camId: d.camId, compliant: d.compliant })
       else {
@@ -107,11 +102,8 @@ export function DetectionBoxLayer() {
 
     const boxes = []
     for (const [wid, w] of workerPosMap) {
-      const br = workerBreachInfo(wid)
       let color = null, label = null, phase = 'verdict', camId = null, conf = 96
-      if (br && br.state === 'danger') { color = RED; label = `⚠ PROXIMITY DANGER · ${br.vehName} · ${Math.round(br.dist)} m · AUTO-STOP` }
-      else if (br && br.state === 'warn') { color = AMBER; label = `ENTERING PROXIMITY ZONE · ${br.vehName}` }
-      else if (ppe.has(wid)) {
+      if (ppe.has(wid)) {
         const d = ppe.get(wid), ss = scanState.get(wid); camId = d.camId; conf = d.conf ?? 96
         if (ss && ss.phase === 'scan') { color = SCAN; phase = 'scan' }
         else if (d.compliant) { color = GREEN; label = 'SAFETY COMPLIANT' }

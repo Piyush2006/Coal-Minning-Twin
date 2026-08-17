@@ -15,20 +15,17 @@ import { TEMPLATES }          from './lib/templates'
 import { getSchema, coerceConfigValue } from './lib/assetSchemas'
 import { effectiveParamDefs, paramFreqKey, FREQUENCIES } from './lib/parameterSchemas'
 import { getConnectorSchema }   from './lib/connectorSchemas'
-import { vehicleState, hasStop as _hasStop } from './lib/vehicleMotion'
+import { vehicleState } from './lib/vehicleMotion'
 import { RuleEditor }           from './components/RuleEditor'
 import { SceneRenderer }      from './components/SceneRenderer'
 import { Connectors }         from './components/Connectors'
 import { MaterialFlowLayer }  from './components/effects/MaterialFlow'
 import { CameraFeedRenderer, CameraFeedPanel } from './components/CameraFeed'
 import { RestrictedZones } from './components/safety/RestrictedZones'
-import { ProximityLayer, NearMissActor } from './components/safety/ProximityLayer'
 import { DetectionBoxLayer } from './components/safety/DetectionBoxLayer'
 import { PdmBadgeLayer } from './components/PdmBadgeLayer'
 import { PdmDrawerHost } from './components/PdmDrawerHost'
 import { CameraFovLayer } from './components/safety/CameraFovLayer'
-import { proximityState, workerBreachInfo as _workerBreachInfo } from './lib/proximity'
-import { startNearMiss, stopNearMiss, nearMissActive, phantom as _phantom } from './lib/nearMissDirector'
 import { ShopFloorEnvironment } from './components/ShopFloorEnvironment'
 import { MACHINE_LIBRARY }    from './lib/machineLibrary'
 import { dragGuard }          from './lib/interactionGuard'
@@ -50,7 +47,6 @@ import { tickSafetyBridge, liveSafety } from './lib/liveSafety'
 import { evaluateAlerts } from './lib/alertsEngine'
 import { useFeedStore } from './components/CameraFeed'
 import { workerPosMap as _workerPosMap } from './lib/workerPosMap'
-import { useSafetyLayer } from './lib/safetyLayer'
 import { useDayNight } from './lib/dayNight'
 import { useViewTab } from './lib/viewTab'
 import { CommandPalette }     from './components/CommandPalette'
@@ -1531,11 +1527,9 @@ export default function App() {
                 <Connectors />
                 <MaterialFlowLayer />
                 <RestrictedZones />
-                <ProximityLayer />
                 <DetectionBoxLayer />
                 <PdmBadgeLayer editMode={editMode} />
                 <CameraFovLayer />
-                <NearMissActor />
                 <CameraController orbitRef={orbitRef} />
                 <TourDriver orbitRef={orbitRef} />
                 {<Kpi3DLayer />}
@@ -1684,19 +1678,8 @@ function DevFreezeHook() {
       workerWorld: (id) => { const w = _workerPosMap.get(id); return w ? [+w.pos.x.toFixed(2), +w.pos.y.toFixed(2), +w.pos.z.toFixed(2)] : null },
       workerIds: () => [..._workerPosMap.keys()],
       objPos: (id) => { const o = useSceneStore.getState().objects[id]; return o ? [...o.position] : null },
-      // ── Stage-4 proximity test accessors ──
-      nearMiss: (opts) => startNearMiss(opts),
-      stopNearMiss: () => stopNearMiss(),
-      nearMissActive: () => nearMissActive(),
-      proxState: (id) => proximityState(id),
-      breachInfo: (id) => _workerBreachInfo(id),
-      safetyOn: (v) => useSafetyLayer.getState().setOn(!!v),
-      phantomState: () => ({ ..._phantom }),
-      placePhantom: (x, z) => { _phantom.x = x; _phantom.y = 0; _phantom.z = z; _phantom.active = true; return true },  // detection is always-on; leave visuals off for fast headless frames
-      clearPhantom: () => { _phantom.active = false; return true },
       // force N R3F frames (drives every useFrame — PathDrive, proximity — past headless rAF throttling)
       pump: (n = 40, stepMs = 33) => { let t = (typeof performance !== 'undefined' ? performance.now() : 0); for (let i = 0; i < n; i++) { t += stepMs; three.advance(t) } return n },
-      hasStop: (id, reason) => _hasStop(id, reason),
       workerTris: () => { let n = 0; three.scene.traverse(o => { for (let a = o; a; a = a.parent) if (a.name === 'worker-1') { if (o.isMesh && o.geometry) { const g = o.geometry; n += (g.index ? g.index.count : g.attributes.position.count) / 3 } break } }); return Math.round(n) },
       // Structural digest: every mesh's identity/transform/material — the
       // deterministic "did anything visible change" check (rotation excluded:

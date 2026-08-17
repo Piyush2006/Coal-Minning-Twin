@@ -1,5 +1,5 @@
 // Live-safety bridge. The 3D safety systems (PPE vision, restricted zones, and
-// the Stage-4 proximity layer) write REAL, twin-driven values here each tick;
+// the safety layers) write REAL, twin-driven values here each tick;
 // `tickSafetyBridge` mirrors the managed ones into the EXISTING safety-1
 // parameters via updateObject — so one scripted event in the twin becomes one
 // number change on safety-1, which the existing alertRules + m.tcs + dashboard
@@ -20,10 +20,7 @@ export const liveSafety = {
   unauthorizedEvent: null,           // 0/1
   restrictedZone: null,              // zone name string
   unauthorizedEntriesToday: null,    // running total (seeded from safety-1 on engage)
-  // proximity + geofence (Stage 4) — declared now, written there
-  minWorkerVehicleDistance: null,    // m
-  proximityEvent: null,              // 0/1
-  proximityAlertsToday: null,
+  // geofence — declared now, written by the mock simulator
   geofenceEvent: null,               // 0/1
   geofenceViolationsToday: null,
 }
@@ -32,7 +29,6 @@ export const liveSafety = {
 // reads it directly). A param is written only when its liveSafety field != null.
 const BRIDGED = [
   'unauthorizedEvent', 'restrictedZone', 'unauthorizedEntriesToday',
-  'minWorkerVehicleDistance', 'proximityEvent', 'proximityAlertsToday',
   'geofenceEvent', 'geofenceViolationsToday',
 ]
 
@@ -43,7 +39,6 @@ export function seedCounters(safetyParams) {
   if (seeded) return
   seeded = true
   if (liveSafety.unauthorizedEntriesToday == null) liveSafety.unauthorizedEntriesToday = Number(safetyParams?.unauthorizedEntriesToday) || 0
-  if (liveSafety.proximityAlertsToday == null) liveSafety.proximityAlertsToday = Number(safetyParams?.proximityAlertsToday) || 0
   if (liveSafety.geofenceViolationsToday == null) liveSafety.geofenceViolationsToday = Number(safetyParams?.geofenceViolationsToday) || 0
 }
 

@@ -899,6 +899,23 @@ const store = (set, get) => ({
       }
     }
 
+    // Proximity/collision retired: strip its alert rules + KPI params from saved
+    // scenes so "Proximity incident" alerts can never fire again and the safety
+    // panel shows no dead proximity numbers (the vehicle AUTO-STOP story was
+    // removed — worker safety is told via camera detection instead).
+    const PROX_PARAMS = ['proximityAlertsToday', 'proximityEvent', 'minWorkerVehicleDistance']
+    for (const k in rawObjects) {
+      const o = rawObjects[k]
+      const rules = o?.config?.alertRules
+      const hasRule = Array.isArray(rules) && rules.some(r => r?.useCase === 'Proximity' || PROX_PARAMS.includes(r?.param))
+      const hasParam = o?.parameters && PROX_PARAMS.some(pk => pk in o.parameters)
+      if (!hasRule && !hasParam) continue
+      const next = { ...o }
+      if (hasRule) next.config = { ...next.config, alertRules: rules.filter(r => r?.useCase !== 'Proximity' && !PROX_PARAMS.includes(r?.param)) }
+      if (hasParam) { next.parameters = { ...next.parameters }; for (const pk of PROX_PARAMS) delete next.parameters[pk] }
+      rawObjects[k] = next
+    }
+
     // Upgrade legacy smoke/vapour parts to the rising-plume animation so existing
     // projects pick it up without re-creating from the template.
     const isPlume = (p) => /smoke|vapou?r/i.test(p?.label || '')

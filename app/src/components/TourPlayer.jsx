@@ -26,10 +26,9 @@ import { useUIStore } from '../store/uiStore'
 import { useViewTab } from '../lib/viewTab'
 import { triggerScenario, clearScenario, clearAllScenarios, setScenarioExclusive } from '../lib/demoScenarios'
 import { useSafetyLayer } from '../lib/safetyLayer'
-import { startNearMiss, stopNearMiss } from '../lib/nearMissDirector'
 import { rescanWorkers } from './safety/DetectionBoxLayer'
 import { openPdmForTour, closePdm } from '../lib/pdmBridge'
-import { C, R, FONT, glass, SHADOW } from '../ui/theme'
+import { C, R, FONT, glass } from '../ui/theme'
 
 export const useTourStore = create((set) => ({
   active: false,
@@ -57,7 +56,6 @@ function tourCleanupUI() {
     useSceneStore.getState().clearSelection?.()
     useViewTab.getState().setTab('overview')
     useUIStore.setState({ rightCollapsed: true })   // KPI panel collapsed by default; a beat opens it on cue
-    stopNearMiss()                          // director never leaks past its beat
     closePdm()                              // PdM drawer never leaks past its beat
     useSafetyLayer.getState().setOn(false)  // safety overlay off between beats / on exit
   } catch { /* never stall the tour */ }
@@ -124,7 +122,7 @@ function runTourAction(a, segIndex) {
         assert = `safety=${useSafetyLayer.getState().on}`
         break
       case 'chips':
-        // swap the lower-third chips mid-beat (e.g. Fleet -> Collision on the near-miss)
+        // swap the caption chips mid-beat
         useTourStore.setState(s => ({ card: s.card ? { ...s.card, chips: a.params?.chips || [] } : s.card }))
         ok = true; assert = 'chips swapped'
         break
@@ -137,11 +135,6 @@ function runTourAction(a, segIndex) {
       case 'pdm':
         if (a.params?.open !== false) { ok = openPdmForTour(a.target || 'CR-01'); assert = ok ? 'pdm drawer open' : 'no pdm asset' }
         else { closePdm(); ok = true; assert = 'pdm drawer closed' }
-        break
-      case 'director':
-        if (a.target === 'near-miss') { ok = !!startNearMiss(a.params); assert = ok ? 'near-miss armed' : 'no rolling truck' }
-        else if (a.target === 'stop') { stopNearMiss(); ok = true; assert = 'director stopped' }
-        else { ok = false; assert = 'unknown director target' }
         break
       case 'patchConfig': {
         // set a dot-path value into an object's config (e.g. ppe.helmet=false to
@@ -307,7 +300,10 @@ export function TourDriver({ orbitRef }) {
   return null
 }
 
-// ── Lower-third title overlay (DOM, mounts in the app layout) ──────────────
+// ── Cinematic upper-third title (DOM, mounts in the app layout) ────────────
+// Top-anchored, box-free. A soft feathered top scrim (no borders, no edges)
+// carries the text so it stays readable over any part of the 3D scene — bright
+// sky, tan benches or dark equipment — without ever reading as a panel.
 export function TourOverlay() {
   const active = useTourStore(s => s.active)
   const paused = useTourStore(s => s.paused)
@@ -315,26 +311,30 @@ export function TourOverlay() {
   const [shown, setShown] = useState(null)          // sticky content through the fade-out
   useEffect(() => { if (card) setShown(card) }, [card])
   if (!active) return null
+  const eyebrow = shown?.chips?.length ? shown.chips.join('  ·  ') : (shown?.tag || '')
   return (
     <>
-      <div data-tour-card style={{ position: 'absolute', left: '50%', bottom: 58, zIndex: 24, pointerEvents: 'none',
-        transform: `translateX(-50%) translateY(${card ? 0 : 12}px)`, opacity: card ? 1 : 0,
+      {/* Feathered scrim: full-bleed, fades to nothing — the legibility device, not a box. */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 210, zIndex: 23, pointerEvents: 'none',
+        background: 'linear-gradient(180deg, rgba(8,12,22,0.46) 0%, rgba(8,12,22,0.22) 42%, rgba(8,12,22,0) 100%)',
+        opacity: card ? 1 : 0, transition: 'opacity 650ms ease' }} />
+      <div data-tour-card style={{ position: 'absolute', top: 34, left: '50%', zIndex: 24, pointerEvents: 'none',
+        transform: `translateX(-50%) translateY(${card ? 0 : -12}px)`, opacity: card ? 1 : 0,
         transition: 'opacity 650ms ease, transform 650ms ease',
-        fontFamily: FONT, textAlign: 'center', ...glass, border: `1px solid ${C.line}`,
-        borderRadius: R.lg, boxShadow: SHADOW.panel, padding: '13px 28px', maxWidth: 620 }}>
-        {shown?.chips?.length ? (
-          <div style={{ marginBottom: 5, display: 'flex', gap: 5, justifyContent: 'center', flexWrap: 'wrap' }}>
-            {shown.chips.map((c, i) => (
-              <span key={i} style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: C.text2,
-                background: 'rgba(120,120,128,0.12)', borderRadius: 4, padding: '2px 8px' }}>{c}</span>
-            ))}
-          </div>
+        fontFamily: FONT, textAlign: 'center', maxWidth: 760, padding: '0 24px' }}>
+        {eyebrow ? (
+          <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.72)', marginBottom: 9, textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>{eyebrow}</div>
         ) : null}
-        <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: 0.2, color: C.text, whiteSpace: 'nowrap' }}>{shown?.title}</div>
-        {shown?.subtitle ? <div style={{ fontSize: 13, color: C.text2, marginTop: 4 }}>{shown.subtitle}</div> : null}
+        <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: 0.2, lineHeight: 1.12, color: '#fff',
+          textShadow: '0 2px 18px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.4)' }}>{shown?.title}</div>
+        {shown?.subtitle ? (
+          <div style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginTop: 9, lineHeight: 1.45,
+            textShadow: '0 1px 10px rgba(0,0,0,0.5)' }}>{shown.subtitle}</div>
+        ) : null}
       </div>
       {paused && (
-        <div style={{ position: 'absolute', top: 74, left: '50%', transform: 'translateX(-50%)', zIndex: 24,
+        <div style={{ position: 'absolute', bottom: 58, left: '50%', transform: 'translateX(-50%)', zIndex: 24,
           pointerEvents: 'none', fontFamily: FONT, fontSize: 12, fontWeight: 600, color: C.text2,
           ...glass, border: `1px solid ${C.line}`, borderRadius: R.pill, padding: '6px 14px' }}>
           Paused — space to resume · esc to exit

@@ -108,7 +108,7 @@ const LIFT = 1.0   // how far a selected asset / line "pops" up (view mode)
 // mode and when not running.
 // Hook-free gate: only actual path-driven movers mount PathDrive (and its
 // per-frame subscription); everything else renders children directly.
-const _pdPos = new Vector3(), _pdTan = new Vector3(), _pdAhead = new Vector3()
+const _pdPos = new Vector3(), _pdTan = new Vector3()
 
 // One frame subscriber animates the selection pop for whichever objects want
 // it (the selected one / selected-group members) — byte-identical math to the
@@ -219,7 +219,7 @@ function PathDrive({ obj, editMode, children }) {
           const kappa = curv[Math.min(N - 1, Math.floor((ai / len) * N))] || 0
           let cap = maxSpeed * _clampf(1 - kappa * CURVE_K, CURVE_FLOOR, 1)
           if ((cBefore > 0 || cAfter > 0) && (ai > len - cBefore || ai < cAfter)) cap = Math.min(cap, cSpeed)
-          cap = effectiveCap(vehicleMotion(ids[i]), cap)   // folds proximity stops + director caps
+          cap = effectiveCap(vehicleMotion(ids[i]), cap)   // folds any external caps/stops
           if (cap < target) target = cap
         }
         const dv = target - cv.v
@@ -249,7 +249,7 @@ function PathDrive({ obj, editMode, children }) {
       }
 
       // ── speed target = MIN of cruise / loadedSlow / curvature / dwell-approach,
-      //    then folded with any external caps + hard stops (proximity, director) ─
+      //    then folded with any external caps + hard stops ─
       const f0 = st.arc / len
       let cruise = maxSpeed
       const slow = Number(path.loadedSlow) || 0
@@ -290,13 +290,9 @@ function PathDrive({ obj, editMode, children }) {
       pathFillMap[obj.id] = fill
     }
 
-    // position (p is the world point on the curve; store it for the proximity system)
+    // position (p is the world point on the curve; keep the live world pos readable)
     const p = curve.getPointAt(f, _pdPos)
     st.wx = p.x; st.wy = p.y; st.wz = p.z
-    // a point ~20 m ahead ALONG the curve (in travel order) for the near-miss director
-    const fa = ((((st.arc + 20) % len) + len) % len) / len
-    const pa = curve.getPointAt(_clampf(fa, 0, 0.999999), _pdAhead)
-    st.aheadX = pa.x; st.aheadY = pa.y; st.aheadZ = pa.z
     g.position.set(p.x - obj.position[0], p.y - obj.position[1], p.z - obj.position[2])
 
     // yaw: damped shortest-angle ease toward the tangent (kills the corner snap)

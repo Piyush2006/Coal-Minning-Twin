@@ -188,16 +188,16 @@ function stepGeneric(o, customAssetTypes) {
   return { parameters: p }
 }
 
-// Worker & proximity safety signals — believable, occasional-event pacing (NOT
-// a constant alarm). Workers drift 8–14; the closest worker↔vehicle distance
-// drifts 20–55 m and occasionally dips; rare unauthorized-entry / geofence /
-// proximity incidents raise a transient flag (→ the alert engine fires a
-// tagged row) and bump the running "today" counters.
+// Worker safety signals — believable, occasional-event pacing (NOT a constant
+// alarm). Workers drift 8–14; rare unauthorized-entry / geofence incidents
+// raise a transient flag (→ the alert engine fires a tagged row) and bump the
+// running "today" counters. Proximity/collision events are retired — worker
+// safety is told through camera detection, never vehicle auto-stop claims.
 function stepSafety(o, rec) {
   const p = { ...o.parameters }
   const q = (rec.q ??= {
-    workers: 11, dist: 42, uaTimer: 0, gfTimer: 0, pxTimer: 0,
-    ua: p.unauthorizedEntriesToday ?? 0, gf: p.geofenceViolationsToday ?? 0, px: p.proximityAlertsToday ?? 0,
+    workers: 11, uaTimer: 0, gfTimer: 0,
+    ua: p.unauthorizedEntriesToday ?? 0, gf: p.geofenceViolationsToday ?? 0,
   })
   // workers on site — slow bounded random walk 8..14
   q.workers = Math.max(8, Math.min(14, q.workers + (Math.random() - 0.5) * 0.6))
@@ -208,31 +208,22 @@ function stepSafety(o, rec) {
   p.workersPlant = Math.round(w * 0.30)
   p.workersRail  = Math.round(w * 0.18)
   p.workersPort  = Math.max(0, w - p.workersPit - p.workersPlant - p.workersRail)
-  // closest worker↔vehicle distance — drift, with occasional proximity dips
-  q.dist += (Math.random() - 0.5) * 3
-  if (q.pxTimer > 0) { q.pxTimer -= 1; q.dist = Math.min(q.dist, 6 + Math.random() * 3) }
-  q.dist = Math.max(4, Math.min(58, q.dist))
-  p.minWorkerVehicleDistance = Math.round(q.dist)
   // event pacing — rare, non-overlapping-ish (scale for long recordings)
   const sScale = TUNE().safetyEventScale ?? 1
-  if (q.pxTimer <= 0 && Math.random() < 0.006 * sScale) { q.pxTimer = 7; q.px += 1 }
   if (q.uaTimer <= 0 && Math.random() < 0.004 * sScale) { q.uaTimer = 8; q.ua += 1 }
   if (q.gfTimer <= 0 && Math.random() < 0.003 * sScale) { q.gfTimer = 8; q.gf += 1 }
   if (q.uaTimer > 0) q.uaTimer -= 1
   if (q.gfTimer > 0) q.gfTimer -= 1
-  p.proximityEvent = q.pxTimer > 0 ? 1 : 0
   p.unauthorizedEvent = q.uaTimer > 0 ? 1 : 0
   p.geofenceEvent = q.gfTimer > 0 ? 1 : 0
   // counters increment WITH their event; guard so an active event can never
   // interpolate a pre-increment zero into its alert message
-  if (p.proximityEvent && q.px < 1) q.px = 1
   if (p.unauthorizedEvent && q.ua < 1) q.ua = 1
   if (p.geofenceEvent && q.gf < 1) q.gf = 1
-  p.proximityAlertsToday = q.px
   p.unauthorizedEntriesToday = q.ua
   p.restrictedZone = ['Active Blast Area', 'Crusher Maintenance Bay', 'Rail Corridor'][q.ua % 3]
   p.geofenceViolationsToday = q.gf
-  return { parameters: p, state: q.pxTimer > 0 ? 'fault' : 'running' }
+  return { parameters: p, state: 'running' }
 }
 
 // One simulation step over the whole scene → a fresh objects map (no history).

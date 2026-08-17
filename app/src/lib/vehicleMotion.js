@@ -1,7 +1,7 @@
 // Per-vehicle kinematic state for smooth, STATEFUL path motion. Module map
-// (the pathFillMap / loadStateMap pattern) so nothing re-renders and so the
-// Stage-4 proximity system + near-miss director can stack speed targets and
-// hard stops onto a moving vehicle without prop-drilling. PathDrive owns the
+// (the pathFillMap / loadStateMap pattern) so nothing re-renders and so other
+// systems can stack speed targets and hard stops onto a moving vehicle without
+// prop-drilling. PathDrive owns the
 // curve geometry and calls in here to integrate; this owns the state and the
 // reason-stack API.
 //
@@ -34,8 +34,7 @@ export function vehicleMotion(id) {
       arc: 0, v: 0, yaw: 0, prevV: 0,
       pitch: 0, roll: 0, settle: 0,       // body dynamics
       dwellT: 0,                          // remaining dwell seconds (>0 = parked at wp0)
-      wx: 0, wy: 0, wz: 0,                // live world position (written by PathDrive, read by proximity)
-      aheadX: 0, aheadY: 0, aheadZ: 0,    // a point ~20 m ahead ALONG the curve (for the near-miss director)
+      wx: 0, wy: 0, wz: 0,                // live world position (written by PathDrive)
       targets: new Map(),                 // reason -> speed cap (m/s)
       stops: new Set(),                   // reasons forcing a hard stop
       initDone: false,
@@ -45,11 +44,11 @@ export function vehicleMotion(id) {
   return st
 }
 export function clearVehicle(id) { S.delete(id) }
-export function vehicleState(id) { return S.get(id) || null }   // read-only peek (director/proximity)
+export function vehicleState(id) { return S.get(id) || null }   // read-only peek
 
 // ── reason-stacked speed caps + hard stops ────────────────────────────────
-// Multiple systems (proximity-warning, director, dwell…) can each pin a cap or
-// a stop under their own reason; they compose without clobbering each other.
+// Multiple systems (dwell, convoy…) can each pin a cap or a stop under their
+// own reason; they compose without clobbering each other.
 export function setSpeedTarget(id, target, reason) { vehicleMotion(id).targets.set(reason, target) }
 export function clearSpeedTarget(id, reason) { const st = S.get(id); if (st) st.targets.delete(reason) }
 export function requestStop(id, reason) { vehicleMotion(id).stops.add(reason) }
@@ -89,8 +88,8 @@ export const stoppingSpeed = (dist, decel) => Math.sqrt(Math.max(0, 2 * decel * 
 // arc-clock, so their spacing is constant by construction: they can never
 // catch up, lap, or overlap. The clock's speed is the MIN of every member's
 // local allowance (curvature, loading-crawl zone, external caps/hard stops),
-// so a worker AUTO-STOP on any one truck freezes the whole circuit — exactly
-// what a blocked one-lane haul road does.
+// so a stop on any one truck freezes the whole circuit — exactly what a
+// blocked one-lane haul road does.
 const CONVOYS = new Map()   // pathKey -> { arc, v, members: Map, frame, inited }
 export function convoyFor(key) {
   let c = CONVOYS.get(key)
